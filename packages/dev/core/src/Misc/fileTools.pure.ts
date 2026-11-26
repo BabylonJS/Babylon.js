@@ -833,8 +833,10 @@ export const GetMimeType = (url: string): string | undefined => {
         return type || undefined;
     }
 
-    const lastDot = url.lastIndexOf(".");
-    const extension = url.substring(lastDot + 1).toLowerCase();
+    // The extension is in the path, not in the query string or fragment (e.g. "texture.jpg?v=2")
+    const path = url.split(/[?#]/)[0];
+    const lastDot = path.lastIndexOf(".");
+    const extension = path.substring(lastDot + 1).toLowerCase();
 
     switch (extension) {
         case "glb":

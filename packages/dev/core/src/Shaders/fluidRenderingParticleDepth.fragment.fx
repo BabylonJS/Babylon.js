@@ -22,7 +22,7 @@ void main(void) {
     vec4 realViewPos = vec4(viewPos + normal * sphereRadius, 1.0);
     vec4 clipSpacePos = projection * realViewPos;
 
-#ifdef WEBGPU
+#ifdef IS_NDC_HALF_ZRANGE
     gl_FragDepth = clipSpacePos.z / clipSpacePos.w;
 #else
     gl_FragDepth = (clipSpacePos.z / clipSpacePos.w) * 0.5 + 0.5;

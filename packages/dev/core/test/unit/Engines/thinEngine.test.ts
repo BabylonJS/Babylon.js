@@ -3,52 +3,15 @@ import { ThinEngine } from "core/Engines/thinEngine";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Color4 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Ray } from "core/Culling/ray";
+import { Vector3 } from "core/Maths/math.vector";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { Scene } from "core/scene";
+import { CreateMockWebGL2Canvas } from "./mockWebGL2Canvas";
 import "core/Engines/Extensions/engine.multiRender";
 
 type RenderFrameCallback = (timestamp: number) => void;
-
-/**
- * Creates a canvas whose getContext("webgl2") returns a minimal mocked WebGL2 context, so that the engine
- * goes through the full context initialization (_initGLContext) in a node environment.
- * Constants are numbers (LEQUAL and GEQUAL have their real values), methods return null unless listed below.
- * @returns the mocked canvas, and the spy on the context clear() method
- */
-function CreateMockWebGL2Canvas() {
-    const knownConstants: Record<string, number> = { LEQUAL: Constants.LEQUAL, GEQUAL: Constants.GEQUAL };
-    let nextConstant = 0x10000;
-    const methods: Record<string, (...args: unknown[]) => unknown> = {
-        getContextAttributes: () => ({ stencil: true, antialias: false }),
-        getParameter: () => 16,
-        getShaderPrecisionFormat: () => ({ precision: 23, rangeMin: 127, rangeMax: 127 }),
-        getSupportedExtensions: () => [],
-        clear: vi.fn(),
-    };
-    const gl = new Proxy({} as Record<string, unknown>, {
-        get: (target, name) => {
-            if (typeof name !== "string") {
-                return undefined;
-            }
-            if (!(name in target)) {
-                target[name] = /^[A-Z0-9_]+$/.test(name) ? (knownConstants[name] ?? nextConstant++) : (methods[name] ?? (() => null));
-            }
-            return target[name];
-        },
-    });
-    const canvas = {
-        width: 300,
-        height: 150,
-        clientWidth: 300,
-        clientHeight: 150,
-        style: {},
-        getContext: (contextType: string) => (contextType === "webgl2" ? gl : null),
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        setAttribute: () => {},
-        getBoundingClientRect: () => ({ width: 300, height: 150 }),
-    };
-    gl.canvas = canvas;
-    return { canvas: canvas as unknown as HTMLCanvasElement, clear: methods.clear };
-}
 
 describe("Engine", () => {
     describe("constructor", () => {
@@ -121,6 +84,244 @@ describe("Engine", () => {
                     expect(clear).not.toHaveBeenCalled();
                     expect(engine.useReverseDepthBuffer).toBe(!!options.useReverseDepthBuffer);
                     expect(engine.depthCullingState.depthFunc).toBe(expectedDepthFunc);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("only requests clip control when half-range depth is requested", () => {
+                const { canvas, getExtension } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useReverseDepthBuffer: true });
+                try {
+                    expect(getExtension).not.toHaveBeenCalledWith("EXT_clip_control");
+                    expect(engine.isNDCHalfZRange).toBe(false);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("keeps full-range depth when the extension is unavailable", () => {
+                const { canvas, getExtension } = CreateMockWebGL2Canvas();
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                try {
+                    expect(getExtension).toHaveBeenCalledWith("EXT_clip_control");
+                    expect(engine.isNDCHalfZRange).toBe(false);
+                    expect(engine._getGlobalDefines()).not.toContain("IS_NDC_HALF_ZRANGE");
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("leaves the clip range alone for a supplied WebGL context", () => {
+                const { context, getExtension, clipControl } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(context, false, { useNDCHalfZRange: true });
+                try {
+                    expect(engine.isNDCHalfZRange).toBe(false);
+                    expect(getExtension).not.toHaveBeenCalledWith("EXT_clip_control");
+                } finally {
+                    engine.dispose();
+                }
+                expect(clipControl.clipControlEXT).not.toHaveBeenCalled();
+            });
+
+            it("keeps a half-range engine with context loss handling disabled suspended after a context loss", () => {
+                const { canvas, clipControl, context, restoreContext } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true, doNotHandleContextLost: true });
+                const render = vi.fn();
+                const requestAnimationFrame = vi.fn<(_callback: RenderFrameCallback) => number>(() => 1);
+                engine.customAnimationFrameRequester = { requestAnimationFrame, cancelAnimationFrame: vi.fn(), requestID: 0 };
+
+                try {
+                    expect(engine.isNDCHalfZRange).toBe(true);
+                    engine.runRenderLoop(render);
+                    requestAnimationFrame.mock.calls[0][0](1000);
+                    expect(render).toHaveBeenCalledOnce();
+
+                    expect(restoreContext()).toBe(false);
+                    requestAnimationFrame.mock.calls[1][0](1016);
+                    expect(render).toHaveBeenCalledOnce();
+                    expect(clipControl.clipControlEXT).toHaveBeenCalledExactlyOnceWith(clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT);
+                    expect(context.getParameter(clipControl.CLIP_DEPTH_MODE_EXT)).toBe(clipControl.NEGATIVE_ONE_TO_ONE_EXT);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it("resets clip depth before disposal observers can create a replacement engine", () => {
+                const { canvas, context, clipControl } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                const onDispose = vi.fn(() => {
+                    const depthAtHandoff = context.getParameter(clipControl.CLIP_DEPTH_MODE_EXT);
+                    const replacement = new Engine(canvas, false, { useNDCHalfZRange: true });
+                    return { depthAtHandoff, replacement };
+                });
+                engine.onDisposeObservable.addOnce(onDispose);
+                engine.dispose();
+
+                expect(onDispose).toHaveBeenCalledOnce();
+                const { depthAtHandoff, replacement } = onDispose.mock.results[0].value;
+                try {
+                    expect(depthAtHandoff).toBe(clipControl.NEGATIVE_ONE_TO_ONE_EXT);
+                    expect(replacement.isNDCHalfZRange).toBe(true);
+                    expect(context.getParameter(clipControl.CLIP_DEPTH_MODE_EXT)).toBe(clipControl.ZERO_TO_ONE_EXT);
+                    expect(clipControl.clipControlEXT.mock.calls).toEqual([
+                        [clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT],
+                        [clipControl.LOWER_LEFT_EXT, clipControl.NEGATIVE_ONE_TO_ONE_EXT],
+                        [clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT],
+                    ]);
+                } finally {
+                    replacement.dispose();
+                }
+            });
+
+            it("detaches the canvas context handlers on disposal without a window", () => {
+                const { canvas } = CreateMockWebGL2Canvas(true);
+                const removeEventListener = vi.spyOn(canvas, "removeEventListener");
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                engine.dispose();
+
+                expect(removeEventListener).toHaveBeenCalledWith("webglcontextlost", expect.any(Function));
+                expect(removeEventListener).toHaveBeenCalledWith("webglcontextrestored", expect.any(Function));
+                expect(canvas.dispatchEvent(new Event("webglcontextlost", { cancelable: true }))).toBe(true);
+            });
+
+            it("restores the selected clip range before notifying context restoration", async () => {
+                const { canvas, clipControl, restoreContext, getExtension } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true });
+                try {
+                    expect(engine.isNDCHalfZRange).toBe(true);
+                    expect(engine.useReverseDepthBuffer).toBe(false);
+                    expect(engine._getGlobalDefines()).toContain("#define IS_NDC_HALF_ZRANGE");
+                    expect(clipControl.clipControlEXT).toHaveBeenCalledExactlyOnceWith(clipControl.LOWER_LEFT_EXT, clipControl.ZERO_TO_ONE_EXT);
+
+                    const restored = new Promise<void>((resolve) => {
+                        engine.onContextRestoredObservable.addOnce(() => resolve());
+                    });
+                    restoreContext();
+                    await restored;
+                    expect(clipControl.clipControlEXT).toHaveBeenCalledTimes(2);
+                    expect(getExtension.mock.calls.filter(([name]) => name === "EXT_clip_control")).toHaveLength(2);
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it.each([
+                { halfZRange: false, reverseDepth: false },
+                { halfZRange: false, reverseDepth: true },
+                { halfZRange: true, reverseDepth: false },
+                { halfZRange: true, reverseDepth: true },
+            ])("culls meshes at the camera depth limits (half range: $halfZRange, reversed Z: $reverseDepth)", ({ halfZRange, reverseDepth }) => {
+                const { canvas } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: halfZRange, useReverseDepthBuffer: reverseDepth });
+                try {
+                    const scene = new Scene(engine);
+                    const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                    scene.activeCamera = camera;
+                    camera.minZ = 1;
+                    camera.maxZ = 10;
+                    scene.updateTransformMatrix();
+
+                    const box = CreateBox("box", { size: 0.1 }, scene);
+                    for (const [z, visible] of [
+                        [0.75, false],
+                        [5, true],
+                        [11, false],
+                    ] as const) {
+                        box.position.z = z;
+                        box.computeWorldMatrix(true);
+                        expect([camera.isInFrustum(box), box.isInFrustum(scene.frustumPlanes)], `box at z=${z}`).toEqual([visible, visible]);
+                    }
+
+                    camera.maxZ = 0;
+                    scene.updateTransformMatrix();
+                    expect(camera.isInFrustum(box)).toBe(true);
+                    expect(box.isInFrustum(scene.frustumPlanes)).toBe(true);
+
+                    if (halfZRange && reverseDepth) {
+                        box.scaling.setAll(0);
+                        box.computeWorldMatrix(true);
+                        expect([camera.isInFrustum(box), box.isInFrustum(scene.frustumPlanes)], "zero-extent bounds in the infinite frustum").toEqual([true, true]);
+                    }
+                } finally {
+                    engine.dispose();
+                }
+            });
+
+            it.each([false, true])("picks with the scene's depth range (half-range engine created first: %s)", (halfRangeFirst) => {
+                const engines = [halfRangeFirst, !halfRangeFirst].map((useNDCHalfZRange) => {
+                    const { canvas } = CreateMockWebGL2Canvas(true);
+                    return new Engine(canvas, false, { useNDCHalfZRange });
+                });
+
+                try {
+                    for (const engine of engines) {
+                        const scene = new Scene(engine);
+                        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                        scene.activeCamera = camera;
+                        camera.minZ = 1;
+                        camera.maxZ = 10;
+
+                        const box = CreateBox("box", { size: 0.1 }, scene);
+                        box.position.z = 1.25;
+                        box.computeWorldMatrix(true);
+
+                        const x = engine.getRenderWidth() / 2;
+                        const y = engine.getRenderHeight() / 2;
+                        expect(scene.pick(x, y).pickedMesh).toBe(box);
+                        expect(scene.createPickingRayInCameraSpace(x, y).origin.z).toBeCloseTo(1);
+
+                        const distantRay = Ray.Zero();
+                        scene.createPickingRayToRef(x, y, null, distantRay, camera, false, true);
+                        expect(distantRay.origin.z).toBeCloseTo(1);
+                    }
+                } finally {
+                    for (const engine of engines) {
+                        engine.dispose();
+                    }
+                }
+            });
+
+            it.each([false, true])("picks distant meshes in reversed Z with a standard engine created last (half range: %s)", (halfZRange) => {
+                const engine = new Engine(CreateMockWebGL2Canvas(true).canvas, false, { useNDCHalfZRange: halfZRange, useReverseDepthBuffer: true });
+                const standardEngine = new Engine(CreateMockWebGL2Canvas().canvas, false);
+
+                try {
+                    const scene = new Scene(engine);
+                    const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                    camera.minZ = 1;
+                    camera.maxZ = 0;
+                    scene.activeCamera = camera;
+
+                    const box = CreateBox("box", { size: 2 }, scene);
+                    box.position.z = 2 ** 30;
+                    box.computeWorldMatrix(true);
+
+                    const x = engine.getRenderWidth() / 2;
+                    const y = engine.getRenderHeight() / 2;
+                    expect(scene.createPickingRayInCameraSpace(x, y).origin.z).toBeCloseTo(camera.minZ);
+                    expect(scene.pick(x, y).pickedMesh).toBe(box);
+                } finally {
+                    standardEngine.dispose();
+                    engine.dispose();
+                }
+            });
+
+            it.each([false, true])("projects an infinite reversed-Z frustum into [0, 1] (right-handed: %s)", (rightHanded) => {
+                const { canvas } = CreateMockWebGL2Canvas(true);
+                const engine = new Engine(canvas, false, { useNDCHalfZRange: true, useReverseDepthBuffer: true });
+                try {
+                    const scene = new Scene(engine);
+                    scene.useRightHandedSystem = rightHanded;
+                    const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                    camera.minZ = 1;
+                    camera.maxZ = 100;
+                    camera.ignoreCameraMaxZ = true;
+                    const projection = camera.getProjectionMatrix();
+
+                    const forwardZ = rightHanded ? -1 : 1;
+                    expect(Vector3.TransformCoordinates(new Vector3(0, 0, forwardZ), projection).z).toBe(1);
+                    expect(Vector3.TransformCoordinates(new Vector3(0, 0, forwardZ * 1e9), projection).z).toBeCloseTo(1e-9, 15);
                 } finally {
                     engine.dispose();
                 }

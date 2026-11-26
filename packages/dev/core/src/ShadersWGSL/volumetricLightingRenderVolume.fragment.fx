@@ -33,7 +33,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var worldPos = fragmentInputs.vWorldPos;
 
+#ifdef USE_REVERSE_DEPTHBUFFER
+    if (fragmentInputs.position.z < depth) {
+#else
     if (fragmentInputs.position.z > depth) {
+#endif
         let ndc = vec4f((fragmentInputs.position.xy / uniforms.outputTextureSize) * 2. - 1., depth, 1.0);
 
         worldPos = uniforms.invViewProjection * ndc;

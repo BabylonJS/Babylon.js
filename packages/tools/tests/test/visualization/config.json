@@ -6123,6 +6123,114 @@
             "dependsOn": ["Compute", "Meshes", "Shadows"]
         },
         {
+            "title": "WebGL2 half-range depth - fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"]
+        },
+        {
+            "title": "WebGL2 half-range depth - volumetric lighting occlusion",
+            "playgroundId": "#YAZ8XO#0",
+            "referenceImage": "webgl2-half-range-depth-volumetric.png",
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "FrameGraph", "Lights", "Rendering", "Textures"]
+        },
+        {
+            "title": "WebGL2 half-range depth - right-handed fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;"
+        },
+        {
+            "title": "WebGL2 - right-handed orthographic fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-orthographic-fluid-occlusion.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Cameras", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, camera.fov = 0.9;, camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA; camera.orthoLeft = -2.4; camera.orthoRight = 2.4; camera.orthoBottom = -1.35; camera.orthoTop = 1.35;"
+        },
+        {
+            "title": "WebGPU depth - right-handed fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, engine.webGLVersion !== 2 || engine.isNDCHalfZRange !== requestedHalfRange, !engine.isWebGPU || !engine.isNDCHalfZRange"
+        },
+        {
+            "title": "WebGL2 half-range depth - right-handed fluid particle occlusion with reversed Z",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;",
+            "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGPU depth - right-handed fluid particle occlusion with reversed Z",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, engine.webGLVersion !== 2 || engine.isNDCHalfZRange !== requestedHalfRange, !engine.isWebGPU || !engine.isNDCHalfZRange",
+            "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGL2 half-range depth - volumetric lighting occlusion with reversed Z",
+            "replace": "output.sourceTexture = volume.outputTexture;, output.sourceTexture = volume.outputTexture; output.depthTest = false;",
+            "playgroundId": "#YAZ8XO#0",
+            "referenceImage": "webgl2-half-range-depth-volumetric.png",
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "FrameGraph", "Lights", "Rendering", "Textures"],
+            "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGL2 half-range depth - infinite-far fluid rendering with fixed thickness",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "useReverseDepthBuffer": "true",
+            "replace": "camera.maxZ = 20;, camera.maxZ = 0;"
+        },
+        {
+            "title": "WebGL2 half-range depth - infinite-far fluid rendering with variable thickness",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-variable-thickness.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "useReverseDepthBuffer": "true",
+            "replace": "camera.maxZ = 20;, camera.maxZ = 0;, fluid.targetRenderer.useFixedThickness = true;, fluid.targetRenderer.useFixedThickness = false;, fluid.targetRenderer.minimumThickness = 0.35;, fluid.targetRenderer.minimumThickness = 0;"
+        },
+        {
             "title": "WebGPU fast snapshot rendering - rendering groups on the canvas and in a render target",
             "playgroundId": "#PQTZNT#0",
             "referenceImage": "webgpu-fast-snapshot-rendering-groups.png",

@@ -254,10 +254,18 @@ export const evaluatePlaywrightVisTests = async (
                 engineName: engineType,
                 useLargeWorldRendering: testCase.useLargeWorldRendering ?? false,
                 useReverseDepthBuffer: testCase.useReverseDepthBuffer ?? "false",
+                useNDCHalfZRange: testCase.useNDCHalfZRange,
                 useNonCompatibilityMode: testCase.useNonCompatibilityMode ?? "false",
                 baseUrl: getGlobalConfig({ root: config.root, usesDevHost: false }).baseUrl,
             });
             log(rendererData.renderer);
+            if (testCase.useNDCHalfZRange) {
+                if (!rendererData.clipControlSupported) {
+                    page.off("console", logCallback);
+                    test.skip(true, "This WebGL context does not support EXT_clip_control.");
+                }
+                expect(rendererData.isNDCHalfZRange).toBe(true);
+            }
 
             await page.evaluate((backgroundColor?: string) => {
                 if (backgroundColor) {
@@ -320,12 +328,14 @@ export const evaluateInitEngineForVisualization = async ({
     engineName,
     useLargeWorldRendering,
     useReverseDepthBuffer,
+    useNDCHalfZRange,
     useNonCompatibilityMode,
     baseUrl,
 }: {
     engineName: string;
     useLargeWorldRendering: boolean;
     useReverseDepthBuffer: string | number;
+    useNDCHalfZRange?: boolean;
     useNonCompatibilityMode: string | number;
     baseUrl: string;
 }) => {
@@ -407,6 +417,7 @@ export const evaluateInitEngineForVisualization = async ({
             failIfMajorPerformanceCaveat: true,
             powerPreference: "high-performance",
             useLargeWorldRendering: useLargeWorldRendering,
+            useNDCHalfZRange,
         });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
@@ -427,6 +438,8 @@ export const evaluateInitEngineForVisualization = async ({
         forceUseNonCompatibilityMode: window.forceUseNonCompatibilityMode,
         engineName,
         renderer: (window.engine as any)._glRenderer,
+        clipControlSupported: useNDCHalfZRange && window.engine?._gl?.getSupportedExtensions()?.includes("EXT_clip_control"),
+        isNDCHalfZRange: window.engine?.isNDCHalfZRange,
     };
 };
 

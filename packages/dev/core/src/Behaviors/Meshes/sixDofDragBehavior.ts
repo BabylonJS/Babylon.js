@@ -145,7 +145,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             if (this.rotateDraggedObject) {
                 if (this.rotateAroundYOnly) {
                     // Convert change in rotation to only y axis rotation
-                    Quaternion.RotationYawPitchRollToRef(worldDeltaRotation.toEulerAngles().y, 0, 0, TmpVectors.Quaternion[0]);
+                    Quaternion.RotationYawPitchRollToRef(worldDeltaRotation._toEulerAnglesToRef(new Vector3(), true).y, 0, 0, TmpVectors.Quaternion[0]);
                 } else {
                     TmpVectors.Quaternion[0].copyFrom(worldDeltaRotation);
                 }
@@ -219,7 +219,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                     Quaternion.FromLookDirectionLHToRef(toCamera, new Vector3(0, 1, 0), quat);
                 }
                 quat.normalize();
-                Quaternion.RotationYawPitchRollToRef(quat.toEulerAngles().y, 0, 0, TmpVectors.Quaternion[0]);
+                Quaternion.RotationYawPitchRollToRef(quat._toEulerAnglesToRef(new Vector3(), true).y, 0, 0, TmpVectors.Quaternion[0]);
                 this._targetOrientation.copyFrom(TmpVectors.Quaternion[0]);
             }
             this._startingPosition.copyFrom(this._targetPosition);

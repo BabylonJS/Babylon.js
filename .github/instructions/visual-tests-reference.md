@@ -17,6 +17,7 @@ Reference material for Babylon.js visualization tests. For the workflow and step
 | `replaceUrl`                                                                 | No       | -             | Comma-separated replacement pairs for patching URLs                                                                                                             |
 | `excludeFromAutomaticTesting`                                                | No       | `false`       | Exclude the test from the standard visualization harness entirely, including targeted `-g` runs                                                                 |
 | `useLargeWorldRendering`, `useReverseDepthBuffer`, `useNonCompatibilityMode` | No       | -             | Per-test engine flags                                                                                                                                           |
+| `useNDCHalfZRange`                                                           | No       | `false`       | Request a `[0, 1]` NDC depth range for WebGL. The test is skipped if the context lacks `EXT_clip_control`.                                                      |
 | `dependsOn`                                                                  | No\*     | `[]`          | Array of module tags the test exercises (e.g. `["PBR", "Shadows"]`). **Required for new tests.** Tests without it always run in CI.                             |
 
 ## `renderCount` guidance

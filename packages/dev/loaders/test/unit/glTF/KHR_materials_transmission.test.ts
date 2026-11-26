@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, expect } from "vitest";
+import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Mesh } from "core/Meshes/mesh";
@@ -8,7 +8,11 @@ import { ImportMeshAsync } from "core/Loading";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { ObjectRenderer } from "core/Rendering/objectRenderer";
+import { ThinDepthPeelingRenderer } from "core/Rendering/thinDepthPeelingRenderer";
+import { TimingTools } from "core/Misc/timingTools";
 import { Vector3 } from "core/Maths/math.vector";
+import "core/Rendering/depthPeelingSceneComponent";
+import "core/Rendering/prePassRendererSceneComponent";
 import "loaders/glTF";
 
 /**
@@ -83,6 +87,27 @@ describe("KHR_materials_transmission – MergeMeshes with MultiMaterial", () => 
 
         const helper = getTransmissionHelper(scene);
         expect(helper).toBeDefined();
+    });
+
+    it("should run depth peeling for the camera but not for the transmission background", async () => {
+        await ImportMeshAsync(`data:${buildTransmissionGltf()}`, scene);
+        await new Promise<void>((resolve) => TimingTools.SetImmediate(resolve));
+        scene.activeCamera!.position.z = -2;
+
+        vi.spyOn(engine, "buildTextureLayout").mockReturnValue([]);
+        const depthPeelingRenderer = new ThinDepthPeelingRenderer(scene);
+        scene.onDisposeObservable.addOnce(() => depthPeelingRenderer.dispose());
+        scene.depthPeelingRenderer = depthPeelingRenderer;
+        const render = vi.spyOn(depthPeelingRenderer, "render").mockImplementation((subMeshes) => subMeshes);
+        scene.useOrderIndependentTransparency = true;
+
+        const opaqueTarget = getTransmissionHelper(scene).getOpaqueTarget() as RenderTargetTexture;
+        expect(opaqueTarget.renderList).not.toHaveLength(0);
+        opaqueTarget.render();
+        expect(render).not.toHaveBeenCalled();
+
+        scene.render();
+        expect(render).toHaveBeenCalled();
     });
 
     it("should classify original meshes into opaque and transparent caches", async () => {
