@@ -1123,14 +1123,20 @@ export class Curve3 {
         const xAxis = radiusVec.normalize();
         const yAxis = Vector3.Cross(zAxis, xAxis).normalize();
         if (fullCircle) {
-            const dStep = (2 * Math.PI) / steps;
-            // Count the steps instead of adding dStep up to 2 * PI: depending on rounding, the sum reached 2 * PI
-            // or not, so the circle sometimes ended with a second copy of its first point (a zero length segment).
-            for (let i = 0; i < steps; i++) {
-                const theta = i * dStep;
-                arc.push(center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta)))));
+            // Seed with an exact clone of first so the opening point matches the input exactly
+            // rather than the trig reconstruction, which can differ by one ULP.
+            arc.push(first.clone());
+            if (steps >= 1) {
+                const dStep = (2 * Math.PI) / steps;
+                // Count the steps instead of adding dStep up to 2 * PI: depending on rounding, the sum
+                // reached 2 * PI or not, so the circle sometimes ended with a duplicate of its first point.
+                // Start from index 1; first.clone() already covers the theta=0 position.
+                for (let i = 1; i < steps; i++) {
+                    const theta = i * dStep;
+                    arc.push(center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta)))));
+                }
+                arc.push(first.clone());
             }
-            arc.push(first);
         } else {
             const dStep = 1 / steps;
             let theta = 0;

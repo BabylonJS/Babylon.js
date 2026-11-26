@@ -12,6 +12,8 @@ describe("Curve3.ArcThru3Points", () => {
             const points = Curve3.ArcThru3Points(first, second, third, steps, false, true).getPoints();
 
             expect(points.length).toBe(steps + 1);
+            // Both endpoints are exact clones of first, not trig reconstructions.
+            expect(points[0].equals(first)).toBe(true);
             expect(points[points.length - 1].equals(first)).toBe(true);
             // every segment has the same length, including the one that closes the circle
             const segment = 2 * Math.sin(Math.PI / steps);
@@ -19,5 +21,11 @@ describe("Curve3.ArcThru3Points", () => {
                 expect(Vector3.Distance(points[i - 1], points[i])).toBeCloseTo(segment, 10);
             }
         }
+    });
+
+    it("returns a one-point arc for zero steps without throwing", () => {
+        const points = Curve3.ArcThru3Points(first, second, third, 0, false, true).getPoints();
+        expect(points.length).toBe(1);
+        expect(points[0].equals(first)).toBe(true);
     });
 });
