@@ -33,7 +33,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // This requires a depth texture value.
     let depth = textureSampleLevel(depthTexture, depthTextureSampler, input.vUV, 0.).r;
-    if (depth >= 1.) {
+    if (isAtOrBeyondFarPlane(depth)) {
         discard;
     }
 

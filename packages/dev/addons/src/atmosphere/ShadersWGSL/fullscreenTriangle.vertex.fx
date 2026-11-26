@@ -17,7 +17,13 @@ varying positionOnNearPlane: vec3f;
 #endif
 
 #if COMPUTE_WORLD_RAY
+#if USE_REVERSE_DEPTHBUFFER
+const nearPlaneNDC: f32 = 1.0;
+#elif IS_NDC_HALF_ZRANGE
+const nearPlaneNDC: f32 = 0.0;
+#else
 const nearPlaneNDC: f32 = -1.0;
+#endif
 #endif
 
 @vertex

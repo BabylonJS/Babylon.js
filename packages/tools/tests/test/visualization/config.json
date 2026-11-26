@@ -4261,6 +4261,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Atmosphere Day (Reverse Depth)",
+            "playgroundId": "#VO1Z0C#48",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Atmosphere", "Lights", "PBR", "PostProcesses"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Atmosphere Day (Planet Origin)",
             "playgroundId": "#VO1Z0C#40",
             "referenceImage": "atmosphere-day.png",

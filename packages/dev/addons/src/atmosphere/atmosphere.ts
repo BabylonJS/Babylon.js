@@ -1143,7 +1143,7 @@ export class Atmosphere implements IDisposable {
             },
             1, // depth to use in the compositor.
             this.applyApproximateTransmittance ? Constants.ALPHA_PREMULTIPLIED_PORTERDUFF : Constants.ALPHA_ONEONE,
-            true, // depthTest
+            false, // depthTest
             false, // depthWrite
             Constants.ALWAYS, // depthFunction
             false // restoreDefaultFramebuffer
@@ -1204,7 +1204,7 @@ export class Atmosphere implements IDisposable {
                 }
                 effectRenderer.draw();
             },
-            1, // depth to use in the compositor.
+            engine.useReverseDepthBuffer ? (engine.isNDCHalfZRange ? 0 : -1) : 1, // Far-plane clip-space depth.
             this._applyApproximateTransmittance ? Constants.ALPHA_PREMULTIPLIED_PORTERDUFF : Constants.ALPHA_ONEONE,
             true, // depthTest
             false, // depthWrite
@@ -1275,7 +1275,7 @@ export class Atmosphere implements IDisposable {
             },
             1, // depth to use in the compositor.
             this._applyApproximateTransmittance ? Constants.ALPHA_PREMULTIPLIED_PORTERDUFF : Constants.ALPHA_ONEONE,
-            true, // depthTest
+            false, // depthTest
             false, // depthWrite
             Constants.ALWAYS, // depthFunction
             false // restoreDefaultFramebuffer
@@ -1662,7 +1662,7 @@ const DrawEffect = (
     drawCallback: (effectRenderer: EffectRenderer, renderTarget: Nullable<RenderTargetWrapper>, effect: Effect, engine: AbstractEngine) => void,
     depth = 0,
     alphaMode = Constants.ALPHA_DISABLE,
-    depthTest = true,
+    depthTest = false,
     depthWrite?: boolean,
     depthFunction = Constants.LEQUAL,
     restoreDefaultFramebuffer = true
