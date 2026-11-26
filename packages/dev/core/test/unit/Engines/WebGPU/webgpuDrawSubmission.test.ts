@@ -171,6 +171,36 @@ describe("WebGPU draw submission", () => {
         );
     });
 
+    it.each([true, false])("reuses alternating winding pipelines when color writes are %s until bindings change", (colorWrite) => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const pipelines = [{ winding: "cw" }, { winding: "ccw" }];
+        const original = [{ id: 1 }, { id: 2 }];
+        const replacement = [{ id: 3 }, { id: 4 }];
+        for (const bundle of [...original, ...replacement]) {
+            bundleEncoder.finish.mockReturnValueOnce(bundle);
+        }
+        engine.compatibilityMode = false;
+        engine.setColorWrite(colorWrite);
+
+        const drawPair = () => {
+            for (const pipeline of pipelines) {
+                state._cacheRenderPipeline.getRenderPipeline.mockReturnValue(pipeline);
+                engine.drawElementsType(0, 0, 3);
+                state._currentMaterialContext.isDirty = false;
+            }
+        };
+        drawPair();
+        drawPair();
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(2);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([...original, ...original].map((bundle) => [bundle]));
+
+        state._currentMaterialContext.isDirty = true;
+        drawPair();
+        drawPair();
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(4);
+        expect(state._bundleList.addBundle.mock.calls.slice(4)).toEqual([...replacement, ...replacement].map((bundle) => [bundle]));
+    });
+
     it("accepts the legacy provider type and submits its draws directly", () => {
         const { engine, renderPass } = createEngine();
         const provider = {

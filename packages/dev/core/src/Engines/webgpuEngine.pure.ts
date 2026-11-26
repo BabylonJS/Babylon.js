@@ -4315,9 +4315,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (nonCompatMode) {
             // Pipeline state can change without dirtying the draw or material bindings.
             const drawContext = this._currentDrawContext;
-            const bundlePipeline = this._colorWriteLocal ? drawContext._fastBundlePipeline : drawContext._fastBundleWithoutColorWritePipeline;
-            const fastBundle = this._colorWriteLocal ? drawContext.fastBundle : drawContext._fastBundleWithoutColorWrite;
-            if (fastBundle && bundlePipeline === pipeline) {
+            let fastBundle: GPURenderBundle | undefined;
+            if (this._colorWriteLocal) {
+                if (drawContext._fastBundlePipeline === pipeline) {
+                    fastBundle = drawContext.fastBundle;
+                } else if (drawContext.fastBundle && drawContext._previousFastBundlePipeline === pipeline) {
+                    fastBundle = drawContext._previousFastBundle;
+                }
+            } else if (drawContext._fastBundleWithoutColorWritePipeline === pipeline) {
+                fastBundle = drawContext._fastBundleWithoutColorWrite;
+            } else if (drawContext._fastBundleWithoutColorWrite && drawContext._previousFastBundleWithoutColorWritePipeline === pipeline) {
+                fastBundle = drawContext._previousFastBundleWithoutColorWrite;
+            }
+            if (fastBundle) {
                 this._applyRenderPassChanges(bundleList);
                 this._counters.numBundleReuseNonCompatMode++;
                 // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
@@ -4435,12 +4445,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (nonCompatMode) {
             const bundle = (renderPass2 as GPURenderBundleEncoder).finish();
+            const drawContext = this._currentDrawContext;
             if (this._colorWriteLocal) {
-                this._currentDrawContext.fastBundle = bundle;
-                this._currentDrawContext._fastBundlePipeline = pipeline;
+                drawContext._previousFastBundle = drawContext.fastBundle;
+                drawContext._previousFastBundlePipeline = drawContext._fastBundlePipeline;
+                drawContext.fastBundle = bundle;
+                drawContext._fastBundlePipeline = pipeline;
             } else {
-                this._currentDrawContext._fastBundleWithoutColorWrite = bundle;
-                this._currentDrawContext._fastBundleWithoutColorWritePipeline = pipeline;
+                drawContext._previousFastBundleWithoutColorWrite = drawContext._fastBundleWithoutColorWrite;
+                drawContext._previousFastBundleWithoutColorWritePipeline = drawContext._fastBundleWithoutColorWritePipeline;
+                drawContext._fastBundleWithoutColorWrite = bundle;
+                drawContext._fastBundleWithoutColorWritePipeline = pipeline;
             }
             bundleList.addBundle(bundle);
         }

@@ -52,12 +52,25 @@ export class WebGPUDrawContext implements IDrawContext {
     /** Pipeline recorded in the depth-only fast bundle. @internal */
     public _fastBundleWithoutColorWritePipeline?: GPURenderPipeline;
 
-    /** Drops both color-write variants of the fast bundle. @internal */
+    /** Previous color-writing fast bundle, for draws that alternate pipelines. @internal */
+    public _previousFastBundle?: GPURenderBundle;
+    /** Pipeline recorded in the previous color-writing fast bundle. @internal */
+    public _previousFastBundlePipeline?: GPURenderPipeline;
+    /** Previous fast bundle recorded with color writes disabled. @internal */
+    public _previousFastBundleWithoutColorWrite?: GPURenderBundle;
+    /** Pipeline recorded in the previous depth-only fast bundle. @internal */
+    public _previousFastBundleWithoutColorWritePipeline?: GPURenderPipeline;
+
+    /** Drops all fast bundles and their pipeline references. @internal */
     public _invalidateFastBundles(): void {
         this.fastBundle = undefined;
         this._fastBundlePipeline = undefined;
         this._fastBundleWithoutColorWrite = undefined;
         this._fastBundleWithoutColorWritePipeline = undefined;
+        this._previousFastBundle = undefined;
+        this._previousFastBundlePipeline = undefined;
+        this._previousFastBundleWithoutColorWrite = undefined;
+        this._previousFastBundleWithoutColorWritePipeline = undefined;
     }
 
     /**
