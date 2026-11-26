@@ -4,6 +4,7 @@ import { type ISpriteManager } from "../Sprites/spriteManager";
 import { type IParticleSystem } from "../Particles/IParticleSystem";
 import { type Observable } from "../Misc/observable";
 import { RenderingGroup } from "./renderingGroup";
+import { Constants } from "../Engines/constants";
 
 import { type Scene } from "../scene";
 import { type Camera } from "../Cameras/camera";
@@ -187,7 +188,7 @@ export class RenderingManager {
             return;
         }
 
-        this._scene.getEngine().clear(null, false, depth, stencil);
+        this._scene.getEngine()._clearBetweenRenderingGroups(depth, stencil);
         this._depthStencilBufferAlreadyCleaned = true;
     }
 
@@ -238,6 +239,14 @@ export class RenderingManager {
             }
         }
 
+        // In fast snapshot mode the engine plays the draws it recorded and the groups are empty: only the clears it recorded between
+        // the groups are left to issue. While the engine records, the mode is the standard one.
+        const engine = this._scene.getEngine();
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            engine._issueRenderingGroupClearsAgain();
+        }
+        engine._beginRenderingGroups();
+
         // Render
         for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
             this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
@@ -283,6 +292,8 @@ export class RenderingManager {
             // After Observable
             this._notifyRenderingGroupObservers(this._scene.onAfterRenderingGroupObservable, info, renderingGroupMask);
         }
+
+        engine._endRenderingGroups();
     }
 
     /**
