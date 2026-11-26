@@ -657,9 +657,17 @@ function linkSubdirBarrels(dir) {
         if (!existsSync(subPure)) continue;
 
         const parentPure = join(dir, "pure.ts");
-        if (!existsSync(parentPure) && !expectedContents.has(parentPure)) continue;
-
-        const parentContent = CHECK ? (expectedContents.get(parentPure) ?? readFileSync(parentPure, "utf-8")) : readFileSync(parentPure, "utf-8");
+        let parentContent = CHECK ? expectedContents.get(parentPure) : undefined;
+        if (parentContent === undefined) {
+            try {
+                parentContent = readFileSync(parentPure, "utf-8");
+            } catch (error) {
+                if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+                    continue;
+                }
+                throw error;
+            }
+        }
         const subRef = `./${entry.name}/pure`;
         if (parentContent.includes(subRef)) continue;
 

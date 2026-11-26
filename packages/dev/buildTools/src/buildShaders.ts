@@ -4,6 +4,17 @@ import * as path from "path";
 import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";
 import { type DevPackageName } from "./packageMapping.js";
 
+function HasSameFileContent(filename: string, content: string): boolean {
+    try {
+        return getHashOfFile(filename) === getHashOfContent(content);
+    } catch (error) {
+        if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+            return false;
+        }
+        throw error;
+    }
+}
+
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
 // import { DevPackageName } from "./packageMapping";
@@ -277,12 +288,8 @@ export function BuildShader(filePath: string, basePackageName: string | undefine
         const tsShaderFilename = path.join(directory, tsFilename);
         checkDirectorySync(path.dirname(tsShaderFilename));
         // check hash
-        if (fs.existsSync(tsShaderFilename)) {
-            const hash = getHashOfFile(tsShaderFilename);
-            const newHash = getHashOfContent(tsContent);
-            if (hash === newHash) {
-                return;
-            }
+        if (HasSameFileContent(tsShaderFilename, tsContent)) {
+            return;
         }
         fs.writeFileSync(tsShaderFilename, tsContent);
         isVerbose && console.log("Generated " + tsShaderFilename);
@@ -393,12 +400,8 @@ export const ${shaderName + (isWGSL ? "WGSL" : "")} = { name, shader };`
         const tsShaderFilename = path.join(directory, tsFilename);
         checkDirectorySync(path.dirname(tsShaderFilename));
         // check hash
-        if (fs.existsSync(tsShaderFilename)) {
-            const hash = getHashOfFile(tsShaderFilename);
-            const newHash = getHashOfContent(tsContent);
-            if (hash === newHash) {
-                return;
-            }
+        if (HasSameFileContent(tsShaderFilename, tsContent)) {
+            return;
         }
         fs.writeFileSync(tsShaderFilename, tsContent);
         isVerbose && console.log("Generated " + tsShaderFilename);

@@ -186,11 +186,12 @@ export interface AbstractEngineOptions {
      * applied during construction, so it is already in effect for the first frame.
      *
      * A reversed depth buffer gives more depth precision to distant objects and reduces z-fighting, especially when the
-     * camera covers a large depth range. It is recommended for WebGPU. With WebGL it brings little or no gain, because the
-     * [-1, 1] clip space depth range loses the extra precision.
+     * camera covers a large depth range. It is recommended for WebGPU and for WebGL with the `useNDCHalfZRange` option
+     * and a floating-point depth attachment. WebGL's default [-1, 1] clip-space depth range provides little or no gain.
      * For the best precision, pair it with a floating-point depth buffer (on WebGPU, creating the engine with `stencil: false`
      * makes the main depth buffer `depth32float` instead of `depth24plus-stencil8`).
      *
+     * For WebXR rendering, keep this disabled so depth testing matches the runtime's projection.
      * Custom shaders that write or read depth values must account for the reversed range (see the `USE_REVERSE_DEPTHBUFFER` define).
      */
     useReverseDepthBuffer?: boolean;
@@ -496,6 +497,35 @@ export abstract class AbstractEngine {
     public currentRenderPassId = Constants.RENDERPASS_MAIN;
 
     /**
+     * @internal True while the scene renders a pass it renders again in the next frames (its cameras, the render targets of its frame,
+     * the frame graph): only there can a mesh draw wait for its pipeline (WebGPU asynchronous pipeline creation). A pass rendered once
+     * (an object renderer, of a render target or a frame graph task, with REFRESHRATE_RENDER_ONCE or rendered by a call that its
+     * shouldRender() did not ask for: a GPU picking, the voxelization of IBL shadows, a decal of MeshUVSpaceRenderer; a screenshot through
+     * a render target, a render outside the scene's frame) draws every mesh in that rendering.
+     */
+    public _drawsMayWait = false;
+
+    /**
+     * @internal The depth of the renderings done once that are in progress (an object renderer rendered once, a screenshot through a
+     * render target): while it is not zero, the passes of the scene's frame they render do not let their draws wait either.
+     */
+    public _renderingOnce = 0;
+
+    /**
+     * @internal The mesh whose draws are being submitted (Mesh._processRendering, in any of its passes and whatever draw context its
+     * material gives them): its draws wait together for their render pipelines (WebGPU asynchronous pipeline creation). Null for every
+     * other draw (the bounding box of an occlusion query, a post-process, sprites, particles...), which never waits.
+     */
+    public _pipelineWaitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null;
+
+    /**
+     * @internal The last frame in which a mesh draw waited for its render pipeline (WebGPU asynchronous pipeline creation). A mesh is held
+     * back in its passes in the frame of its last wait and the next one; until the frame after those, a render target refreshed every N
+     * frames renders in every frame (ObjectRenderer.shouldRender), so that it shows a mesh in the same frames as the other passes.
+     */
+    public _lastPipelineWaitFrameId = -Infinity;
+
+    /**
      * Gets a boolean indicating if the pointer is currently locked
      */
     public isPointerLock = false;
@@ -536,7 +566,7 @@ export abstract class AbstractEngine {
     private _useReverseDepthBuffer = false;
     /**
      * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
-     * This can provide greater z depth for distant objects.
+     * This can provide greater z depth for distant objects. Keep this disabled while rendering WebXR views.
      */
     public get useReverseDepthBuffer(): boolean {
         return this._useReverseDepthBuffer;
@@ -2028,14 +2058,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@9.36.0";
+        return "babylonjs@9.37.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "9.36.0";
+        return "9.37.2";
     }
 
     /**
@@ -2599,9 +2629,10 @@ export abstract class AbstractEngine {
 
     /**
      * @internal While a snapshot records, encodes again the draw last recorded for this draw wrapper, if it is still valid,
-     * instead of binding its mesh and material. Returns false when the draw must be rendered normally.
+     * instead of binding its mesh and material. Returns false when the draw must be rendered normally. waitOwner is the owner its full
+     * draw would have (see _pipelineWaitOwner): the draws of a mesh wait together for their render pipelines, recorded ones too
      */
-    public _replayRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+    public _replayRecordedDraw(_drawWrapper: DrawWrapper, _waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
         return false;
     }
 
@@ -2617,7 +2648,7 @@ export abstract class AbstractEngine {
      * @internal Whether _replayRecordedDraw would encode again the draw last recorded for this draw wrapper now: a mesh runs the scene's
      * steps around its draw only once it knows the draw will not be rendered normally instead
      */
-    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper): boolean {
+    public _canEncodeRecordedDraw(_drawWrapper: DrawWrapper, _waitOwner: Nullable<{ _pipelinePendingFrameId: number; _pipelineDrawnFrameId: number }> = null): boolean {
         return false;
     }
 

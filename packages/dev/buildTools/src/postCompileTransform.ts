@@ -2,7 +2,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { transformPackageLocation } from "./pathTransform.js";
-import { type BuildType } from "./packageMapping.js";
+import { isValidDevPackageName, type BuildType } from "./packageMapping.js";
 import { checkArgs } from "./utils.js";
 
 /**
@@ -25,6 +25,25 @@ interface IPostCompileTransformOptions {
     buildType: BuildType;
     basePackage: string;
     appendJS?: boolean | string;
+    localPackagePaths?: Record<string, string>;
+}
+
+function ParseLocalPackagePaths(value: string): Record<string, string> | undefined {
+    if (!value) {
+        return undefined;
+    }
+
+    const localPackagePaths: Record<string, string> = {};
+    for (const entry of value.split(",")) {
+        const separator = entry.indexOf("=");
+        const packageName = entry.slice(0, separator);
+        const outputPath = entry.slice(separator + 1);
+        if (separator <= 0 || !outputPath || !isValidDevPackageName(packageName)) {
+            throw new Error(`Invalid local package mapping "${entry}". Expected <dev-package>=<output-path>.`);
+        }
+        localPackagePaths[packageName] = outputPath;
+    }
+    return localPackagePaths;
 }
 
 function CollectFiles(dir: string, extensions: string[]): string[] {
@@ -83,6 +102,8 @@ function TransformFilesInDir(options: IPostCompileTransformOptions): void {
                         basePackage: options.basePackage,
                         packageOnly: false,
                         appendJS: options.appendJS,
+                        localPackagePaths: options.localPackagePaths,
+                        outDir: resolvedDir,
                     },
                     filePath
                 );
@@ -105,17 +126,20 @@ function TransformFilesInDir(options: IPostCompileTransformOptions): void {
 
 /**
  * CLI entry point for the post-compile path transform command.
- * Reads options from command-line args (--outDir, --buildType, --basePackage, --appendJS).
+ * Reads options from command-line args (--outDir, --buildType, --basePackage, --appendJS, --localPackagePaths).
  */
 export function PostCompileTransformCommand(): void {
     const outDir = checkArgs(["--outDir", "-o"], false, true) as string;
     const buildType = checkArgs(["--buildType", "-bt"], false, true) as string;
     const basePackage = checkArgs(["--basePackage", "-bp"], false, true) as string;
     const appendJS = checkArgs(["--appendJS", "-ajs"], true) as boolean;
+    const localPackagePaths = ParseLocalPackagePaths(checkArgs("--localPackagePaths") as string);
 
     if (!outDir || !buildType || !basePackage) {
         console.error("postCompileTransform: missing required args. Usage:");
-        console.error("  build-tools -c transform-paths --outDir <dir> --buildType <es6|umd|lts|esm> --basePackage <package>");
+        console.error(
+            "  build-tools -c transform-paths --outDir <dir> --buildType <es6|umd|lts|esm> --basePackage <package> [--localPackagePaths <dev-package>=<output-path>[,...]]"
+        );
         process.exit(1);
     }
 
@@ -124,5 +148,6 @@ export function PostCompileTransformCommand(): void {
         buildType: buildType as BuildType,
         basePackage,
         appendJS,
+        localPackagePaths,
     });
 }

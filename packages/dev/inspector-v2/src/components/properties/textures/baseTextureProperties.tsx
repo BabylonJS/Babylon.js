@@ -1,8 +1,9 @@
-import { type ComponentType, type FunctionComponent, useRef } from "react";
+import { type ComponentType, type FunctionComponent, useRef, useState } from "react";
 
 import { type BaseTexture } from "core/index";
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { type TextureEditorProps } from "../../textureEditor/textureEditor";
+import { BabylonTextureEditorSource } from "../../textureEditor/babylonTextureEditorSource";
 import { type TexturePreviewImperativeRef, TexturePreview } from "./texturePreview";
 
 import { EditRegular } from "@fluentui/react-icons";
@@ -30,14 +31,24 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
     const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
 
     const childWindow = useRef<ChildWindow>(null);
+    const [editorSource, setEditorSource] = useState<BabylonTextureEditorSource | null>(null);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     return (
         <>
             <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} />
             <TextureUpload texture={texture} />
-            <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} icon={EditRegular} />
-            <ChildWindow id="Texture Editor" imperativeRef={childWindow}>
-                <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
+            <ButtonLine
+                label="Edit Texture"
+                onClick={() => {
+                    setEditorSource(new BabylonTextureEditorSource(texture));
+                    childWindow.current?.open();
+                }}
+                icon={EditRegular}
+            />
+            {/* Reopening fires close for the replaced popup and then open for the new one, so render based on the latest open state. */}
+            <ChildWindow id="Texture Editor" imperativeRef={childWindow} onOpenChange={setIsEditorOpen}>
+                {isEditorOpen && editorSource && <TextureEditor source={editorSource} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />}
             </ChildWindow>
         </>
     );

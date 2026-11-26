@@ -605,19 +605,21 @@ export class MonacoManager {
         ];
 
         // snapshot/version/local overrides
-        let snapshot: string;
-        if (window.location.search.indexOf("snapshot=") !== -1) {
-            snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
+        // Keep literal "+" characters (valid in git refs) instead of decoding them as spaces.
+        const searchParams = new URLSearchParams(window.location.search.replace(/\+/g, "%2B"));
+        const snapshot = searchParams.get("snapshot");
+        if (snapshot) {
+            const encodedSnapshot = snapshot.split("/").map(encodeURIComponent).join("/");
             for (let i = 0; i < declarations.length; i++) {
-                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + encodedSnapshot);
             }
         }
 
-        let version: string;
-        if (window.location.search.indexOf("version=") !== -1) {
-            version = window.location.search.split("version=")[1].split("&")[0];
+        const version = searchParams.get("version");
+        if (version) {
+            const encodedVersion = encodeURIComponent(version);
             for (let i = 0; i < declarations.length; i++) {
-                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + encodedVersion);
             }
         }
 
@@ -641,7 +643,7 @@ export class MonacoManager {
         const timestamp = (typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__) || 0;
         if (timestamp) {
             for (let i = 0; i < declarations.length; i++) {
-                if (declarations[i].indexOf("preview.babylonjs.com") !== -1) {
+                if (new URL(declarations[i], window.location.href).hostname === "preview.babylonjs.com") {
                     declarations[i] = declarations[i] + "?t=" + timestamp;
                 }
             }
@@ -652,12 +654,15 @@ export class MonacoManager {
         const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
-                const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
-                if (fallbackResponse.ok) {
-                    libContent += await fallbackResponse.text();
-                } else {
-                    Logger.Log(`missing declaration: ${response.url}`);
+                const responseUrl = new URL(response.url);
+                if (responseUrl.hostname === "preview.babylonjs.com") {
+                    const fallbackResponse = await fetch(`${fallbackUrl}${responseUrl.pathname}${responseUrl.search}`);
+                    if (fallbackResponse.ok) {
+                        libContent += await fallbackResponse.text();
+                        continue;
+                    }
                 }
+                Logger.Log(`missing declaration: ${response.url}`);
             } else {
                 libContent += await response.text();
             }

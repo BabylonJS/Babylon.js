@@ -221,7 +221,7 @@ let checkBabylonVersionAsync = async function () {
         frameworkScripts = frameworkScripts
             .filter((v) => (!v.minVersion || isVersionGreaterOrEqual(version, v.minVersion)) && (!v.maxVersion || isVersionGreaterOrEqual(v.maxVersion, version)))
             .map((v) => ({ ...v, url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version) }));
-    } else if (window.location.href.includes("debug.html")) {
+    } else if (window.location.pathname.endsWith("/debug.html")) {
         frameworkScripts = frameworkScripts.map((v) => {
             if (!v.url.includes("https://preview.babylonjs.com") && !v.url.includes("https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js")) {
                 return v;

@@ -1,7 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
+import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int, type ImageSource } from "../types";
 
 import { type Scene } from "../scene.pure";
 import { type VertexBuffer } from "../Buffers/buffer.pure";
@@ -225,6 +225,140 @@ const _TexturesWithMipStorage = /*#__PURE__*/ new WeakSet<InternalTexture>();
 // and updateTextureData requires that storage to exist.
 const _RawTextureResourcesWithoutStorage = /*#__PURE__*/ new WeakSet<IHardwareTextureWrapper>();
 
+// Raw 2D array buffers the engine allocated: retained base levels that image layer uploads patch in place,
+// and mip snapshots that same-size updates overwrite, so neither ever aliases caller-owned data.
+const _OwnedRawArrayData = /*#__PURE__*/ new WeakSet<ArrayBufferView>();
+
+// Per raw 2D array: for each cached explicit mip level, the layers whose mips a later image layer upload
+// regenerated. Context-loss replay skips those layers so it keeps the regenerated mips, as live rendering did.
+const _RawArrayMipLayersRegenerated = /*#__PURE__*/ new WeakMap<InternalTexture, Map<number, Set<number>>>();
+
+/** How Native stores one texel of an uncompressed format and widens tightly packed RGB uploads into it. */
+interface INativeRawLayout {
+    /** Size of one texel in the native texture format */
+    texelByteLength: number;
+    /** Size of one component when Native accepts RGB data for this RGBA format, otherwise 0 */
+    rgbComponentByteLength: number;
+    /** Alpha value Native writes when widening RGB data */
+    alpha: number;
+}
+
+// Mirrors the texel sizes bgfx uses for the uncompressed formats getNativeTextureFormat returns, and the RGB
+// widening of ResolveRawUpload in NativeEngine.cpp: [native format, texel bytes, RGB component bytes, alpha].
+const _NativeRawLayouts: ReadonlyArray<readonly [string, number, number, number]> = [
+    ["TEXTURE_FORMAT_R8", 1, 0, 0],
+    ["TEXTURE_FORMAT_R8S", 1, 0, 0],
+    ["TEXTURE_FORMAT_R8U", 1, 0, 0],
+    ["TEXTURE_FORMAT_R16", 2, 0, 0],
+    ["TEXTURE_FORMAT_R16S", 2, 0, 0],
+    ["TEXTURE_FORMAT_R16U", 2, 0, 0],
+    ["TEXTURE_FORMAT_R16F", 2, 0, 0],
+    ["TEXTURE_FORMAT_R32F", 4, 0, 0],
+    ["TEXTURE_FORMAT_R32I", 4, 0, 0],
+    ["TEXTURE_FORMAT_R32U", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG8", 2, 0, 0],
+    ["TEXTURE_FORMAT_RG8S", 2, 0, 0],
+    ["TEXTURE_FORMAT_RG16", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG16S", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG16U", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG16F", 4, 0, 0],
+    ["TEXTURE_FORMAT_RG32F", 8, 0, 0],
+    ["TEXTURE_FORMAT_RG32I", 8, 0, 0],
+    ["TEXTURE_FORMAT_RG32U", 8, 0, 0],
+    ["TEXTURE_FORMAT_RGB8", 3, 0, 0],
+    ["TEXTURE_FORMAT_RGB8S", 3, 0, 0],
+    ["TEXTURE_FORMAT_RGB8I", 3, 0, 0],
+    ["TEXTURE_FORMAT_RGB8U", 3, 0, 0],
+    ["TEXTURE_FORMAT_B5G6R5", 2, 0, 0],
+    ["TEXTURE_FORMAT_BGRA8", 4, 0, 0],
+    ["TEXTURE_FORMAT_RGBA8", 4, 1, 0xff],
+    ["TEXTURE_FORMAT_RGBA8S", 4, 1, 0x7f],
+    ["TEXTURE_FORMAT_RGBA16", 8, 2, 0xffff],
+    ["TEXTURE_FORMAT_RGBA16S", 8, 2, 0x7fff],
+    ["TEXTURE_FORMAT_RGBA16F", 8, 2, 0x3c00],
+    ["TEXTURE_FORMAT_RGBA16I", 8, 2, 1],
+    ["TEXTURE_FORMAT_RGBA16U", 8, 2, 1],
+    ["TEXTURE_FORMAT_RGBA32F", 16, 4, 0x3f800000],
+    ["TEXTURE_FORMAT_RGBA32I", 16, 4, 1],
+    ["TEXTURE_FORMAT_RGBA32U", 16, 4, 1],
+];
+
+/**
+ * Returns how Native lays out raw uploads for a texture format, or null when the format is not an uncompressed
+ * format whose uploads the engine can validate and keep for context-loss rebuilds.
+ * @param format defines the Babylon texture format
+ * @param type defines the Babylon texture type
+ * @returns the native layout, or null
+ */
+function GetNativeRawLayout(format: number, type: number): Nullable<INativeRawLayout> {
+    let nativeFormat: number | undefined;
+    try {
+        nativeFormat = getNativeTextureFormat(format, type);
+    } catch {
+        return null;
+    }
+    if (nativeFormat === undefined) {
+        return null;
+    }
+    const constants = _native.Engine as unknown as Record<string, unknown>;
+    for (const [name, texelByteLength, rgbComponentByteLength, alpha] of _NativeRawLayouts) {
+        if (constants[name] === nativeFormat) {
+            return { texelByteLength, rgbComponentByteLength, alpha };
+        }
+    }
+    return null;
+}
+
+/**
+ * Checks whether Native accepts an upload of the given size, like ResolveRawUpload in NativeEngine.cpp: data at
+ * least as large as the texels (the excess is ignored), or tightly packed RGB data for formats stored as RGBA.
+ * @param byteLength defines the size of the uploaded data
+ * @param texelCount defines the number of texels covered by the upload
+ * @param layout defines the native layout of the texture
+ * @returns true if the upload size is accepted
+ */
+function IsRawUploadSizeValid(byteLength: number, texelCount: number, layout: INativeRawLayout): boolean {
+    return (
+        texelCount > 0 &&
+        (byteLength >= texelCount * layout.texelByteLength || (layout.rgbComponentByteLength > 0 && byteLength === texelCount * 3 * layout.rgbComponentByteLength))
+    );
+}
+
+/**
+ * Converts raw upload data to the exact texture layout the native upload resolves it to: oversized data is
+ * truncated, and tightly packed RGB data is widened with the alpha Native writes for formats stored as RGBA.
+ * @param data defines the uploaded data
+ * @param texelCount defines the number of texels covered by the upload
+ * @param layout defines the native layout of the texture
+ * @returns the data in texture layout, or null when the native upload would reject it
+ */
+function ResolveRawUploadLayout(data: ArrayBufferView, texelCount: number, layout: INativeRawLayout): Nullable<Uint8Array> {
+    if (!IsRawUploadSizeValid(data.byteLength, texelCount, layout)) {
+        return null;
+    }
+
+    const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    const byteLength = texelCount * layout.texelByteLength;
+    if (bytes.byteLength >= byteLength) {
+        return bytes.subarray(0, byteLength);
+    }
+
+    // Native writes the alpha component in little-endian byte order after each RGB triplet.
+    const componentByteLength = layout.rgbComponentByteLength;
+    const rgbByteLength = 3 * componentByteLength;
+    const widened = new Uint8Array(byteLength);
+    const texelByteLength = layout.texelByteLength;
+    for (let texel = 0, source = 0, target = 0; texel < texelCount; texel++, target += texelByteLength) {
+        for (let byte = 0; byte < rgbByteLength; byte++) {
+            widened[target + byte] = bytes[source++];
+        }
+        for (let byte = 0; byte < componentByteLength; byte++) {
+            widened[target + rgbByteLength + byte] = (layout.alpha >>> (8 * byte)) & 0xff;
+        }
+    }
+    return widened;
+}
+
 /**
  * Sentinel for "no attachment masking": every color attachment of the bound framebuffer takes part in
  * the clear. Native treats this value specially and skips the bgfx color-palette clear path.
@@ -259,6 +393,10 @@ export class ThinNativeEngine extends ThinEngine {
      * Only used to mask clears (see bindAttachments).
      */
     private _clearAttachmentMask: number;
+    /**
+     * Operation flags ORed into the attachment mask of the next COMMAND_CLEAR2 only (see clearAttachments).
+     */
+    private _clearOperationFlags = 0;
     private _currentDepthTest: number;
     private _depthTestEnabled: boolean;
     private _stencilTest: boolean;
@@ -322,6 +460,11 @@ export class ThinNativeEngine extends ThinEngine {
             nonFloatVertexBuffers: true,
         });
         this._camera = _native.Camera ? new _native.Camera() : null;
+        // Native hosts have no navigator.userAgent for _setupMobileChecks, so the runtime reports it directly.
+        // Older runtimes don't report it; leave hostInformation unchanged (false unless the host app set it).
+        if (this._engine.isMobile !== undefined) {
+            this.hostInformation.isMobile = this._engine.isMobile;
+        }
         this._commandBufferEncoder = new CommandBufferEncoder(this._engine);
         this._frameGraphFramebufferRefCount = new Map();
         this._frameStats = { gpuTimeNs: Number.NaN };
@@ -353,7 +496,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._stencilOpStencilDepthPass = Constants.REPLACE;
         this._zOffset = 0;
         this._zOffsetUnits = 0;
-        this._cachedCulling = true;
+        this._cachedCulling = false;
         this._cachedReverseSide = false;
         this._cachedCullBackFaces = true;
         this._cachedZOffset = 0;
@@ -481,6 +624,8 @@ export class ThinNativeEngine extends ThinEngine {
             supportMSAA: true,
             supportSSAO2: false,
             supportIBLShadows: false,
+            // The runtime must clear integer color attachments with integer values and never blend them.
+            supportMeshBlending: !!_native.Engine.CAPS_INTEGER_COLOR_ATTACHMENTS,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
@@ -670,6 +815,72 @@ export class ThinNativeEngine extends ThinEngine {
         this._flagContextRestored();
     }
 
+    protected override _rebuildGraphicsResources(): void {
+        const generatedDepthShares = new Map<
+            NativeRenderTargetWrapper,
+            {
+                wrappers: NativeRenderTargetWrapper[];
+                format: number;
+                samples: number;
+                generateStencil: boolean;
+            }
+        >();
+
+        for (const wrapper of this._renderTargetWrapperCache as NativeRenderTargetWrapper[]) {
+            const source = wrapper._generatedDepthShareSource;
+            if (!source) {
+                continue;
+            }
+
+            const depth = wrapper._depthStencilTexture;
+            let group = generatedDepthShares.get(source);
+            if (!group) {
+                group = {
+                    wrappers: [],
+                    format: depth?.format ?? (source._generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT),
+                    samples: depth?.samples ?? wrapper.samples,
+                    generateStencil: wrapper._depthStencilTextureWithStencil,
+                };
+                generatedDepthShares.set(source, group);
+            }
+            group.wrappers.push(wrapper);
+
+            wrapper._depthStencilTexture = null;
+            wrapper._generatedDepthShareSource = null;
+            depth?.dispose();
+        }
+
+        super._rebuildGraphicsResources();
+
+        for (const [originalSource, group] of generatedDepthShares) {
+            // Context restoration has already discarded the old contents, so recreate the group around an explicit
+            // depth texture. This does not depend on the original source still being alive or a lazy source already
+            // having a framebuffer.
+            const source = group.wrappers.includes(originalSource) ? originalSource : group.wrappers[0];
+            if (source.is2DArray) {
+                source._depthStencilTexture = this.createDepthStencilTexture(
+                    { width: source.width, height: source.height },
+                    {
+                        bilinearFiltering: false,
+                        comparisonFunction: 0,
+                        generateStencil: group.generateStencil,
+                        samples: group.samples,
+                        depthTextureFormat: group.format,
+                    },
+                    source
+                );
+            } else {
+                source.createDepthStencilTexture(0, false, group.generateStencil, group.samples, group.format);
+            }
+            source._generatedDepthShareSource = source;
+            for (const wrapper of group.wrappers) {
+                if (wrapper !== source) {
+                    source.shareDepth(wrapper);
+                }
+            }
+        }
+    }
+
     /**
      * Override default engine behavior.
      * @param framebuffer
@@ -717,6 +928,11 @@ export class ThinNativeEngine extends ThinEngine {
             this.setDepthFunction(Constants.GEQUAL);
         }
 
+        // Pending operation flags apply only to the next encoded clear command, so additional clears
+        // issued by an override of clear() are encoded as ordinary clears.
+        const operationFlags = this._clearOperationFlags;
+        this._clearOperationFlags = 0;
+
         const clear2 = _native.Engine.COMMAND_CLEAR2;
         this._commandBufferEncoder.startEncodingCommand(clear2 ?? _native.Engine.COMMAND_CLEAR);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(backBuffer && color && this._clearAttachmentMask !== 0 ? 1 : 0);
@@ -733,7 +949,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilClearValue);
         if (clear2) {
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(this._clearAttachmentMask | operationFlags);
         }
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -2136,7 +2352,9 @@ export class ThinNativeEngine extends ThinEngine {
             context.flush();
             // Older runtimes take no options and always copy with their legacy alpha handling.
             const supportsOptions = this._engine.supportsDynamicTextureMipMaps === true;
-            const source = supportsOptions ? canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps) : canvas.getCanvasTexture();
+            // invertY is always forwarded: runtimes that predate it ignore the argument, and an undefined
+            // premulAlpha with no mips selects the legacy premultiplied copy.
+            const source = supportsOptions ? canvas.getCanvasTexture(premulAlpha, texture.generateMipMaps, invertY) : canvas.getCanvasTexture(undefined, false, invertY);
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_COPYTEXTURE);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(source as NativeData);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(destination as NativeData);
@@ -2144,6 +2362,9 @@ export class ThinNativeEngine extends ThinEngine {
             if (supportsOptions) {
                 texture._premulAlpha = premulAlpha;
             }
+            // Recorded like WebGL/WebGPU so DynamicTexture._rebuild re-uploads with the last orientation.
+            texture._dynamicTextureSource = canvas;
+            texture.invertY = invertY || false;
             texture.isReady = true;
         }
     }
@@ -2240,10 +2461,18 @@ export class ThinNativeEngine extends ThinEngine {
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.is2DArray = true;
+        // Later mip updates and context-loss rebuilds read these back.
+        texture.invertY = invertY;
+        texture._compression = compression;
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
+        }
 
         if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
             this._engine.loadRawTexture2DArray(nativeTexture, data, width, height, depth, getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+            // Layer uploads can toggle generateMipMaps off temporarily; keep track of the allocated mip chain.
+            this._setHasMipStorage(texture, generateMipMaps);
 
             const filter = getNativeSamplingMode(samplingMode);
             this._setTextureSampling(nativeTexture, filter);
@@ -2343,6 +2572,258 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         texture.isReady = true;
+    }
+
+    public override updateRawTexture2DArray(
+        texture: Nullable<InternalTexture>,
+        bufferView: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string> = null,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        mipLevel: number = 0
+    ): void {
+        if (!texture) {
+            return;
+        }
+
+        if (compression) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: compressed raw array uploads are not supported (${compression}).`);
+        }
+
+        if (!Number.isInteger(mipLevel) || mipLevel < 0) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: invalid mip level ${mipLevel}.`);
+        }
+
+        if (mipLevel > 0) {
+            this._updateRawTexture2DArrayMip(texture, bufferView, format, invertY, textureType, mipLevel);
+            return;
+        }
+
+        // Upload first so a rejected upload leaves the previous rebuild state intact. Like WebGL's texImage3D,
+        // a null upload reinitializes the array, so the retained data below is replaced either way.
+        if (texture._hardwareTexture) {
+            this._engine.loadRawTexture2DArray(
+                texture._hardwareTexture.underlyingResource,
+                bufferView,
+                texture.width,
+                texture.height,
+                texture.depth,
+                getNativeTextureFormat(format, textureType),
+                texture.generateMipMaps,
+                invertY
+            );
+            this._setHasMipStorage(texture, texture.generateMipMaps);
+        }
+
+        texture.format = format;
+        texture.type = textureType;
+        texture.invertY = invertY;
+        texture._compression = compression;
+        if (!this._doNotHandleContextLost) {
+            // Native reallocates the array for a base upload, which discards explicitly uploaded mips.
+            texture._bufferView = bufferView;
+            texture._bufferViewArray = null;
+            _RawArrayMipLayersRegenerated.delete(texture);
+        }
+
+        texture.isReady = true;
+    }
+
+    private _updateRawTexture2DArrayMip(
+        texture: InternalTexture,
+        bufferView: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        textureType: number,
+        mipLevel: number
+    ): void {
+        if (!bufferView) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: updating mip level ${mipLevel} requires data.`);
+        }
+
+        // The base upload's descriptor stays authoritative, and rebuilds replay every mip with the base invertY.
+        if (format !== texture.format || textureType !== texture.type) {
+            throw new Error("NativeEngine.updateRawTexture2DArray: changing the format or type is only supported when updating level 0.");
+        }
+        if (invertY !== texture.invertY) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: mip level ${mipLevel} must use the same invertY as level 0 (${texture.invertY}).`);
+        }
+
+        if (!this._engine.updateTextureData) {
+            throw new Error("NativeEngine.updateRawTexture2DArray: updating mip levels above 0 requires a Babylon Native runtime with updateTextureData.");
+        }
+
+        const maxMipLevel = Math.floor(Math.log2(Math.max(texture.width, texture.height)));
+        if (!this._hasMipStorage(texture) || mipLevel > maxMipLevel) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: mip level ${mipLevel} is out of range for this texture.`);
+        }
+
+        const layout = GetNativeRawLayout(format, textureType);
+        if (!layout) {
+            throw new Error(`NativeEngine.updateRawTexture2DArray: updating mip levels above 0 is not supported for format ${format}, type ${textureType}.`);
+        }
+
+        // The buffer holds every layer of the mip level back to back, and each layer must be a valid native upload.
+        const width = Math.max(1, texture.width >> mipLevel);
+        const height = Math.max(1, texture.height >> mipLevel);
+        const layerByteLength = bufferView.byteLength / texture.depth;
+        if (!Number.isInteger(layerByteLength) || !IsRawUploadSizeValid(layerByteLength, width * height, layout)) {
+            throw new Error(
+                `NativeEngine.updateRawTexture2DArray: ${bufferView.byteLength} bytes do not hold ${texture.depth} layers of ${width}x${height} texels for mip level ${mipLevel}.`
+            );
+        }
+
+        // Rebuilds replay the copy cached below. Layers whose mips a later image upload regenerated keep those
+        // regenerated mips, which the rebuilt base level already produced.
+        const isReplay = texture._bufferViewArray?.[mipLevel] === bufferView;
+        const regeneratedLayers = isReplay ? _RawArrayMipLayersRegenerated.get(texture)?.get(mipLevel) : undefined;
+
+        if (texture._hardwareTexture) {
+            const nativeTexture = texture._hardwareTexture.underlyingResource;
+            for (let layer = 0; layer < texture.depth; layer++) {
+                if (regeneratedLayers?.has(layer)) {
+                    continue;
+                }
+                const layerData = new Uint8Array(bufferView.buffer, bufferView.byteOffset + layer * layerByteLength, layerByteLength);
+                this._engine.updateTextureData(nativeTexture, layerData, 0, 0, width, height, layer, mipLevel, invertY, false);
+            }
+        }
+
+        if (!isReplay && !this._doNotHandleContextLost) {
+            // Copy so later edits to the caller's buffer cannot change what a rebuild replays; same-size updates
+            // overwrite the existing engine-owned snapshot instead of allocating a new one.
+            const bytes = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
+            texture._bufferViewArray ??= [];
+            const snapshot = texture._bufferViewArray[mipLevel];
+            if (snapshot instanceof Uint8Array && snapshot.byteLength === bytes.byteLength && _OwnedRawArrayData.has(snapshot)) {
+                snapshot.set(bytes);
+            } else {
+                const ownedSnapshot = bytes.slice();
+                _OwnedRawArrayData.add(ownedSnapshot);
+                texture._bufferViewArray[mipLevel] = ownedSnapshot;
+            }
+            _RawArrayMipLayersRegenerated.get(texture)?.delete(mipLevel);
+        }
+
+        texture.isReady = true;
+    }
+
+    /**
+     * Uploads an image bitmap created by createImageBitmap into a single layer of a 2D array texture.
+     * @param texture defines the 2D array texture to update
+     * @param source defines the image bitmap to upload
+     * @param layer defines the array layer to upload into
+     * @param invertY defines if the source must be stored with the Y axis inverted (false by default)
+     * @param premultiplyAlpha defines if the source alpha must be premultiplied (not supported)
+     */
+    public override updateTextureArrayLayerFromImageSource(
+        texture: InternalTexture,
+        source: ImageSource,
+        layer: number,
+        invertY: boolean = false,
+        premultiplyAlpha: boolean = false
+    ): void {
+        if (!texture._hardwareTexture) {
+            return;
+        }
+
+        if (premultiplyAlpha) {
+            throw new Error("NativeEngine.updateTextureArrayLayerFromImageSource: premultiplyAlpha is not supported.");
+        }
+
+        if (!this._engine.updateTextureData) {
+            throw new Error("NativeEngine.updateTextureArrayLayerFromImageSource requires a Babylon Native runtime with updateTextureData.");
+        }
+
+        // Native image bitmaps expose their decoded pixels as data; the native upload validates them against the texture format.
+        const bitmap = source as unknown as { data?: ArrayBufferView; width: number; height: number };
+        if (!bitmap.data) {
+            throw new Error("NativeEngine.updateTextureArrayLayerFromImageSource: only image bitmaps created by createImageBitmap are supported.");
+        }
+        if (bitmap.width !== texture.width || bitmap.height !== texture.height) {
+            throw new Error(
+                `NativeEngine.updateTextureArrayLayerFromImageSource: the ${bitmap.width}x${bitmap.height} source does not match the ${texture.width}x${texture.height} texture.`
+            );
+        }
+        if (!Number.isInteger(layer) || layer < 0 || layer >= texture.depth) {
+            throw new Error(`NativeEngine.updateTextureArrayLayerFromImageSource: layer ${layer} is out of range for a texture with ${texture.depth} layers.`);
+        }
+
+        // Resolve the layer in the texture layout before writing, so an upload that a rebuild could not
+        // reproduce is rejected instead of leaving the live texture and its rebuild data out of sync.
+        let retainedLayer: Nullable<Uint8Array> = null;
+        if (!this._doNotHandleContextLost) {
+            const layout = GetNativeRawLayout(texture.format, texture.type);
+            retainedLayer = layout && ResolveRawUploadLayout(bitmap.data, texture.width * texture.height, layout);
+            if (!retainedLayer) {
+                throw new Error(
+                    `NativeEngine.updateTextureArrayLayerFromImageSource: the ${bitmap.data.byteLength}-byte source cannot be stored in a texture with format ${texture.format}, type ${texture.type}.`
+                );
+            }
+        }
+
+        // Native generates mips per layer, so rebuild this layer's chain whenever the texture has one.
+        const regenerateMips = this._hasMipStorage(texture);
+        this._engine.updateTextureData(texture._hardwareTexture.underlyingResource, bitmap.data, 0, 0, texture.width, texture.height, layer, 0, invertY, regenerateMips);
+
+        if (retainedLayer) {
+            this._retainRawTexture2DArrayLayer(texture, retainedLayer, layer, invertY);
+            if (regenerateMips && texture._bufferViewArray) {
+                let regeneratedLayers = _RawArrayMipLayersRegenerated.get(texture);
+                if (!regeneratedLayers) {
+                    regeneratedLayers = new Map();
+                    _RawArrayMipLayersRegenerated.set(texture, regeneratedLayers);
+                }
+                for (let mipLevel = 1; mipLevel < texture._bufferViewArray.length; mipLevel++) {
+                    if (texture._bufferViewArray[mipLevel]) {
+                        let layers = regeneratedLayers.get(mipLevel);
+                        if (!layers) {
+                            layers = new Set();
+                            regeneratedLayers.set(mipLevel, layers);
+                        }
+                        layers.add(layer);
+                    }
+                }
+            }
+        }
+
+        texture.isReady = true;
+    }
+
+    /**
+     * Writes an uploaded layer into the base data that context-loss rebuilds recreate the array from.
+     * The layer is stored in the texture layout and orientation so the rebuild reproduces the live texture.
+     * @param texture defines the 2D array texture
+     * @param layerData defines the uploaded layer, already resolved to the texture layout
+     * @param layer defines the uploaded layer
+     * @param invertY defines the orientation the layer was uploaded with
+     */
+    private _retainRawTexture2DArrayLayer(texture: InternalTexture, layerData: Uint8Array, layer: number, invertY: boolean): void {
+        const layerByteLength = layerData.byteLength;
+        let baseData = texture._bufferView;
+        if (!baseData || !_OwnedRawArrayData.has(baseData)) {
+            // Never patch caller-owned data; start from a copy of the current base level in texture layout.
+            const ownedData = new Uint8Array(layerByteLength * texture.depth);
+            const layout = GetNativeRawLayout(texture.format, texture.type);
+            const currentData = baseData && layout ? ResolveRawUploadLayout(baseData, texture.width * texture.height * texture.depth, layout) : null;
+            if (currentData) {
+                ownedData.set(currentData);
+            }
+            _OwnedRawArrayData.add(ownedData);
+            texture._bufferView = baseData = ownedData;
+        }
+
+        // The rebuild uploads the whole base level with the texture's invertY, so flip layers uploaded the other way.
+        const target = new Uint8Array(baseData.buffer, baseData.byteOffset + layer * layerByteLength, layerByteLength);
+        if (invertY === texture.invertY) {
+            target.set(layerData);
+        } else {
+            const rowByteLength = layerByteLength / texture.height;
+            for (let row = 0; row < texture.height; row++) {
+                target.set(layerData.subarray(row * rowByteLength, (row + 1) * rowByteLength), (texture.height - 1 - row) * rowByteLength);
+            }
+        }
     }
 
     public override updateRawTexture(
@@ -3080,6 +3561,68 @@ export class ThinNativeEngine extends ThinEngine {
         this.updateTextureComparisonFunction(texture, texture._comparisonFunction);
     }
 
+    /**
+     * Reports whether this runtime can share an auto-generated depth/stencil buffer.
+     * @internal
+     */
+    public _supportsGeneratedDepthSharing(): boolean {
+        return !!this._engine.shareFrameBufferDepthStencil;
+    }
+
+    /**
+     * Creates a lazy source framebuffer, if needed, and applies its pending generated depth shares.
+     * @param nativeRTWrapper Source render target wrapper
+     * @internal
+     */
+    public _resolvePendingGeneratedDepthShares(nativeRTWrapper: NativeRenderTargetWrapper): void {
+        if (!nativeRTWrapper._framebuffer && !nativeRTWrapper._layerFramebuffers?.size) {
+            if (nativeRTWrapper.isMulti && (nativeRTWrapper.is3D || nativeRTWrapper._isMixedTypeMRT || this._isLayeredFrameGraphMRT(nativeRTWrapper))) {
+                this._bindLayeredMultiFramebuffer(nativeRTWrapper, false);
+            } else if (nativeRTWrapper.is3D) {
+                this._get3DLayerFramebuffer(nativeRTWrapper, 0, 0);
+            } else if (
+                !nativeRTWrapper._framebuffers &&
+                !nativeRTWrapper._framebufferDepthStencil &&
+                (!nativeRTWrapper._framebuffer || this._frameGraphFramebufferRefCount.has(nativeRTWrapper._framebuffer))
+            ) {
+                this._buildFrameGraphFramebuffer(nativeRTWrapper);
+            }
+        }
+        nativeRTWrapper._resolvePendingGeneratedDepthShares();
+    }
+
+    /**
+     * Wraps a render target's auto-generated depth/stencil buffer in a depth texture without rebuilding the render
+     * target, so it can be shared with its current contents.
+     * @internal
+     */
+    public _wrapGeneratedDepthStencil(nativeRTWrapper: NativeRenderTargetWrapper): Nullable<InternalTexture> {
+        const framebuffer = nativeRTWrapper._framebuffer ?? nativeRTWrapper._layerFramebuffers?.values().next().value;
+        if (!this._engine.shareFrameBufferDepthStencil || !framebuffer) {
+            return null;
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+        if (!this._engine.shareFrameBufferDepthStencil(framebuffer, texture._hardwareTexture!.underlyingResource)) {
+            texture.dispose();
+            return null;
+        }
+
+        const generateStencil = nativeRTWrapper._generateStencilBuffer;
+        texture.baseWidth = nativeRTWrapper.width;
+        texture.baseHeight = nativeRTWrapper.height;
+        texture.width = nativeRTWrapper.width;
+        texture.height = nativeRTWrapper.height;
+        texture.isReady = true;
+        texture.samples = nativeRTWrapper.samples;
+        texture.generateMipMaps = false;
+        texture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture.format = generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+        nativeRTWrapper._depthStencilTextureWithStencil = generateStencil;
+        return texture;
+    }
+
     // Reallocates a render target's sampleable depth/stencil texture with a new sample count and reattaches it to
     // the (already rebuilt) color framebuffer(s), so rendering and later depth sampling keep using the same resource.
     private _recreateDepthStencilTexture(nativeRTWrapper: NativeRenderTargetWrapper, samples: number): void {
@@ -3563,6 +4106,27 @@ export class ThinNativeEngine extends ThinEngine {
         }
 
         throw new Error("Unsupported data for createImageBitmap.");
+    }
+
+    /**
+     * Throws for image bitmap options that createImageBitmap would silently ignore on Babylon Native.
+     * @param options defines the options to validate
+     * @internal
+     */
+    public _validateImageBitmapOptions(options?: ImageBitmapOptions): void {
+        if (!options) {
+            return;
+        }
+
+        if (options.imageOrientation === "flipY" || options.resizeWidth !== undefined || options.resizeHeight !== undefined) {
+            throw new Error(
+                'Babylon Native does not support the imageOrientation "flipY", resizeWidth or resizeHeight image bitmap options; use invertY or resize the source images instead.'
+            );
+        }
+
+        if (options.premultiplyAlpha === "premultiply") {
+            throw new Error('Babylon Native does not support the premultiplyAlpha "premultiply" image bitmap option; premultiply the source images instead.');
+        }
     }
 
     /**
@@ -4222,7 +4786,13 @@ export class ThinNativeEngine extends ThinEngine {
         stencilClearValue = 0
     ): void {
         this.bindAttachments(attachments);
-        this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+        // Integer attachments convert the clear color differently than in clear() (see ThinEngine.clearAttachments).
+        this._clearOperationFlags = _native.Engine.CLEAR_ATTACHMENTS_OPERATION ?? 0;
+        try {
+            this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+        } finally {
+            this._clearOperationFlags = 0;
+        }
     }
 
     public override buildTextureLayout(textureStatus: boolean[], _backBufferLayout = false): number[] {
@@ -4475,8 +5045,8 @@ export class ThinNativeEngine extends ThinEngine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
 
+        nativeRTWrapper._resolvePendingGeneratedDepthShareSources();
         this._currentRenderTarget = texture;
-
         // Multi render target whose color attachments each target a specific layer/face of a texture: the IBL
         // voxelization MRTs (several Z-slices of one shared 3D texture, routed via is3D) and mixed-type MRTs
         // (2D-array layer / cube face / 2D attachments, routed via _isMixedTypeMRT). The color textures may be
@@ -4484,6 +5054,7 @@ export class ThinNativeEngine extends ThinEngine {
         // framebuffer here from the current textures + their per-attachment layer/face indices.
         if (nativeRTWrapper.isMulti && (nativeRTWrapper.is3D || nativeRTWrapper._isMixedTypeMRT || this._isLayeredFrameGraphMRT(nativeRTWrapper))) {
             this._bindLayeredMultiFramebuffer(nativeRTWrapper);
+            nativeRTWrapper._resolvePendingGeneratedDepthShares();
             this._applyBoundViewport(forceFullscreenViewport);
             return;
         }
@@ -4492,7 +5063,9 @@ export class ThinNativeEngine extends ThinEngine {
         // (mip, layer) through a lazily-built, cached per-slice framebuffer. requiredWidth/Height carry the
         // mip dimensions for the voxel mip-copy pass (forceFullscreenViewport is always set by that caller).
         if (nativeRTWrapper.is3D) {
-            this._bindUnboundFramebuffer(this._get3DLayerFramebuffer(nativeRTWrapper, lodLevel ?? 0, layer ?? 0, requiredWidth, requiredHeight));
+            const framebuffer = this._get3DLayerFramebuffer(nativeRTWrapper, lodLevel ?? 0, layer ?? 0, requiredWidth, requiredHeight);
+            nativeRTWrapper._resolvePendingGeneratedDepthShares();
+            this._bindUnboundFramebuffer(framebuffer);
             this._applyBoundViewport(forceFullscreenViewport);
             return;
         }
@@ -4514,6 +5087,7 @@ export class ThinNativeEngine extends ThinEngine {
         ) {
             this._buildFrameGraphFramebuffer(nativeRTWrapper);
         }
+        nativeRTWrapper._resolvePendingGeneratedDepthShares();
 
         if (nativeRTWrapper._framebuffers) {
             // _framebuffers is indexed by cube face for cube render targets, but by array layer for 2D-array
@@ -4689,7 +5263,7 @@ export class ThinNativeEngine extends ThinEngine {
     // are specific layers of 2D-array textures and/or faces of cube textures, plus plain 2D). Textures may be
     // assigned via setInternalTexture and layers/faces retargeted via setLayerAndFaceIndex after creation, so the
     // framebuffer is built lazily here and rebuilt whenever its attachment layout changes.
-    private _bindLayeredMultiFramebuffer(nativeRTWrapper: NativeRenderTargetWrapper): void {
+    private _bindLayeredMultiFramebuffer(nativeRTWrapper: NativeRenderTargetWrapper, bindFramebuffer = true): void {
         const textures = nativeRTWrapper.textures;
         const layerIndices = nativeRTWrapper.layerIndices;
         const expectedCount = nativeRTWrapper._attachments?.length ?? textures?.length ?? 0;
@@ -4738,7 +5312,9 @@ export class ThinNativeEngine extends ThinEngine {
             nativeRTWrapper._layeredFramebufferKey = { colors: colorTextures, layers, depth, samples, autoGenerateMips };
             this._applyDepthTextureSampling(nativeRTWrapper);
         }
-        this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
+        if (bindFramebuffer) {
+            this._bindUnboundFramebuffer(nativeRTWrapper._framebuffer);
+        }
     }
 
     public override unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {

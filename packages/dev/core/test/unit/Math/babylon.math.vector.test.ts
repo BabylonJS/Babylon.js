@@ -1618,6 +1618,76 @@ describe("Babylon Vector tests", () => {
                 expect(result.z).toBeCloseTo(4.678272528167059);
                 shouldNotChange = true;
             });
+
+            it("should rotate halfway around for opposite vectors instead of passing through zero", () => {
+                const start = new Vector3(0, 2, 0);
+                const end = new Vector3(0, -2, 0);
+                const result = new Vector3();
+                for (const amount of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
+                    Vector3.SlerpToRef(start, end, amount, result);
+                    expect(result.length()).toBeCloseTo(2);
+                    // the angle from the start grows linearly up to PI
+                    expect(result.y / 2).toBeCloseTo(Math.cos(amount * Math.PI));
+                }
+                // exact endpoint
+                Vector3.SlerpToRef(start, end, 1, result);
+                expect(result.x).toBe(end.x);
+                expect(result.y).toBe(end.y);
+                expect(result.z).toBe(end.z);
+                // operands must not be modified
+                expect(start.x).toBe(0);
+                expect(start.y).toBe(2);
+                expect(start.z).toBe(0);
+                expect(end.x).toBe(0);
+                expect(end.y).toBe(-2);
+                expect(end.z).toBe(0);
+                shouldNotChange = true;
+            });
+
+            it("should stay on the unit sphere for nearly opposite vectors", () => {
+                const start = new Vector3(1, 0, 0);
+                const end = new Vector3(-1, 1e-9, 0).normalize();
+                const result = new Vector3();
+                for (const amount of [0.25, 0.5, 0.75]) {
+                    Vector3.SlerpToRef(start, end, amount, result);
+                    expect(result.length()).toBeCloseTo(1);
+                    expect(result.x).toBeCloseTo(Math.cos(amount * Math.PI));
+                    // it turns toward the side the end vector leans to
+                    expect(result.y).toBeCloseTo(Math.sin(amount * Math.PI));
+                }
+                // operands must not be modified
+                expect(start.x).toBe(1);
+                expect(start.y).toBe(0);
+                expect(start.z).toBe(0);
+                const expectedEnd = new Vector3(-1, 1e-9, 0).normalize();
+                expect(end.x).toBe(expectedEnd.x);
+                expect(end.y).toBe(expectedEnd.y);
+                expect(end.z).toBe(expectedEnd.z);
+                shouldNotChange = true;
+            });
+
+            it("should stay on the unit sphere for mixed-coordinate antipodal vectors", () => {
+                // These coordinates trigger catastrophic cancellation in cross(start, end) when end ~= -start.
+                // The midpoint must still land on the unit sphere.
+                const start = new Vector3(0.5, 0.5, Math.SQRT1_2);
+                const end = new Vector3(-0.49999999999999994, -0.5, -Math.SQRT1_2);
+                const result = new Vector3();
+                Vector3.SlerpToRef(start, end, 0.5, result);
+                expect(result.length()).toBeCloseTo(1, 10);
+                // exact endpoint
+                Vector3.SlerpToRef(start, end, 1, result);
+                expect(result.x).toBe(end.x);
+                expect(result.y).toBe(end.y);
+                expect(result.z).toBe(end.z);
+                // operands must not be modified
+                expect(start.x).toBe(0.5);
+                expect(start.y).toBe(0.5);
+                expect(start.z).toBe(Math.SQRT1_2);
+                expect(end.x).toBe(-0.49999999999999994);
+                expect(end.y).toBe(-0.5);
+                expect(end.z).toBe(-Math.SQRT1_2);
+                shouldNotChange = true;
+            });
         });
 
         describe("SmoothToRef", () => {
@@ -2408,6 +2478,53 @@ describe("Babylon Vector tests", () => {
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
                 shouldNotChange = true;
+            });
+        });
+    });
+
+    describe("Quaternion", () => {
+        describe("toEulerAngles", () => {
+            it("round-trips rotations close to a 90 degree pitch", () => {
+                for (const pitch of [1.5, 1.57, 1.5707, -1.5707, Math.PI / 2 - 2e-8, -Math.PI / 2 + 2e-8]) {
+                    const q = Quaternion.FromEulerAngles(pitch, 0.4, 0.7);
+                    const euler = q.toEulerAngles();
+                    const back = Quaternion.FromEulerVector(euler);
+                    expect(Math.abs(Quaternion.Dot(q, back))).toBeCloseTo(1, 12);
+                    expect(euler.x).toBeCloseTo(pitch, 10);
+                }
+            });
+
+            it("keeps the gimbal lock result at exactly 90 degrees", () => {
+                const euler = Quaternion.FromEulerAngles(Math.PI / 2, 0.4, 0).toEulerAngles();
+                expect(euler.x).toBe(Math.PI / 2);
+                expect(euler.y).toBeCloseTo(0.4, 10);
+                expect(euler.z).toBe(0);
+            });
+
+            it("keeps the gimbal lock result at exactly -90 degrees with a roll", () => {
+                const q = Quaternion.FromEulerAngles(-Math.PI / 2, 0.4, 0.3);
+                const euler = q.toEulerAngles();
+                expect(euler.x).toBe(-Math.PI / 2);
+                expect(euler.z).toBe(0);
+                expect(Math.abs(Quaternion.Dot(q, Quaternion.FromEulerVector(euler)))).toBeCloseTo(1, 12);
+            });
+
+            it("returns a zero rotation for the zero quaternion and small multiples of the identity", () => {
+                for (const q of [Quaternion.Zero(), new Quaternion(0, 0, 0, 1e-6)]) {
+                    const euler = q.toEulerAngles();
+                    expect(euler.x).toBeCloseTo(0, 12);
+                    expect(euler.y).toBeCloseTo(0, 12);
+                    expect(euler.z).toBeCloseTo(0, 12);
+                }
+            });
+
+            it("does not depend on the quaternion length", () => {
+                const q = Quaternion.FromEulerAngles(1.5707, 0.4, 0.7);
+                const euler = q.toEulerAngles();
+                const scaled = q.scale(1e-3).toEulerAngles();
+                expect(scaled.x).toBeCloseTo(euler.x, 10);
+                expect(scaled.y).toBeCloseTo(euler.y, 10);
+                expect(scaled.z).toBeCloseTo(euler.z, 10);
             });
         });
     });

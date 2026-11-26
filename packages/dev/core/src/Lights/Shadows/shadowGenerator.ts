@@ -1463,12 +1463,14 @@ export class ShadowGenerator implements IShadowGenerator {
             !this.onAfterShadowMapRenderMeshObservable.hasObservers();
         if (replayable) {
             const recorded = subMesh._getDrawWrapper();
+            // the owner its full draw would have (see Mesh._processRendering): a recorded draw waits with the other passes of its mesh too
+            const meshDataInfo = subMesh.getMesh()._internalAbstractMeshDataInfo;
             if (
                 recorded &&
                 // as _processRendering: a mesh still rendered for its instances or its batch but not drawn itself draws nothing
                 batch.renderSelf[subMesh._id] &&
                 renderingMesh._isRecordedDrawUnchanged(recorded, subMesh, material, effectiveMesh, false, this._getRecordedDrawsDomain(), domainState) &&
-                engine._replayRecordedDraw(recorded)
+                engine._replayRecordedDraw(recorded, meshDataInfo._pipelineWaitOwner ?? meshDataInfo)
             ) {
                 // as the update of a full draw: a later write of the frame goes to a new buffer, not to the one this draw binds
                 effectiveMesh._uniformBuffer._markBufferUsed();

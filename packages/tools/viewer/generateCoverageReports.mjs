@@ -2,8 +2,9 @@
 
 /* eslint-disable no-console */
 
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
+import { createRequire } from "module";
 import path from "path";
 import open from "open";
 import chalk from "chalk";
@@ -14,10 +15,12 @@ const [scriptPath, analyzeDirectory, coverageDirectory, originalDirectory, rawDi
 const reportsDirectory = path.join(coverageDirectory, "reports");
 
 // Generate coverage reports (full html + json summary), and open the html report
-const nycCommand = `npx nyc report --reporter html --reporter json-summary -t ${rawDirectory} --report-dir ${reportsDirectory}`;
-console.log(`${chalk.bold(chalk.italic(`Running command`))}: ${chalk.italic(nycCommand)}`);
+// Run nyc through the current Node executable so no shell is needed on any platform.
+const nycScript = createRequire(import.meta.url).resolve("nyc/bin/nyc.js");
+const nycArguments = ["report", "--reporter", "html", "--reporter", "json-summary", "-t", rawDirectory, "--report-dir", reportsDirectory];
+console.log(`${chalk.bold(chalk.italic(`Running command`))}: ${chalk.italic(["nyc", ...nycArguments].join(" "))}`);
 console.log();
-execSync(nycCommand);
+execFileSync(process.execPath, [nycScript, ...nycArguments], { stdio: "inherit" });
 open(`${path.join(reportsDirectory, "index.html")}`);
 
 // Load the coverage summary and coerce file sizes based on coverage

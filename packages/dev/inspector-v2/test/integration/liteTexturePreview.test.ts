@@ -6,6 +6,7 @@ import sharp from "sharp";
 type LiteTestWindow = Window &
     typeof globalThis & {
         liteCreateTexturePreviewFixture(kind: "2d" | "2d-array" | "3d" | "cube"): Promise<void>;
+        liteReadTexturePreviewFixture(mipLevel?: number): Promise<{ pixels: number[]; width: number; height: number }>;
         liteTexturePreviewFixture: Texture2D | CubeTexture;
         debugNode: object | null;
     };
@@ -71,21 +72,18 @@ test("native texture editor paints an inverted mip at the base canvas size", asy
         const { TextureCanvasManager } = await import(moduleUrl);
         const canvas = document.createElement("canvas");
         const manager = Object.create(TextureCanvasManager.prototype);
+        const pixels = new Uint8Array([0, 0, 255, 255, 255, 255, 0, 255, 255, 0, 0, 255, 0, 255, 0, 255]);
         Object.assign(manager, {
-            _originalTexture: {
-                isReady: () => true,
-                getSize: () => ({ width: 4, height: 4 }),
-                getInternalTexture: () => ({ format: 5 }),
-                getScene: () => null,
-                textureFormat: 5,
-                invertY: true,
-                readPixels: async () => new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255]),
+            _source: {
+                size: { width: 4, height: 4 },
+                readPixelsAsync: async () => ({ data: pixels, width: 2, height: 2 }),
             },
             _mipLevel: 1,
             _face: 0,
             _window: window,
             _2DCanvas: canvas,
             _3DCanvasTexture: { update: () => {} },
+            _onError: () => {},
             setSize: (size: { width: number; height: number }) => {
                 canvas.width = size.width;
                 canvas.height = size.height;
@@ -150,6 +148,79 @@ test("Lite Inspector previews the selected cube face", async ({ page }) => {
     expect(await PreviewPixels(page)).toEqual([255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255]);
     await page.getByRole("button", { name: "-Z", exact: true }).click();
     await expect.poll(() => PreviewPixels(page)).toEqual([0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255]);
+});
+
+test("Lite texture editor paints through pointer picking and resets", async ({ page, context }) => {
+    await OpenPreview(page, "2d");
+    const initialPixels = await page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture());
+    const editorPagePromise = context.waitForEvent("page");
+    await page.getByRole("button", { name: "Edit Texture", exact: true }).click();
+    const editorPage = await editorPagePromise;
+    await editorPage.getByRole("button", { name: "Paintbrush" }).click();
+
+    const canvas = editorPage.locator("canvas").first();
+    await expect(canvas).toBeVisible();
+    const bounds = await canvas.boundingBox();
+    expect(bounds).not.toBeNull();
+    const x = bounds!.x + bounds!.width / 2;
+    const y = bounds!.y + bounds!.height / 2;
+    await editorPage.mouse.move(x, y);
+    await editorPage.mouse.down();
+    await expect
+        .poll(() => page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture()), { timeout: 10000 })
+        .toEqual({ pixels: Array<number>(16).fill(255), width: 2, height: 2 });
+    await editorPage.mouse.up();
+
+    await editorPage.getByRole("button", { name: "Reset" }).click();
+    await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture())).toEqual(initialPixels);
+});
+
+test("Lite Inspector edits writable RGBA8 textures, regenerates mips and resets pixels", async ({ page, context }) => {
+    await OpenPreview(page, "2d");
+    const initialPixels = await page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture());
+    const editorPagePromise = context.waitForEvent("page");
+    await page.getByRole("button", { name: "Edit Texture", exact: true }).click();
+    const editorPage = await editorPagePromise;
+    await expect(editorPage.getByRole("button", { name: "Resize" })).toBeDisabled();
+
+    const editedPixels = [12, 34, 56, 255, 12, 34, 56, 255, 12, 34, 56, 255, 12, 34, 56, 255];
+    const sameSizePng = await sharp({ create: { width: 2, height: 2, channels: 4, background: { r: 12, g: 34, b: 56, alpha: 1 } } })
+        .png()
+        .toBuffer();
+    await editorPage.locator('input[type="file"]').setInputFiles({ name: "edited.png", mimeType: "image/png", buffer: sameSizePng });
+    await expect
+        .poll(() => page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture()))
+        .toEqual({
+            pixels: editedPixels,
+            width: 2,
+            height: 2,
+        });
+    await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture(1))).toEqual({ pixels: [12, 34, 56, 255], width: 1, height: 1 });
+
+    const mismatchedPng = await sharp({ create: { width: 1, height: 1, channels: 4, background: { r: 255, g: 0, b: 0, alpha: 1 } } })
+        .png()
+        .toBuffer();
+    await editorPage.locator('input[type="file"]').setInputFiles({ name: "wrong-size.png", mimeType: "image/png", buffer: mismatchedPng });
+    await expect(editorPage.getByText("The uploaded image must match the texture dimensions (2 × 2).")).toBeVisible();
+    await expect
+        .poll(() => page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture()))
+        .toEqual({
+            pixels: editedPixels,
+            width: 2,
+            height: 2,
+        });
+
+    await editorPage.getByRole("button", { name: "Reset" }).click();
+    await expect.poll(() => page.evaluate(() => (window as LiteTestWindow).liteReadTexturePreviewFixture())).toEqual(initialPixels);
+});
+
+test("Lite Inspector keeps unsupported cube textures previewable but disables editing", async ({ page }) => {
+    const png = await sharp({ create: { width: 2, height: 2, channels: 4, background: { r: 255, g: 0, b: 0, alpha: 1 } } })
+        .png()
+        .toBuffer();
+    await page.route("**/texture-preview-fixture_*.png", (route) => route.fulfill({ contentType: "image/png", body: png }));
+    await OpenPreview(page, "cube");
+    await expect(page.getByRole("button", { name: "Edit Texture", exact: true })).toBeDisabled();
 });
 
 for (const kind of ["2d-array", "3d"] as const) {

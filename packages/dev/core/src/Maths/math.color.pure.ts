@@ -733,7 +733,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
 
     /**
      * Converts Hue, saturation and value to a Color3 (RGB)
-     * @param hue defines the hue (value between 0 and 360)
+     * @param hue defines the hue in degrees; any value is accepted and wrapped modulo 360 (e.g. 480 and 120 produce the same color)
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @param result defines the Color3 where to store the RGB values
@@ -741,7 +741,8 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     public static HSVtoRGBToRef<T extends IColor3Like>(hue: number, saturation: number, value: number, result: T): T {
         const chroma = value * saturation;
-        const h = hue / 60;
+        // wrap the hue into [0, 360) so an animated or negative hue keeps its color
+        const h = (((hue % 360) + 360) % 360) / 60;
         const x = chroma * (1 - Math.abs((h % 2) - 1));
         let r = 0;
         let g = 0;
@@ -776,7 +777,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
 
     /**
      * Converts Hue, saturation and value to a new Color3 (RGB)
-     * @param hue defines the hue (value between 0 and 360)
+     * @param hue defines the hue in degrees; any value is accepted and wrapped modulo 360 (e.g. 480 and 120 produce the same color)
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @returns a new Color3 object

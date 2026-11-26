@@ -386,7 +386,7 @@ function shouldUsePathMapping(projectRoot: string, importPath: string, filename:
         for (const [pathKey, pathValues] of Object.entries(paths)) {
             for (const pathValue of pathValues) {
                 // Convert tsconfig path to absolute path
-                const absolutePackageRoot = path.resolve(projectRoot, baseUrl, pathValue).replace("*", "");
+                const absolutePackageRoot = path.resolve(projectRoot, baseUrl, pathValue).replaceAll("*", "");
 
                 // Check if the resolved import matches this path mapping
                 if (filename.startsWith(absolutePackageRoot)) {
@@ -414,7 +414,7 @@ function shouldUsePathMapping(projectRoot: string, importPath: string, filename:
         const relativePart = path.relative(importPathInfo.absolutePackageRoot, resolvedImportPath);
 
         const suggestedImport = importPathInfo.pathKey
-            .replace("*", relativePart)
+            .replaceAll("*", relativePart)
             .replace(/\\/g, "/") // Normalize to forward slashes
             .replace(/\.(ts|tsx)$/, ""); // Remove extension
 

@@ -11,8 +11,6 @@ import { log, error } from "./buildToolsLogger.js";
 // a new RegExp object from them when needed, to ensure state isn't accidentally reused.
 
 // Matches a function's name and its parameters
-const GetFunctionHeaderRegExString = `\\S*\\w+\\s+(\\w+)\\s*\\((.*?)\\)\\s*\\{`;
-const GetFunctionHeaderRegExOptions = "g";
 
 // Matches a #define statement line, capturing its name
 const GetDefineRegExString = `^\\S*#define\\s+(\\w+).*$`;
@@ -124,16 +122,8 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
 
     // Read the uniforms
     const uniforms: UniformMetadata[] = [];
-    const uniformRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(uniform .*)/gm);
-    const uniformGroups = fragmentShader.matchAll(uniformRegExp);
-    for (const matches of uniformGroups) {
-        const annotationJSON = matches[1];
-        const uniformLine = matches[2];
-
-        if (!uniformLine) {
-            throw new Error("Uniform line not found");
-        }
-
+    const uniformGroups = FindDeclarations(fragmentShader, "uniform");
+    for (const { annotationJSON, declaration: uniformLine } of uniformGroups) {
         const uniformLineMatches = new RegExp(/^uniform\s+(\w+)\s+(\w+)\s*;?/gm).exec(uniformLine);
         if (!uniformLineMatches || uniformLineMatches.length < 3) {
             throw new Error(`Uniforms must have a type and a name: '${uniformLine}'`);
@@ -187,11 +177,8 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
 
     // Read the property consts (consts to be exposed as properties)
     const fragmentConstProperties: ConstPropertyMetadata[] = [];
-    const constRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(const .*)/gm);
-    const constGroups = fragmentShader.matchAll(constRegExp);
-    for (const matches of constGroups) {
-        const annotationJSON = matches[1];
-
+    const constGroups = FindDeclarations(fragmentShader, "const");
+    for (const { annotationJSON, declaration: constLine } of constGroups) {
         // If it doesn't have any annotation, treat it as a regular const
         if (!annotationJSON) {
             continue;
@@ -204,13 +191,11 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
             continue;
         }
 
-        const constLine = matches[2];
-
-        if (!constLine) {
-            throw new Error("Const line not found");
+        let constDefinition = constLine.trim();
+        if (constDefinition.endsWith(";")) {
+            constDefinition = constDefinition.slice(0, -1).trimEnd();
         }
-
-        const constLineMatches = new RegExp(/^const\s+(\w+)\s+(\w+)\s*=\s*([^\s;]+)\s*;?\s*$/gm).exec(constLine);
+        const constLineMatches = /^const[ \t]+(\w+)[ \t]+(\w+)[ \t]*=[ \t]*([^ \t;]+)$/.exec(constDefinition);
         if (!constLineMatches || constLineMatches.length < 4) {
             throw new Error(`Consts must have a name, type, and a default value: '${constLine}'`);
         }
@@ -251,13 +236,13 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     // Collect uniform, const, and function names which need to be decorated
     const uniformNames = uniforms.map((uniform) => uniform.name);
     log(`Uniforms found: ${JSON.stringify(uniforms)}`);
-    const consts = [...fragmentShader.matchAll(/\S*const\s+\w*\s+(\w*)\s*=.*;/g)].map((match) => match[1]);
+    const consts = FindDeclarationNames(fragmentShader, "const");
     log(`Consts found: ${JSON.stringify(consts)}`);
     const constPropertyFriendlyNames = fragmentConstProperties.map((c) => c.friendlyName);
     log(`Const properties found: ${JSON.stringify(constPropertyFriendlyNames)}`);
     const defineNames = [...fragmentShader.matchAll(new RegExp(GetDefineRegExString, GetDefineRegExOptions))].map((match) => match[1]);
     log(`Defines found: ${JSON.stringify(defineNames)}`);
-    const functionNames = [...fragmentShaderWithNoFunctionBodies.matchAll(new RegExp(GetFunctionHeaderRegExString, GetFunctionHeaderRegExOptions))].map((match) => match[1]);
+    const functionNames = FindFunctionHeaders(fragmentShaderWithNoFunctionBodies).map((header) => header.name);
     log(`Functions found: ${JSON.stringify(functionNames)}`);
 
     // Decorate the uniforms, consts, defines, and functions
@@ -285,7 +270,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     const finalDefines = [...fragmentShaderWithRenamedSymbols.matchAll(new RegExp(GetDefineRegExString, GetDefineRegExOptions))].map((match) => match[0]);
 
     // Find the main input
-    const mainInputs = [...fragmentShaderWithRenamedSymbols.matchAll(/\S*uniform.*\s(\w*);\s*\/\/\s*main/gm)].map((match) => match[1]);
+    const mainInputs = FindMainInputNames(fragmentShaderWithRenamedSymbols);
     if (mainInputs.length > 1) {
         throw new Error("Shaders may have no more than 1 main input");
     }
@@ -341,28 +326,27 @@ function ExtractFunctions(fragment: string): {
     let mainFunctionName: string | undefined;
     let pos = 0;
 
-    const getFunctionHeaderRegEx = new RegExp(GetFunctionHeaderRegExString, GetFunctionHeaderRegExOptions);
+    const functionHeaderFinder = new FunctionHeaderFinder(fragment);
 
     while (pos < fragment.length) {
         // Match the next available function header in the fragment code
-        getFunctionHeaderRegEx.lastIndex = pos;
-        const match = getFunctionHeaderRegEx.exec(fragment);
+        const match = functionHeaderFinder.find(pos);
         if (!match) {
             break;
         }
 
-        const functionName = match[1];
+        const functionName = match.name;
         if (!functionName) {
             throw new Error("No function name found in shader code");
         }
 
-        const functionParams = match[2] || "";
+        const functionParams = match.params;
 
         // Store start index of the function definition
         const startIndex = match.index;
 
         // Balance braces to find end of function, starting just after the opening `{`
-        let endIndex = match.index + match[0].length;
+        let endIndex = match.end;
         let depth = 1;
         while (depth > 0 && endIndex < fragment.length) {
             if (fragment[endIndex] === "{") {
@@ -439,6 +423,260 @@ function RemoveFunctionBodies(input: string): string {
     return output;
 }
 
+function FindDeclarations(input: string, keyword: "uniform" | "const"): { annotationJSON?: string; declaration: string }[] {
+    const declarations: { annotationJSON?: string; declaration: string }[] = [];
+    let annotationJSON: string | undefined;
+
+    for (const line of input.split(/\r\n|\r|\n/)) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("//")) {
+            const annotation = trimmed.slice(2).trim();
+            annotationJSON = annotation.startsWith("{") && annotation.endsWith("}") ? trimmed : undefined;
+            continue;
+        }
+        if (trimmed === "") {
+            continue;
+        }
+        if (trimmed.startsWith(`${keyword} `) || trimmed.startsWith(`${keyword}\t`)) {
+            declarations.push({ annotationJSON, declaration: trimmed });
+        }
+        annotationJSON = undefined;
+    }
+
+    return declarations;
+}
+
+function FindDeclarationNames(input: string, keyword: "const"): string[] {
+    const names: string[] = [];
+    for (const line of input.split(/\r\n|\r|\n/)) {
+        let searchIndex = 0;
+        while (searchIndex < line.length) {
+            const keywordIndex = line.indexOf(keyword, searchIndex);
+            if (keywordIndex === -1) {
+                break;
+            }
+            const match = /^const[ \t]+\w+[ \t]+(\w+)[ \t]*=/.exec(line.slice(keywordIndex));
+            if (match) {
+                names.push(match[1]);
+                break;
+            }
+            searchIndex = keywordIndex + keyword.length;
+        }
+    }
+    return names;
+}
+
+function IsWordChar(char: string | undefined): boolean {
+    return char !== undefined && /\w/.test(char);
+}
+
+function IsWhitespaceChar(char: string | undefined): boolean {
+    return char !== undefined && /\s/.test(char);
+}
+
+function IsLineTerminatorChar(char: string): boolean {
+    return char === "\n" || char === "\r" || char === "\u2028" || char === "\u2029";
+}
+
+/**
+ * Returns the index right after a "<whitespace>//<whitespace>main" marker starting at the given index, or -1.
+ * @param input The shader code
+ * @param index The index right after the declaration's semicolon
+ * @returns The end of the marker or -1
+ */
+function GetMainMarkerEnd(input: string, index: number): number {
+    while (IsWhitespaceChar(input[index])) {
+        index++;
+    }
+    if (!input.startsWith("//", index)) {
+        return -1;
+    }
+    index += 2;
+    while (IsWhitespaceChar(input[index])) {
+        index++;
+    }
+    return input.startsWith("main", index) ? index + 4 : -1;
+}
+
+/**
+ * Finds the names of uniforms annotated with a "// main" comment, matching what
+ * /\S*uniform.*\s(\w*);\s*\/\/\s*main/gm returns, using forward and bounded backward scans to stay linear.
+ * @param input The shader code
+ * @returns The main input names
+ */
+function FindMainInputNames(input: string): string[] {
+    const names: string[] = [];
+    let searchFrom = 0;
+
+    while (searchFrom < input.length) {
+        const uniformIndex = input.indexOf("uniform", searchFrom);
+        if (uniformIndex === -1) {
+            break;
+        }
+        const declarationStart = uniformIndex + 7;
+        let lineEnd = declarationStart;
+        while (lineEnd < input.length && !IsLineTerminatorChar(input[lineEnd])) {
+            lineEnd++;
+        }
+
+        // The regex keeps the last declaration that is followed by the marker, which may start on the next line.
+        let nameStart = -1;
+        let nameEnd = -1;
+        let matchEnd = -1;
+        if (lineEnd < input.length) {
+            let semicolon = lineEnd + 1;
+            while (IsWordChar(input[semicolon])) {
+                semicolon++;
+            }
+            if (input[semicolon] === ";") {
+                matchEnd = GetMainMarkerEnd(input, semicolon + 1);
+                nameStart = lineEnd + 1;
+                nameEnd = semicolon;
+            }
+        }
+        for (let semicolon = lineEnd - 1; matchEnd === -1 && semicolon > declarationStart; semicolon--) {
+            if (input[semicolon] !== ";") {
+                continue;
+            }
+            let whitespace = semicolon - 1;
+            while (whitespace >= declarationStart && IsWordChar(input[whitespace])) {
+                whitespace--;
+            }
+            if (whitespace >= declarationStart && IsWhitespaceChar(input[whitespace])) {
+                matchEnd = GetMainMarkerEnd(input, semicolon + 1);
+                nameStart = whitespace + 1;
+                nameEnd = semicolon;
+            }
+            // Word characters cannot contain ";", so the next candidate is left of the scanned name.
+            semicolon = Math.min(semicolon, whitespace + 1);
+        }
+
+        if (matchEnd === -1) {
+            searchFrom = lineEnd + 1;
+            continue;
+        }
+        names.push(input.substring(nameStart, nameEnd));
+        searchFrom = matchEnd;
+    }
+    return names;
+}
+
+interface IFunctionHeader {
+    /** Start of the header, including the return type */
+    index: number;
+    /** Index right after the opening brace */
+    end: number;
+    /** Function name */
+    name: string;
+    /** Raw parameter list */
+    params: string;
+}
+
+/**
+ * Finds function headers ("<type> <name>(<params>) {"), returning the same results as the global regex
+ * /\S*\w+\s+(\w+)\s*\((.*?)\)\s*\{/g, but with monotonic scans so that searches stay linear on any input.
+ */
+class FunctionHeaderFinder {
+    private _lineEnd = -1;
+    private _closingParenthesis = -1;
+    private _closingParenthesisSearch = 0;
+
+    public constructor(private readonly _code: string) {}
+
+    /**
+     * Finds the first function header whose match starts at or after the given index.
+     * @param from The index to search from
+     * @returns The header or null
+     */
+    public find(from: number): IFunctionHeader | null {
+        const code = this._code;
+        for (let typeEnd = from; typeEnd + 1 < code.length; typeEnd++) {
+            if (!IsWordChar(code[typeEnd]) || !IsWhitespaceChar(code[typeEnd + 1])) {
+                continue;
+            }
+            let position = typeEnd + 1;
+            while (IsWhitespaceChar(code[position])) {
+                position++;
+            }
+            const nameStart = position;
+            while (IsWordChar(code[position])) {
+                position++;
+            }
+            const nameEnd = position;
+            while (IsWhitespaceChar(code[position])) {
+                position++;
+            }
+            if (nameEnd === nameStart || code[position] !== "(") {
+                continue;
+            }
+            const paramsStart = position + 1;
+            const paramsEnd = this._findParamsEnd(paramsStart);
+            if (paramsEnd === -1) {
+                continue;
+            }
+
+            let index = typeEnd;
+            while (index > from && !IsWhitespaceChar(code[index - 1])) {
+                index--;
+            }
+            let end = paramsEnd + 1;
+            while (IsWhitespaceChar(code[end])) {
+                end++;
+            }
+            return { index, end: end + 1, name: code.substring(nameStart, nameEnd), params: code.substring(paramsStart, paramsEnd) };
+        }
+        return null;
+    }
+
+    /**
+     * Finds the first ")" on the same line, at or after the given index, that is followed by optional whitespace and "{".
+     * @param paramsStart The index right after the opening parenthesis
+     * @returns The index of the closing parenthesis or -1
+     */
+    private _findParamsEnd(paramsStart: number): number {
+        const code = this._code;
+        if (this._lineEnd < paramsStart) {
+            this._lineEnd = paramsStart;
+            while (this._lineEnd < code.length && !IsLineTerminatorChar(code[this._lineEnd])) {
+                this._lineEnd++;
+            }
+        }
+        if (this._closingParenthesis < paramsStart) {
+            this._closingParenthesis = -1;
+            let candidate = Math.max(paramsStart, this._closingParenthesisSearch);
+            while (candidate < code.length) {
+                if (code[candidate] === ")") {
+                    let next = candidate + 1;
+                    while (IsWhitespaceChar(code[next])) {
+                        next++;
+                    }
+                    if (code[next] === "{") {
+                        this._closingParenthesis = candidate;
+                        break;
+                    }
+                    // Whitespace before a non-brace character cannot belong to a later candidate.
+                    candidate = next - 1;
+                }
+                candidate++;
+            }
+            this._closingParenthesisSearch = this._closingParenthesis === -1 ? code.length : this._closingParenthesis;
+        }
+        return this._closingParenthesis !== -1 && this._closingParenthesis < this._lineEnd ? this._closingParenthesis : -1;
+    }
+}
+
+function FindFunctionHeaders(code: string): IFunctionHeader[] {
+    const finder = new FunctionHeaderFinder(code);
+    const headers: IFunctionHeader[] = [];
+    let from = 0;
+    let header: IFunctionHeader | null;
+    while ((header = finder.find(from))) {
+        headers.push(header);
+        from = header.end;
+    }
+    return headers;
+}
+
 const SmartFilterBlockTypeKey = "smartFilterBlockType";
 
 /**
@@ -485,20 +723,42 @@ function ReadHeader(fragmentShader: string): {
      */
     fragmentShaderWithoutHeader: string;
 } {
-    const singleLineHeaderMatch = new RegExp(/^\n*\s*\/\/\s*(\{.*\})/g).exec(fragmentShader);
-    if (singleLineHeaderMatch && singleLineHeaderMatch[1]) {
-        return {
-            header: ParseHeader(singleLineHeaderMatch[1].trim()),
-            fragmentShaderWithoutHeader: fragmentShader.replace(singleLineHeaderMatch[0], ""),
-        };
+    let startIndex = 0;
+    while (startIndex < fragmentShader.length && /\s/.test(fragmentShader[startIndex])) {
+        startIndex++;
     }
 
-    const multiLineHeaderMatch = new RegExp(/^\n*\s*\/\*\s*(\{.*\})\s*\*\//gs).exec(fragmentShader);
-    if (multiLineHeaderMatch && multiLineHeaderMatch[1]) {
-        return {
-            header: ParseHeader(multiLineHeaderMatch[1].trim()),
-            fragmentShaderWithoutHeader: fragmentShader.replace(multiLineHeaderMatch[0], ""),
-        };
+    if (fragmentShader.startsWith("//", startIndex)) {
+        const openingBrace = fragmentShader.indexOf("{", startIndex + 2);
+        let lineEnd = openingBrace === -1 ? fragmentShader.length : openingBrace;
+        while (lineEnd < fragmentShader.length && !"\n\r\u2028\u2029".includes(fragmentShader[lineEnd])) {
+            lineEnd++;
+        }
+        const closingBrace = fragmentShader.lastIndexOf("}", lineEnd - 1);
+        if (openingBrace !== -1 && openingBrace < closingBrace && fragmentShader.slice(startIndex + 2, openingBrace).trim() === "") {
+            return {
+                header: ParseHeader(fragmentShader.slice(openingBrace, closingBrace + 1).trim()),
+                fragmentShaderWithoutHeader: fragmentShader.slice(closingBrace + 1),
+            };
+        }
+    }
+
+    if (fragmentShader.startsWith("/*", startIndex)) {
+        const commentEnd = fragmentShader.indexOf("*/", startIndex + 2);
+        const openingBrace = fragmentShader.indexOf("{", startIndex + 2);
+        const closingBrace = commentEnd === -1 ? -1 : fragmentShader.lastIndexOf("}", commentEnd);
+        if (
+            commentEnd !== -1 &&
+            openingBrace !== -1 &&
+            openingBrace < closingBrace &&
+            fragmentShader.slice(startIndex + 2, openingBrace).trim() === "" &&
+            fragmentShader.slice(closingBrace + 1, commentEnd).trim() === ""
+        ) {
+            return {
+                header: ParseHeader(fragmentShader.slice(openingBrace, closingBrace + 1).trim()),
+                fragmentShaderWithoutHeader: fragmentShader.slice(commentEnd + 2),
+            };
+        }
     }
 
     return {

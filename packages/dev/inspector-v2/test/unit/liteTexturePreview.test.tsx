@@ -84,7 +84,9 @@ describe("Babylon Lite texture preview adapter", () => {
     });
 
     async function Render(selectedTexture = texture) {
-        await act(async () => root.render(<TexturePreviewProperties texture={selectedTexture} engine={engine} resourceIndexService={resourceIndexService} />));
+        await act(async () =>
+            root.render(<TexturePreviewProperties texture={selectedTexture} engine={engine} resourceIndexService={resourceIndexService} textureEditor={() => null} />)
+        );
     }
 
     function PreviewProps(): TexturePreviewCoreProps {

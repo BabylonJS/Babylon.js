@@ -1,4 +1,4 @@
-import { type Camera } from "core/Cameras/camera";
+import { Camera } from "core/Cameras/camera.pure";
 import { Constants } from "core/Engines/constants";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -681,7 +681,8 @@ export class FluidRenderingTargetRenderer {
 
         this.dispose(true);
 
-        if (!this._camera) {
+        const camera = this._camera;
+        if (camera === null) {
             return;
         }
 
@@ -740,7 +741,7 @@ export class FluidRenderingTargetRenderer {
             }
         }
 
-        this._renderPostProcess = new PostProcess(
+        const renderPostProcess = new PostProcess(
             "FluidRendering",
             "fluidRenderingRender",
             uniformNames,
@@ -766,17 +767,34 @@ export class FluidRenderingTargetRenderer {
                 }
             }
         );
-        this._renderPostProcess.updateEffect(defines.join("\n"));
+        this._renderPostProcess = renderPostProcess;
+        const postProcessDefines = defines.join("\n");
+        let reverseDepth = engine.useReverseDepthBuffer;
+        renderPostProcess.updateEffect(postProcessDefines);
 
-        this._renderPostProcess.samples = this._samples;
+        if (this._useFixedThickness) {
+            renderPostProcess.onActivateObservable.add(() => {
+                const currentReverseDepth = engine.useReverseDepthBuffer;
+                if (currentReverseDepth === reverseDepth) {
+                    return;
+                }
+
+                const previousEffect = renderPostProcess.getEffect();
+                renderPostProcess.updateEffect(postProcessDefines);
+                reverseDepth = currentReverseDepth;
+                previousEffect.dispose();
+            });
+        }
+
+        renderPostProcess.samples = this._samples;
         const engineWebGPU = engine as WebGPUEngine;
         const setTextureSampler = engineWebGPU.setTextureSampler;
-        this._renderPostProcess.onApplyObservable.add((effect) => {
+        renderPostProcess.onApplyObservable.add((effect) => {
             this._invProjectionMatrix.copyFrom(this._scene.getProjectionMatrix());
             this._invProjectionMatrix.invert();
 
             if (setTextureSampler) {
-                setTextureSampler.call(engineWebGPU, "textureSamplerSampler", this._renderPostProcess!.inputTexture.texture);
+                setTextureSampler.call(engineWebGPU, "textureSamplerSampler", renderPostProcess.inputTexture.texture);
             }
 
             if (!this._depthRenderTarget!.enableBlur) {
@@ -847,7 +865,11 @@ export class FluidRenderingTargetRenderer {
 
             effect.setVector3("dirLight", this.dirLight);
 
-            effect.setFloat("cameraFar", this._camera!.maxZ);
+            // With an infinite perspective far plane, use the clear value to reject pixels without particles.
+            // This also discards fluid samples at view-space depths of 1,000,000 units or more.
+            const { maxZ, mode } = camera;
+            const farDepth = mode === Camera.PERSPECTIVE_CAMERA && maxZ === 0 ? this._depthClearColor.r : maxZ;
+            effect.setFloat("cameraFar", farDepth);
 
             if (this._debug) {
                 let texture: Nullable<ThinTexture> = null;

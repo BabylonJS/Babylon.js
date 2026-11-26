@@ -298,8 +298,8 @@ function BuildWrapping(wrapping: number) {
     }
 }
 
-function BuildColor4(color: Color3) {
-    return `(${color.r}, ${color.g}, ${color.b}, 1.0)`;
+function BuildColor4(color: Color3, alpha = 1.0) {
+    return `(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
 }
 
 function BuildVector2(vector: Vector2) {
@@ -344,6 +344,18 @@ function BuildTexture(
     offset.x += xRotationOffset * repeat.x;
     offset.y += (1 - yRotationOffset) * repeat.y;
 
+    let scaleAndBias = "";
+    if (mapType === "normal") {
+        const scale = texture.level ?? 1;
+        const bias = -scale === 0 ? 0 : -scale;
+        scaleAndBias = `
+        float4 inputs:scale = (${2 * scale}, ${2 * scale}, 2, 1)
+        float4 inputs:bias = (${bias}, ${bias}, -1, 0)`;
+    } else if (color) {
+        scaleAndBias = `
+        float4 inputs:scale = ${BuildColor4(color, mapType === "diffuse" ? material.alpha : 1.0)}`;
+    }
+
     return `
     def Shader "PrimvarReader_${mapType}"
     {
@@ -367,9 +379,8 @@ function BuildTexture(
     {
         uniform token info:id = "UsdUVTexture"
         asset inputs:file = @textures/Texture_${id}.${ext}@
-        float2 inputs:st.connect = </Root/Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
-        ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
-        token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "raw"}"
+        float2 inputs:st.connect = </Root/Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>${scaleAndBias}
+        token inputs:sourceColorSpace = "${mapType === "normal" ? "raw" : texture.gammaSpace ? "sRGB" : "raw"}"
         token inputs:wrapS = "${BuildWrapping(texture.wrapU)}"
         token inputs:wrapT = "${BuildWrapping(texture.wrapV)}"
         float outputs:r
@@ -480,6 +491,8 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Te
         clearCoatRoughnessMap,
     } = ExtractTextureInformations(material);
 
+    const hasDiffuseOpacity = diffuseMap !== null && (material.needAlphaBlending() || material.needAlphaTesting());
+
     if (diffuseMap !== null) {
         inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Root/Materials/Material_${material.uniqueId}/Texture_${diffuseMap.uniqueId}_diffuse.outputs:rgb>`);
 
@@ -538,7 +551,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Te
         inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
 
         samplers.push(BuildTexture(alphaMap as Texture, material, "opacity", null, textureToExports, options));
-    } else {
+    } else if (!hasDiffuseOpacity) {
         inputs.push(`${pad}float inputs:opacity = ${material.alpha}`);
     }
 

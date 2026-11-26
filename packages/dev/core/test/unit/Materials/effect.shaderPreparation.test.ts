@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine";
+import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
 import { Effect, type IEffectCreationOptions } from "core/Materials/effect";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Logger } from "core/Misc/logger";
 
-describe("Effect shader preparation failures", () => {
+describe("Effect shader preparation", () => {
     let engine: NullEngine;
     let fallbacks: EffectFallbacks;
 
@@ -66,6 +67,40 @@ describe("Effect shader preparation failures", () => {
         expect(effect.getCompilationError()).toContain("Shader import failed");
         expect(effect.allFallbacksProcessed()).toBe(true);
         expect(prepare).not.toHaveBeenCalled();
+    });
+
+    it("compiles the depth-order variant requested before asynchronous initialization", async () => {
+        engine.useReverseDepthBuffer = true;
+        vi.spyOn(engine, "_getShaderProcessor").mockReturnValue(new WebGL2ShaderProcessor());
+        const sources = {
+            vertexSource: "void main() { gl_Position = vec4(0.0); }",
+            fragmentSource: `void main() {
+#ifdef USE_REVERSE_DEPTHBUFFER
+    gl_FragColor = vec4(0.25);
+#else
+    gl_FragColor = vec4(0.75);
+#endif
+}`,
+        };
+        const options: IEffectCreationOptions = {
+            attributes: [],
+            uniformsNames: [],
+            samplers: [],
+            defines: "",
+            fallbacks: null,
+            onCompiled: null,
+            onError: null,
+            extraInitializationsAsync: async () => {},
+        };
+        const reversed = engine.createEffect(sources, options, engine);
+        engine.useReverseDepthBuffer = false;
+        const standard = engine.createEffect(sources, options, engine);
+
+        await vi.waitFor(() => expect(reversed.isReady() && standard.isReady()).toBe(true));
+        expect(reversed.fragmentSourceCode).toContain("vec4(0.25)");
+        expect(standard.fragmentSourceCode).toContain("vec4(0.75)");
+        expect(reversed.fragmentSourceCode).not.toContain("vec4(0.75)");
+        expect(standard.fragmentSourceCode).not.toContain("vec4(0.25)");
     });
 
     it("still recovers from a compiler failure using prepared-source fallbacks", async () => {

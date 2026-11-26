@@ -86,4 +86,20 @@ describe("WebGPUSnapshotRendering", () => {
 
         expect(playbackPass.executeBundles).toHaveBeenCalledExactlyOnceWith([drawBundle]);
     });
+
+    it("records the next frame again when a recording misses draws", () => {
+        snapshot.enabled = true;
+        snapshot.invalidateRecording();
+        snapshot.endFrame();
+        expect(snapshot.record).toBe(true);
+
+        snapshot.endFrame();
+        expect(snapshot.play).toBe(true);
+        expect(snapshot.mode).toBe(Constants.SNAPSHOTRENDERING_FAST);
+
+        // not recording: nothing to invalidate
+        snapshot.invalidateRecording();
+        snapshot.endFrame();
+        expect(snapshot.play).toBe(true);
+    });
 });

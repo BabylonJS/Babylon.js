@@ -190,7 +190,7 @@ export class CurveBlock extends NodeMaterialBlock {
         const inputType = state._getShaderType(this.input.type);
         const isWGSL = state.shaderLanguage === ShaderLanguage.WGSL;
 
-        const registeredFunctionName = CurveBlockTypes[this.type] + "_" + inputType.replace("<", "").replace(">", "");
+        const registeredFunctionName = CurveBlockTypes[this.type] + "_" + inputType.replace(/[<>]/g, "");
 
         switch (this.type) {
             case CurveBlockTypes.EaseInSine:

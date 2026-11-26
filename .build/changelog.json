@@ -1,6 +1,821 @@
 {
-    "fromTag": "9.35.0",
+    "fromTag": "9.37.1",
     "changelog": {
+        "9.37.2": [
+            {
+                "pr": "19207",
+                "title": "Keep Vector3.SlerpToRef on the sphere for opposite and nearly opposite vectors",
+                "description": "`Vector3.SlerpToRef` (and `Vector3.SmoothToRef`, which uses it) breaks down when the two vectors point in opposite or nearly opposite directions:\n\n```js\n// 1e-9 rad away from opposite\nVector3.SlerpToRef(new Vector3(1, 0, 0), new Vector3(-1, 1e-9, 0), 0.25, r); // (1, 5773965.05, 0), expected about (0.707, 0.707, 0)\n// exactly opposite, lengths 2\nVector3.SlerpToRef(new Vector3(0, 2, 0), new Vector3(0, -2, 0), t, r);\n// t = 0.1 and 0.25: (0, 2, 0), t = 0.5: (0, 0, 0), t = 0.9: (0, -3, 0)\n```\n\nThe angle comes from `Math.acos(dot)`, which rounds to exactly `PI` once the directions are within about 1e-8 rad of opposite, and the result is then divided by `Math.sin(omega)`, which is about 1e-16 there. For a tiny real angle the two huge terms don't cancel and the result is millions of units long; for exactly opposite vectors they cancel to whatever rounding leaves, so the vector stays at the start, collapses to zero at the halfway point and comes back too long.\n\nFor directions within `Epsilon` of opposite, the angle is now `atan2(|v0 x v1|, dot)`, which stays accurate there, and the result rotates the start direction toward the end one by `slerp * omega` (`v0 * cos + (axis x v0) * sin`). When the vectors are exactly opposite there is no single plane, so it turns around any axis perpendicular to the start vector, which is the usual choice for slerp. The length is still lerped as before. Everything else goes through the existing code; across the switch the two give the same vectors to within 3e-11, so there is no jump.\n\nTests: two new cases in `babylon.math.vector.test.ts` (exactly opposite: length stays 2 and the angle grows linearly to PI; 1e-9 rad off: stays on the unit sphere and turns toward the side the end vector leans to). Both fail before the change (`expected 5773965.045912613 to be close to 1`). The Math unit tests pass (1304), and prettier and eslint are clean on the changed files.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.pure.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19211",
+                "title": "Native: pass clearAttachments operation to native clear",
+                "description": "WebGL `clearAttachments()` converts integer clear colors differently from `clear()`:\n\n- `clear()`: `trunc(c * 255)` for signed and unsigned integer attachments\n- `clearAttachments()`: `round(c)` for signed and `round(c * 255)` for unsigned; float attachments are not scaled\n\nThe native engine implements `clearAttachments()` as `bindAttachments()` + `clear()`, so native receives the same `COMMAND_CLEAR2` in both cases and can't apply the right conversion.\n\nThis change ORs `_native.Engine.CLEAR_ATTACHMENTS_OPERATION` into the `COMMAND_CLEAR2` attachment mask, but only for clears issued from `clearAttachments()`. The flag sits above the 8-bit attachment mask. Native engines that don't expose the constant get `0`, so their behavior is unchanged. The `mask !== 0` color-clear check still uses the plain attachment mask.\n\nNative side: https://github.com/BabylonJS/BabylonNative/pull/2102 (adds the constant and a readback test covering signed and unsigned integer attachments plus a skipped RGBA8 attachment).",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19210",
+                "title": "Fix blank glTF transmission scenes with OIT",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\nFixes the blank canvas reported in [the Babylon.js forum](https://forum.babylonjs.com/t/the-babylonjs-inspector-failed-to-start-due-to-an-oit-error/64881) when enabling order-independent transparency (OIT) on `DragonAttenuation.glb`.\r\n\r\nThe glTF transmission helper renders the opaque background to an offscreen texture. With scene OIT enabled, that pass could invoke the camera's depth-peeling renderer even when it had no transparent meshes, causing it to use the wrong framebuffer. Skip the transparent stage for the transmission target while OIT is active. The main camera still uses OIT, and the transmission pass is unchanged when OIT is disabled.\r\n\r\nThe regression test verifies that the camera invokes depth peeling but the transmission background does not. All seven transmission unit tests pass. A local Edge WebGL2 reproduction with `DragonAttenuation.glb` produced a blank canvas and framebuffer errors before the fix and rendered without framebuffer errors after it.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/transmissionHelper.ts",
+                    "packages/dev/loaders/test/unit/glTF/KHR_materials_transmission.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "19205",
+                "title": "Native: honor invertY in updateDynamicTexture and set isMobile",
+                "description": "Two Babylon Native fixes in `ThinNativeEngine`:\n\n**DynamicTexture `invertY` was ignored** (repro: https://playground.babylonjs.com/#GVPILZ#15 renders upside-down text on Babylon Native).\n`updateDynamicTexture` called `getCanvasTexture` without `invertY`, and the native canvas always returned the `invertY = true` orientation. It now passes `invertY` through. Older Babylon Native runtimes ignore the extra argument, so behavior is unchanged there.\n\n**`hostInformation.isMobile` was always false** (repro: https://playground.babylonjs.com/#NBX64R#6 shows no outline because it takes the desktop/Inspector path).\nBabylon Native has no `navigator.userAgent`. The engine now uses the native `isMobile` value when the runtime provides it.\n\nThe native side is in BabylonJS/BabylonNative (companion PR linked below). Unit tests in `nativeEngine.fontMetrics.test.ts` cover the `invertY` argument.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/nativeEngine.fontMetrics.test.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "native",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "19204",
+                "title": "chore(deps): npm audit fix — 20261119",
+                "description": "Automated by the morning-dev-briefing skill.\n\n## Summary\n`npm audit fix` resolved:\n- Critical: 1\n- High: 36\n- Moderate: 13\n- Low: 1\n\n14 moderate findings remain because resolving them requires breaking-change upgrades (`npm audit fix --force` was not used).\n\n## Verification\n- [x] `npm install --no-audit --no-fund`\n- [x] `npm audit --json` (14 moderate remaining)\n- [ ] CI green\n- [ ] Lockfile diff reviewed",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19184",
+                "title": "Ignore the query string and fragment in GetMimeType",
+                "description": "`GetMimeType()` reads the extension from everything after the last dot of the URL, so a query string or fragment ends up in it: `GetMimeType(\"textures/brick.jpg?v=2\")` looks up `jpg?v=2` and returns `undefined`. Cache-busting (`?v=2`) and signed CDN URLs (`?token=...`) are common for textures.\n\nWhere it matters: when exporting to glTF, `GetCachedImageAsync` (serializers, `exportImageUtils.ts`) only reuses a texture's original bytes when it knows their MIME type. Without one, `glTFMaterialExporter` falls back to reading the texture back and encoding it again (PNG unless a type was requested), so a JPEG loaded with a query string is exported as a new PNG instead of the original file. The USDZ exporter gets PNG for the same reason.\n\nThe extension is now taken from the path before `?` or `#`. `GetExtensionFromUrl` in `urlTools.ts` already drops the query string the same way.\n\nAdded `GetMimeType` tests to `test/unit/Misc/fileTools.test.ts`. The query string and fragment case fails before the change; all 15 tests in the file pass, and prettier is clean on both files.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.pure.ts",
+                    "packages/dev/core/test/unit/Misc/fileTools.test.ts",
+                    "packages/dev/loaders/src/FBX/fbxFileLoader.pure.ts",
+                    "packages/dev/loaders/test/unit/FBX/materials.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19186",
+                "title": "Fix half-float baked vertex animation serialization",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFixes the half-float VAT serialization issue reported in [this forum thread](https://forum.babylonjs.com/t/vat-deserialization-for-half-float-textures-does-not-work/64864) ([reproduction](https://playground.babylonjs.com/#WVXBMV)).\n\n`bakeVertexDataSync(..., true)` produces half-float bit patterns in a `Uint16Array`, but the serializers did not record the precision and the loaders always reconstructed a `Float32Array`. This reinterpreted the bytes, halved the element count, and caused `textureFromBakedVertexData` to select the wrong texture type and calculate half the intended height.\n\n- Save an `isHalfFloat` flag and reconstruct the matching typed array for both object and JSON round trips.\n- Preserve the existing width/height fields and typed-array subarray boundaries.\n- Treat payloads without precision metadata as full floats, preserving legacy full-float data.\n- Update public signatures and API documentation for half-float data.\n\n## TypeScript compatibility\n\nThe serializer inputs now accept `Float32Array | Uint16Array`. The loader return types also become `Float32Array | Uint16Array` to accurately represent the decoded data. Consumers that explicitly require a `Float32Array` must narrow the result; passing it directly to `textureFromBakedVertexData` continues to work. Existing full-float runtime behavior is unchanged.\n\n## Validation\n\n- Targeted `babylon.vertexAnimationBaker.test.ts`: all 9 tests pass, including six added cases covering both precisions, object/JSON round trips, nonzero subarray offsets, texture types/dimensions, and legacy full-float payloads.\n- Targeted TypeScript check of the implementation and tests, including core's browser ambient declarations: no diagnostics.\n- Changed-file Prettier and ESLint checks; ESLint reports only the pre-existing `prefer-const` warning in the existing baking test.\n- Temporary devhost `testScene` in headless Edge/WebGL2: exact values and ready 8×1 GPU textures for both precisions and serialization formats; legacy full-float JSON loads correctly. Temporary scene changes were removed and the server stopped.\n- Full-repository checks were not run.\n\nSelf-review covered both general correctness and repository conventions. No remaining implementation findings; the necessary TypeScript return-type widening is called out above.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts",
+                    "packages/dev/core/test/unit/Animations/babylon.vertexAnimationBaker.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations",
+                    "bones",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "19185",
+                "title": "Fix Sandbox GPU picking for geometry-less glTF roots",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFixes the Sandbox Inspector's **Enable Picking** regression reported for Babylon.js 9.36.0 and 9.37.0:\nhttps://forum.babylonjs.com/t/enable-picking-not-working-in-sandbox-v9-37-0-and-v9-36-0-but-works-in-v9-35-0/64861\n\nThe effect-notification refactor in #19089 made `ShaderMaterial.isReady` evaluate `mesh.subMeshes[0]` even when no effect observers are registered. Geometry-less glTF `__root__` meshes have no `subMeshes` array, and the Inspector includes these meshes in its GPU picking list. Material readiness consequently throws before the picking pass can run.\n\n- Guard the submesh array with optional chaining and notify observers with `null` when no submesh exists.\n- Reset the GPU picker's in-progress state when material readiness throws, preserving the original rejection and render-pass restoration so subsequent picks can retry.\n- Add regression coverage for geometry-less meshes with and without effect observers, existing mesh submesh notifications, and retry behavior for single, multi, and box picks.\n\nNo public API changes.\n\n## Validation\n\n- Reproduced the deployed regression with the same simple GLB: 9.35.0 succeeds; 9.36.0 and 9.37.0 throw.\n- Focused Vitest run: 23 tests pass across ShaderMaterial, vertex pulling, and GPUPicker suites. Five regression cases fail when the fixes are removed.\n- Devhost `testScene`: a geometry-less root plus renderable meshes reproduces the exception without the fix and correctly picks the sphere with the fix. Temporary scene changes and server were cleaned up.\n- Changed-file Prettier and ESLint checks pass with no errors; advisory lint reports an existing `getClassName` documentation warning.\n- Core TypeScript build passes (`npx tsc -b packages/dev/core/tsconfig.build.json`).\n- Self-review completed with agnostic and repository-instruction lenses; no additional actionable findings.\n- Full-repository builds/checks/tests were not run.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.pure.ts",
+                    "packages/dev/core/test/unit/Collisions/babylon.gpuPicker.test.ts",
+                    "packages/dev/core/test/unit/Materials/shaderMaterial.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "19053",
+                "title": "Add the marker define of every material plugin, not only the last one",
+                "description": "\nForum report: https://forum.babylonjs.com/t/64383. Thanks to Evgeni_Popov for confirming the analysis and the fix there.\n\nRepro (Playground): https://playground.babylonjs.com/#JCUGDF\n\n`MaterialPluginManager` gives each plugin class a marker define, `MATERIALPLUGIN_n`, so that a material with a plugin never shares an effect with one without it (the fix for https://forum.babylonjs.com/t/pluginmaterial-bug/30098, #12502). `_addPlugin()` rebuilds the define map from scratch each time a plugin is added, but it only inserted the marker of the plugin being added. The loop that follows collects the defines of every plugin, but not their markers. So with two or more plugins, only the last-added plugin's marker reached the effect key. For example, a StandardMaterial with one user plugin lost the built-in DetailMap plugin's marker.\n\nThis matters because the `PrepareUniformBuffer` handler adds the UBO uniforms of every attached plugin, enabled or not. Two materials whose plugin sets differ only by a disabled plugin got the same defines, so the same effect, but different UBO layouts. In the repro, depending on which material compiles first, one box draws black (it reads a uniform from the wrong UBO slot) or is not drawn at all, with `GL_INVALID_OPERATION: uniform buffer too small`.\n\n## Changes\n\n- `MaterialPluginManager._addPlugin()` now inserts each registered plugin's `MATERIALPLUGIN_n` marker inside the loop over `this._plugins`, instead of only the new plugin's marker before the loop. Every plugin in `_plugins` already has a marker in `_MaterialPluginClassToMainDefine`, because it went through `_addPlugin()`.\n- Disabled plugins are included on purpose: they still contribute their uniforms to the UBO layout, so the effect key must reflect them.\n\nThe only side effect is that materials with several plugins get a slightly longer defines string (for example, a StandardMaterial with a user plugin now also has DetailMap's marker), so they compile under a new key once. Materials with a single plugin are unchanged.\n\n## Testing\n\n- New unit test `Materials/babylon.materialPluginManager.test.ts` (NullEngine):\n  - a StandardMaterial with two plugins has both plugins' markers, plus the built-in DetailMap marker, in its defines;\n  - two StandardMaterials whose plugin sets differ only by a disabled plugin (whose uniforms are still in the UBO) get different defines and different effects.\n\n  Both tests fail with the old `_addPlugin()`: `expected '#define MATERIALPLUGIN_3\\n#define DET…' to contain '#define MATERIALPLUGIN_2\\n'` and `expected '#define MATERIALPLUGIN_3\\n#define DET…' to not deeply equal '#define MATERIALPLUGIN_3\\n#define DET…'`.\n- `npm run build:dev`: no errors.\n- `npm run test:unit`: 485 of 486 files passed (7296 tests passed, 1 expected fail, 34 skipped). The one failure was `umdRollupCompatibility.test.ts` (\"keeps the glTF2 legacy export compatible…\"), which hit the 5 s timeout on a busy machine. It passes when run alone with a longer timeout (4.7 s). It's unrelated to this change.\n- `prettier --check` and `eslint` on the changed files pass (eslint reports only existing \"unused eslint-disable directive\" warnings in `materialPluginManager.pure.ts`, on lines this PR doesn't touch).\n",
+                "author": {
+                    "name": "christabone",
+                    "url": "https://github.com/christabone"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialPluginManager.pure.ts",
+                    "packages/dev/core/test/unit/Materials/babylon.materialPluginManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19181",
+                "title": "Fix dead API reference link in the GUI package readme",
+                "description": "The \"API\" link in `packages/dev/gui/readme.md` points to https://doc.babylonjs.com/api/modules/gui, which returns 404.\n\nThe GUI API reference is now at https://doc.babylonjs.com/typedoc/modules/BABYLON.GUI (returns 200, same `typedoc/...` style already used in `@see` links in core). This changes only that one line.\n",
+                "author": {
+                    "name": "farisbasha",
+                    "url": "https://github.com/farisbasha"
+                },
+                "files": [
+                    "packages/dev/gui/readme.md"
+                ],
+                "tags": []
+            }
+        ],
+        "9.37.1": [
+            {
+                "pr": "19183",
+                "title": "Deliver callbacks to every caller of a cached compute effect",
+                "description": "Fixes the dropped-callback part of #19131.\r\n\r\n## Summary\r\n\r\n`WebGPUEngine.createComputeEffect` returns the cached `ComputeEffect` when the source and defines match. On that cache hit it only called the new caller's `onCompiled`, and only if the effect was already ready. The new caller's `onError` was never called, and neither callback was called if the effect was still compiling, because the cached effect only calls the `onCompiled`/`onError` it was created with (the first caller's). As #19131 shows, a second `ComputeShader` with the same invalid source never hears about the compilation error.\r\n\r\nOn a cache hit the caller's callbacks are now delivered to that caller:\r\n\r\n- effect ready: `onCompiled` is called right away (unchanged)\r\n- compilation already failed (`!isReady()` and `getCompilationError()` is set): `onError` is called right away with the compilation error\r\n- still compiling: one-shot observers are added to `onCompileObservable` and `onErrorObservable`; whichever fires calls the matching callback and removes the other observer, so nothing stays registered after the result. Callbacks that are the same functions as the effect's own `onCompiled`/`onError` (for example, the same `ComputeShader` switching back to these defines while they compile) are skipped here, since the effect already calls them.\r\n\r\n## Behavior change\r\n\r\nA caller that gets a cached effect which already failed now receives `onError`, including a `ComputeShader` that switches its defines back to a variant that failed earlier. This mirrors the existing ready case, where `onCompiled` is called again. A caller that hits the cache while the effect is still compiling now receives `onCompiled` or `onError` when compilation finishes.\r\n\r\n## Not changed\r\n\r\nThe cached effect still holds the first caller's `onCompiled`/`onError`, which is the retention path described in the issue. Those are public `ComputeEffect` fields set from the creation options, so changing that seemed like a separate API decision.\r\n\r\n`createEffect` in `thinEngine.pure.ts` and `webgpuEngine.pure.ts` has the same cache-hit pattern for `Effect`. I left it alone to keep this to the compute path from the issue.\r\n\r\n## Testing\r\n\r\n- New `packages/dev/core/test/unit/Engines/WebGPU/Extensions/engine.computeShader.test.ts` (4 tests). It calls `WebGPUEngine.prototype.createComputeEffect` on a stub engine, so a real `ComputeEffect` is created and the test decides when its compilation succeeds or fails. On master, the three tests for a second caller (error while compiling, success while compiling, error before the cache hit) fail; the fourth (same callbacks are not called twice) passes. All 4 pass with this change, along with the existing `test/unit/Compute/computeShader.test.ts` (8 tests).\r\n- `npm run build:dev` (after `npm run build:tools`) completes with exit code 0 and no TypeScript errors.\r\n- After that build, `npx vitest run --project=unit packages/dev/core/test/unit`: 336 test files, 5482 tests, 5477 passed, 0 failed, 5 skipped.\r\n- Prettier check and ESLint (repository config) on both changed files are clean.\r\n",
+                "author": {
+                    "name": "mmporong",
+                    "url": "https://github.com/mmporong"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.pure.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/Extensions/engine.computeShader.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19182",
+                "title": "Native: pass view-space matrices to splat sorting",
+                "description": "## Summary\n- pass world × view to the legacy native `sortSplats` implementation\n- pass the camera view matrix and scene handedness to native `sortSplatIndices`\n- cover both native caller signatures with unit tests\n\nThis aligns the Babylon.js callers with BabylonJS/BabylonNative#2073 and BabylonJS/BabylonNative#2074.\n\n## Tests\n- `npm test -- packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts` (19 passed)\n- `npm run build:source`\n- `npm run lint:changed`\n- targeted `npm run format:check`",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19180",
+                "title": "Fix CodeQL code-scanning alerts across the repository",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nCodeQL (`security-extended`) was failing PRs such as #19090 because of alerts that already exist on `master`. This PR handles all **151** open code-scanning alerts on `master`:\n\n- **112 fixed in code**\n- **39 dismissed** as false positive, won't fix, or test-only, each with a written justification (done through the code-scanning API, not in this diff)\n\n## Code changes\n\n- **ReDoS / polynomial regexes**: rewritten as linear patterns or string scanning in the shader processors (`#include` parsing, WebGL2 extension stripping, WGSL uniform/buffer parsing), `fileTools` base64 data-URL detection, node material build state, the HDR header, STL/OBJ loaders, KHR_interactivity JSON pointers, GUI SVG detection, the Smart Filters shader converter, and the snippet loader import transform. Old and new versions were compared on repository inputs and fuzzed inputs and produce identical results (for example, all 12 Smart Filter shaders and 400k random GLSL extension/varying cases).\n- **Prototype pollution guards**: FlowGraph set-property paths and the path converter, `SceneRecorder`, the shared UI override manager, the `WebXRFeaturesManager` feature registry, and the compute shader bind group layout.\n- **URL handling**: hostname comparisons instead of substring checks (`WebRequest`, Playground, Flow Graph Editor); snippet ids encoded in tool requests (node editors, Smart Filters editor, viewer configurator, snippet loader); `URLSearchParams` for Playground query parsing.\n- **GUI SVG sanitizer**: also strips `vbscript:` and non-image `data:` URLs.\n- **Scripts and build tools**: `execFile`/`spawn` with argument arrays instead of shell strings, `mkdtemp` temp directories, no check-then-use file races, escaped regex inputs, and `replaceAll` where every occurrence must be replaced.\n- **Inspector CLI**: terminal control characters stripped from printed values.\n- **Smart Filters editor**: texture preview built with DOM APIs instead of `innerHTML`.\n- **Workflows**: explicit `permissions` in `stale.yml`; SRI on the pinned dat.gui CDN script.\n\nFocused unit tests were added for the parsing and pollution-guard changes.\n\n## Dismissed alerts\n\n- **false positive** (16): [3](https://github.com/BabylonJS/Babylon.js/security/code-scanning/3), [12](https://github.com/BabylonJS/Babylon.js/security/code-scanning/12), [13](https://github.com/BabylonJS/Babylon.js/security/code-scanning/13), [14](https://github.com/BabylonJS/Babylon.js/security/code-scanning/14), [15](https://github.com/BabylonJS/Babylon.js/security/code-scanning/15), [16](https://github.com/BabylonJS/Babylon.js/security/code-scanning/16), [40](https://github.com/BabylonJS/Babylon.js/security/code-scanning/40), [83](https://github.com/BabylonJS/Babylon.js/security/code-scanning/83), [84](https://github.com/BabylonJS/Babylon.js/security/code-scanning/84), [86](https://github.com/BabylonJS/Babylon.js/security/code-scanning/86), [102](https://github.com/BabylonJS/Babylon.js/security/code-scanning/102), [105](https://github.com/BabylonJS/Babylon.js/security/code-scanning/105), [106](https://github.com/BabylonJS/Babylon.js/security/code-scanning/106), [130](https://github.com/BabylonJS/Babylon.js/security/code-scanning/130), [152](https://github.com/BabylonJS/Babylon.js/security/code-scanning/152), [153](https://github.com/BabylonJS/Babylon.js/security/code-scanning/153)\n- **used in tests** (6): [82](https://github.com/BabylonJS/Babylon.js/security/code-scanning/82), [85](https://github.com/BabylonJS/Babylon.js/security/code-scanning/85), [87](https://github.com/BabylonJS/Babylon.js/security/code-scanning/87), [88](https://github.com/BabylonJS/Babylon.js/security/code-scanning/88), [89](https://github.com/BabylonJS/Babylon.js/security/code-scanning/89), [90](https://github.com/BabylonJS/Babylon.js/security/code-scanning/90)\n- **won't fix** (17): [17](https://github.com/BabylonJS/Babylon.js/security/code-scanning/17), [19](https://github.com/BabylonJS/Babylon.js/security/code-scanning/19), [21](https://github.com/BabylonJS/Babylon.js/security/code-scanning/21), [23](https://github.com/BabylonJS/Babylon.js/security/code-scanning/23), [99](https://github.com/BabylonJS/Babylon.js/security/code-scanning/99), [103](https://github.com/BabylonJS/Babylon.js/security/code-scanning/103), [104](https://github.com/BabylonJS/Babylon.js/security/code-scanning/104), [114](https://github.com/BabylonJS/Babylon.js/security/code-scanning/114), [115](https://github.com/BabylonJS/Babylon.js/security/code-scanning/115), [116](https://github.com/BabylonJS/Babylon.js/security/code-scanning/116), [117](https://github.com/BabylonJS/Babylon.js/security/code-scanning/117), [118](https://github.com/BabylonJS/Babylon.js/security/code-scanning/118), [119](https://github.com/BabylonJS/Babylon.js/security/code-scanning/119), [120](https://github.com/BabylonJS/Babylon.js/security/code-scanning/120), [121](https://github.com/BabylonJS/Babylon.js/security/code-scanning/121), [122](https://github.com/BabylonJS/Babylon.js/security/code-scanning/122), [135](https://github.com/BabylonJS/Babylon.js/security/code-scanning/135)\n\nThese include `Math.random` used for non-security ids, dedicated-worker `message` handlers, intentional `eval` in test harnesses, dev-only scripts acting on developer-provided input, one-shot migration scripts, a vendored USD importer worker, and a moving CDN URL where SRI cannot be pinned.\n\n## Validation\n\n`npm run format:check`, `npm run lint:check`, `npm run build:source`, and the full `vitest --project=unit` suite pass locally. The only failure was the UMD rollup compatibility test, which times out under full-suite load and passes when run alone.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".github/workflows/stale.yml",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGL2ShaderProcessors.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathConverter.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/curveBlock.pure.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/fileTools.pure.ts",
+                    "packages/dev/core/src/Misc/sceneRecorder.ts",
+                    "packages/dev/core/src/Misc/webRequest.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphConformanceOptions.test.ts",
+                    "packages/dev/core/test/unit/Misc/HighDynamicRange/hdr.test.ts",
+                    "packages/dev/core/test/unit/Misc/fileTools.test.ts",
+                    "packages/dev/core/test/unit/Misc/webRequest.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRFeaturesManagerExtended.test.ts",
+                    "packages/dev/gui/src/2D/controls/image.pure.ts",
+                    "packages/dev/gui/test/unit/image.test.ts",
+                    "packages/dev/inspector-v2/src/cli/cli.ts",
+                    "packages/dev/inspector-v2/test/unit/cli/cli.test.ts",
+                    "packages/dev/inspector-v2/test/unit/cli/config.test.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.pure.ts",
+                    "packages/dev/loaders/src/STL/stlFileLoader.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel.ts",
+                    "packages/dev/loaders/test/external/KHR_interactivity/khrInteractivityAllAssets.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphModel.test.ts",
+                    "packages/dev/loaders/test/unit/STL/stlFileLoader.test.ts",
+                    "packages/dev/sharedUiComponents/src/projects/overrideManager.ts",
+                    "packages/dev/sharedUiComponents/test/unit/overrideManager.test.ts",
+                    "packages/dev/smartFilters/src/utils/buildTools/shaderConverter.ts",
+                    "packages/dev/smartFilters/test/unit/shaderConverter.test.ts",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeGeometryEditor/src/bootstrap.js",
+                    "packages/tools/nodeParticleEditor/src/bootstrap.js",
+                    "packages/tools/nodeRenderGraphEditor/src/bootstrap.js",
+                    "packages/tools/playground/debug.html",
+                    "packages/tools/playground/frame.html",
+                    "packages/tools/playground/full.html",
+                    "packages/tools/playground/index.html",
+                    "packages/tools/playground/public/index.js",
+                    "packages/tools/playground/src/tools/monaco/monacoManager.ts",
+                    "packages/tools/playground/src/tools/monaco/run/runner.ts",
+                    "packages/tools/playground/src/tools/utilities.ts",
+                    "packages/tools/sandbox/src/tools/environmentTools.ts",
+                    "packages/tools/smartFiltersEditor/src/smartFilterLoadSave/loadSmartFilterFromSnippetServer.ts",
+                    "packages/tools/smartFiltersEditor/src/smartFilterLoadSave/saveToSnipperServer.ts",
+                    "packages/tools/smartFiltersEditorControl/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/snippetLoader/src/fetchSnippet.ts",
+                    "packages/tools/snippetLoader/src/saveSnippet.ts",
+                    "packages/tools/snippetLoader/src/snippetLoader.ts",
+                    "packages/tools/snippetLoader/test/unit/fetchSnippet.test.ts",
+                    "packages/tools/snippetLoader/test/unit/snippetLoader.test.ts",
+                    "packages/tools/tests/es6Vis/src/bootstrap.ts",
+                    "packages/tools/tests/test/unit/moduleFileSize.test.ts",
+                    "packages/tools/tests/test/unit/treeShakingSideEffects.test.ts",
+                    "packages/tools/viewer-configurator/src/components/babylonViewer/viewer.tsx",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer/generateCoverageReports.mjs",
+                    "scripts/folderSizeFlameChart.mjs",
+                    "scripts/generateChangelog.js",
+                    "scripts/open.mjs",
+                    "scripts/treeshaking/generatePureBarrels.mjs",
+                    "scripts/treeshaking/migration/createPureForAugmentTargets.mjs",
+                    "scripts/treeshaking/migration/extractTypes.mjs",
+                    "scripts/treeshaking/sideEffectsManifest.mjs"
+                ],
+                "tags": [
+                    "bug",
+                    "build"
+                ]
+            },
+            {
+                "pr": "19170",
+                "title": "Wrap the hue in Color3.HSVtoRGBToRef",
+                "description": "`Color3.FromHSV` and `Color3.HSVtoRGBToRef` return black (or gray, for lower saturation) for any hue outside [0, 360]. That's easy to hit when the hue is animated or computed:\n\n```js\nColor3.FromHSV(480, 1, 1); // (0, 0, 0), should be green like 120\nColor3.FromHSV(-120, 1, 1); // (0, 0, 0), should be blue like 240\n```\n\nThe hue is divided by 60 and matched against the six sectors `0 <= h <= 6`. A hue outside that range matches none of them, so r, g and b stay 0 and only the gray offset `value - chroma` is added. Hue is an angle, so 480 and -120 are valid colors that just need wrapping.\n\nThe hue is now wrapped into [0, 360) before the sectors are picked. Results for hues in [0, 360] are unchanged; 360 still gives red.\n\nTests: a new `packages/dev/core/test/unit/Math/babylon.math.color.test.ts` covers in-range hues, hues above 360, negative hues and a `toHSV` round trip with the hue shifted by 360. The last three fail before the change and pass after. All 1299 tests in `core/test/unit/Math` pass, and prettier is clean.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.pure.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.color.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "19135",
+                "title": "Native: share auto-generated depth buffers in NativeRenderTargetWrapper.shareDepth",
+                "description": "## Summary\n\nOn Native, an auto-generated depth buffer lives inside the native framebuffer and could not be attached to another target, so `NativeRenderTargetWrapper.shareDepth()` was a no-op whenever the source had no depth texture. The destination then depth-tested against its own separate depth buffer. WebGL shares the source's depth renderbuffer instead.\n\nThis shows up in order-independent transparency, where depth peeling shares the prepass depth created with `generateDepthBuffer`.\n\n`shareDepth()` now handles a source with generated depth/stencil:\n- On runtimes with `shareFrameBufferDepthStencil` (BabylonJS/BabylonNative#2081), Native wraps the framebuffer's generated depth/stencil allocation without rebuilding the source or losing its contents, then attaches that same allocation to the destination.\n- If a 3D or layered target has not created its framebuffer yet, the share is recorded and applied on its first bind, once the lazy framebuffer exists.\n- On older runtimes without the API, sharing generated depth keeps the previous non-throwing behavior: it logs the existing one-time warning and continues with separate depth buffers before performing compatibility validation.\n- Explicit depth texture sharing and its compatibility validation are unchanged.\n\nThe earlier prepass/depth-peeling early-sharing reorder is no longer needed because supported Native runtimes preserve the generated depth contents, so those changes have been reverted to the existing renderer behavior.\n\n## Verification\n\n- `npx vitest run packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts` — 125 tests passed.\n- Added coverage for a legacy runtime with mismatched sample counts and for shares requested before first bind on 3D and layered MRT targets.\n- Prettier and ESLint pass on the changed files.\n\nThe previous Metal visualization count was measured with an earlier implementation and needs re-measurement for this revision; no visual-test pass count is claimed here.\n\nNo reference images, tolerances, or test exclusions changed.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19179",
+                "title": "Fix WebGPU texture binding dimension in ES5 UMD bundles",
+                "description": "WebGPU cube textures (`texture_cube`, cube-array, etc.) were bound with a `2d` view dimension when using the ES5 UMD bundles (`babylon.es5.js`).\n\n**Cause:** `const { groupIndex, bindingIndex } = textureInfo.textures[i];` in `WebGPUShaderProcessorWGSL.textureProcessor`. After minification, TypeScript's ES5 downlevel destructuring temporary reuses the same minified local as the texture dimension, so a binding object was passed as the dimension and the bind group layout fell back to `2d`.\n\n**Fix:** read the two properties directly instead of destructuring (no behavior change in ES6+ builds).\n\n**Validation:** a Babylon Native WebGPU skybox scene fails with the stock ES5 bundle and passes with the fixed one; renders match the non-ES5 bundle. Built with `npm run build:dev` and `test:unit` passing.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.pure.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19166",
+                "title": "Fix(USDZ): prevent duplicate opacity declarations on alpha-blended materials",
+                "description": "### Description\nWhen exporting a material whose diffuse/albedo texture uses alpha blending or alpha testing, `usdzExporter.ts` correctly connected `inputs:opacity` to the diffuse texture's alpha channel (`inputs:opacity.connect = ...diffuse.outputs:a`).\n\nHowever, because `alphaMap` was null, the exporter unconditionally executed the `else` branch and authored a second, conflicting scalar declaration:\n```usda\nfloat inputs:opacity = 1\n```\nIn strict USD parsers (such as Pixar `usdview` and Apple RealityKit), having both a connection and an authored scalar attribute on `inputs:opacity` within the same `PreviewSurface` shader causes parser warnings or causes the scalar `1` to override the texture connection, breaking transparency.\n\n> **Note:** This PR complements the USDZ normal map decoding fix (PR #19165).\n\n### Changes\n- Added a `hasDiffuseOpacity` check to only author scalar `inputs:opacity = ${material.alpha}` when diffuse texture alpha isn't already supplying opacity.\n- Multiplied `material.alpha` into the diffuse sampler's `inputs:scale` so scalar material opacity is preserved.\n- Added unit tests in `usdzExporter.test.ts` asserting that only a single `inputs:opacity` is authored for alpha-blended textures, while scalar opacity remains authored for untextured transparent materials.\n\n### Testing\n- Verified with `npx vitest run --project=unit usdzExporter` (all tests passing).\n- Verified with `npm run build:source` and `npm run lint:changed`.",
+                "author": {
+                    "name": "ShakilUrRehman21",
+                    "url": "https://github.com/ShakilUrRehman21"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts",
+                    "packages/dev/serializers/test/unit/USDZ/usdzExporter.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19090",
+                "title": "WebGPU: asynchronous pipeline creation for mesh draws (opt-in)",
+                "description": "Forum: [64298](https://forum.babylonjs.com/t/64298) #11, \"Async pipelines: extend the existing path, and handle incomplete frames\".\n\nOn WebGPU, the first draw that needs a new render pipeline creates it synchronously: the browser compiles the shaders for that pipeline state before it runs the commands that follow, and the frame waits for it (here about 100 ms per new PBR variant). This PR adds an opt-in, `engine.asynchronousPipelineCreation` (off by default): a mesh draw whose pipeline is not created yet is omitted while the pipeline is created asynchronously, through the existing `preWarmPipeline()`. With the option off, nothing changes.\n\n**What the option does.**\n- Only draws of meshes can wait. `Mesh._processRendering` gives the draws it submits their owner, the mesh, in every pass that draws it (main pass, shadow maps, also through a `ShadowDepthWrapper`, depth renderer, geometry buffer, effect layers, outline, volumetric light scattering) and whatever draw context its material gives them, but not to what an observer of its draw (`onBeforeDrawObservable`) draws; `_draw` reads the owner from the engine. The color and depth compositors of point splatting wait with their splat mesh. Post-processes, effect renderers, sprites, particles, the bounding boxes of occlusion queries and the other draws have none, and keep creating their pipelines synchronously, so a full-screen pass is never skipped and a query never closes empty. Some of them run only once: the environment BRDF table, for one, is expanded from RGBD by a single post-process render (`RGBDTextureTools.ExpandRGBDTexture`). In our app, an earlier version of this option that let any draw wait omitted that render: the table stayed at zero, and every PBR material drew black while its depth was still written.\n- Only the passes the scene renders again can wait: its cameras, the render targets of its frame (`customRenderTargets`, the render targets of its materials and components) and the frame graph. An object renderer's mesh draws wait only in a rendering its `shouldRender()` asked for. A pass rendered once draws every mesh in that rendering, creating its pipelines synchronously, so it never misses a mesh. That covers an object renderer with `REFRESHRATE_RENDER_ONCE` (of a render target, or of a frame graph task), such as a GPU picking (its target renders once per request); an object renderer rendered by a direct call to `render()`, such as the voxelization of IBL shadows or a decal of `MeshUVSpaceRenderer`; a screenshot through a render target (`CreateScreenshotUsingRenderTarget` renders the scene's frame once into its target), and any render outside the scene's frame.\n- A mesh is shown in all its passes together: once a draw of the mesh waits in a frame, the mesh is omitted in every pass until a frame in which none of its draws waited. Meanwhile, a render target refreshed every N frames renders in every frame, until the mesh is drawn again (two frames after the last wait, that recovery frame included), so it holds the mesh back and shows it in the same frames as the other passes; then it goes back to its rate. Every such render target of the engine does, including those that do not draw the mesh: while pipelines are created, these extra renders are the cost of the option (documented on `asynchronousPipelineCreation` and `ObjectRenderer.shouldRender()`). Only the passes drawn before the first wait of that frame show it alone, for that frame (in the test below, the shadow map draws of a new mesh, one frame).\n- Snapshots never replay a frame that misses a draw forever. A recording that omitted draws is replayed while their pipelines are created, and recorded again at the first frame after they are all created. A recording that would freeze a mesh in some passes only (a wait after an earlier pass of the frame drew it, or draws held back with nothing pending) is recorded again at the next frame.\n- `areAllEffectsReady()` (so `scene.isReady()`) is false while the pipelines this engine waits for are being created: its own creations, and a creation by another engine of a pipeline it draws too.\n\n**On top of the existing path.** No second cache: `WebGPUCacheRenderPipeline.tryGetRenderPipeline()` looks up the same cache and, on a miss, calls `preWarmPipeline()`, which now\n- creates a pipeline configuration once: pending creations are kept by cache token, and a second request for the same configuration (from a draw or from `createRenderPipelineAsync()`) gets the pending promise;\n- counts, in each engine's cache, the creations it waits for (`numAwaitedPipelines`), which the engine's readiness reads; the cache forgets them when its device is lost or its engine is disposed. `NumPendingPipelines` counts those of all the engines, for diagnostics;\n- reports a failed creation (`Logger.Error` with the pipeline label; callers still get the rejection), and the next miss of that configuration creates it synchronously, so the WebGPU error shows exactly as today;\n- is ignored once the device is replaced or the last engine disposed: the reset of the cache forgets the pending creations, so a late completion is neither kept, counted nor reported, and `NumPendingPipelines` does not wait for creations of a device that is gone; the engine also ignores the completions of an older generation (its own dispose included).\n\nIt is named asynchronous pipeline creation: the browser may still do part of the compilation elsewhere or at first use; nothing here claims the whole cost left the main thread.\n\n**Measured** against 9.33.0 on 87250b7, which 9.33.0 contains (the branch is on master 8958948; the commits since, the KTX2 encoder of #19011 and the version file, touch nothing measured here), the machine checked quiet before and during each measure. Chromium 147, RTX 3080 Laptop GPU, WebGPU, 800×450. Deterministic scene: 600 meshes with a StandardMaterial, a directional light with a 4-cascade CSM; every 40 frames a wave of 20 meshes appears with a PBR variant no draw has used yet (albedo and emissive textures, clear coat, sheen, iridescence: a new shader, so a new main-pass pipeline). 8 waves, 360 frames per run, a new browser for every run, 2 rounds in alternating order, in three modes: no snapshot, `compatibilityMode = false`, and a FAST snapshot recorded again at each wave. A frame's time is from its start until the GPU finished it (`onSubmittedWorkDone`).\n\n| Arm | Slowest frame (no snapshot / `compatibilityMode = false` / FAST snapshot) | Frames over 100 ms, of 8 waves | Pipelines created inside a frame | A wave is drawn |\n|---|---|---|---|---|\n| 9.33.0 | 118-121 / 108-116 / 122-129 ms | 5-8 | 8 | at once |\n| this branch, `asynchronousPipelineCreation` | 33-34 / 31-35 / 35-45 ms | 0 | 0 | 5-6 / 6-7 / 8-11 frames later (about 110-140 ms) |\n| this branch, the app prewarms each wave (below) | 34 / 27-32 / 38-42 ms | 0 | 8 | 4-5 / 5-6 / 11-14 frames later (about 85-115 ms) |\n\n- Once a wave is drawn (the last frame before the next wave), every arm shows the same image as 9.33.0, for the 8 waves in the three modes; with the option off, this branch shows the same image as 9.33.0 in every frame. No errors.\n- With nothing pending (the same scene without waves, about 2,800 draws per frame, 4 rounds in alternating order), the option costs nothing measurable: CPU time per frame 10.24 ms on / 9.90 ms off without a snapshot (rounds 9.59-10.78 and 9.58-10.15), 7.74 / 7.76 ms with `compatibilityMode = false`, with differences of both signs between rounds; and with the option off, this branch matches 9.33.0 (9.86 / 9.95 ms, 7.71 / 7.55 ms). With it off, a draw reads one boolean more, and the pipeline cache's synchronous path is unchanged. A first version that kept the wait state on the mesh and read it at every draw cost 0.4-0.7 ms per frame in this scene (the time was in `_draw`, in a CPU profile); the state is now read only in a frame in which a draw waited and the one after.\n- A Playground of the same waves, which counts the render pipelines the device creates synchronously and asynchronously, and on a build with the option runs them with it off and on: https://playground.babylonjs.com/#INWH19#0. On 9.33.0 with WebGPU its slowest frame is 86 to 103 ms and the waves create their pipelines synchronously (9 for 8 waves); with WebGL2, 26 to 43 ms. On this branch with the option on: 21 ms, 8 pipelines created asynchronously and none synchronously.\n- With a FAST snapshot, a wave costs three recordings instead of one: the one it interrupts (a shadow map pass had drawn the new meshes before the main pass missed their pipeline, so it is recorded again at the next frame), a coherent one without the wave (replayed while the pipeline is created), and the complete one.\n\n**Prewarming known content instead.** The same waves, prewarmed as an app would: the effect of the real sub mesh (`isReadyForSubMesh`; `forceCompilationAsync()` compiles with a temporary sub mesh), then `createRenderPipelineAsync({ effect, mesh })` with the default states; the frames go on and the wave is shown when the promise resolves. It removes the long frames too, but it does not create the pipeline the wave draws with: the first draw of each wave still creates one synchronously. The new meshes receive the CSM, whose shadow map is a depth texture (`shadowTexture0`, DEPTH32_FLOAT), so their draws use texture state 1, and `createRenderPipelineAsync()` always prewarms texture state 0. That synchronous creation was short here only because the browser had compiled the same shaders during the prewarm. The automatic handling creates exactly the pipelines the draws ask for, in every pass (shadow maps included, whose effects the app does not see), without knowing the content in advance; the price is the omitted draws. Letting `createRenderPipelineAsync()` take the texture state (or derive it from a sub mesh) would be a separate change.\n\n**Files.**\n- `webgpuCacheRenderPipeline.ts`: pending creations by cache token, the failure report and the synchronous creation after it, `tryGetRenderPipeline()` and `lastPendingPipeline`, the creations each engine's cache waits for (`numAwaitedPipelines`), `NumPendingPipelines`.\n- `webgpuCacheRenderPipelineTree.ts`: `ResetCache()` forgets the failures.\n- `webgpuEngine.pure.ts`: `asynchronousPipelineCreation`, the omitted draws, the snapshot recorded again, `areAllEffectsReady()`, device loss and dispose.\n- `webgpuSnapshotRendering.ts`: `invalidateRecording()` (the frame is recorded again at the next frame, the existing mechanism of a restarted render pass).\n- `mesh.pure.ts`: the owner of the draws `_processRendering` submits, given back in a `finally`; none while the observers of a draw are notified; the owner of another mesh for a mesh that waits with it.\n- `abstractMesh.pure.ts`: the two frames the mesh remembers (in its internal data, so nothing is allocated), and the mesh it waits with.\n- `gaussianPointSplattingController.pure.ts`: the compositors wait with their splat mesh.\n- `gpuPicker.ts`: each request renders the picking target once.\n- `abstractEngine.pure.ts`, `scene.pure.ts`, `objectRenderer.ts`, `screenshotTools.pure.ts`: the passes whose mesh draws may wait (`_drawsMayWait`), the rendering an object renderer's `shouldRender()` asked for, the renderings done once (`_renderingOnce`), and the last frame a mesh draw waited (`_lastPipelineWaitFrameId`), with which `ObjectRenderer.shouldRender()` renders a target refreshed every N frames in every frame.\n\n**Unit tests.**\n- `webgpuCacheRenderPipeline.test.ts`, 10 more: a configuration created once while it is pending; `tryGetRenderPipeline()` returns null while the pipeline is created, then the cached one; it shares a creation started by `preWarmPipeline()`; a failed creation is reported and the next miss creates the pipeline synchronously; a disabled cache creates synchronously; a creation pending when the cache is reset is forgotten, and ignored when it completes; one that fails after the reset is neither reported nor marked as failed. Removing the deduplication fails 3 of them, removing the synchronous creation after a failure fails 1, and the reset as it was (failed creations only) fails the last 2. With two engines: one stays ready while the other creates a pipeline it does not draw; one waits for a pipeline the other is creating once it draws it too; an engine forgets its creations when its device is lost.\n- `webgpuEngine.asynchronousPipelineCreation.test.ts`, 15, through the engine's own draw path with the GPU replaced: a mesh omitted in all its passes and drawn in all of them in the same frame (also with a cached bundle, and two meshes that share their material's draw context); the draws that never wait (no owner, a pass rendered once); a shadow map refreshed every 4 frames while its mesh waits there or in the main pass; a frame graph object renderer rendered once and the voxelization of IBL shadows, which keep the mesh after the creations complete (the scene's frame and its renderers run as they are); a GPU picking and two multi-pickings with the picking pipeline new, through the scene's render targets, which read the mesh (the pixels hold the mesh id of the draws that reached the GPU); a decal stamped by a direct call from the camera's pass; the bounding box of an occlusion query in a FAST snapshot; recordings made again; a creation that completes after a device loss.\n- `webgpuSnapshotRendering.test.ts`, 1 more: `invalidateRecording()`.\n- `webgpuEngine.dispose.test.ts`, 1 more: the engine's cache forgets the creations it waits for.\n- `babylon.scene.drawsMayWait.test.ts`, 6: the draws of the scene's cameras may wait during the frame only; those of a render target of the frame may, those of one rendered once never, also from inside a camera's pass; a render outside the frame never; a screenshot through a render target never, nor the render targets of the frame it renders; every scope is restored when a rendering throws, the frame graph's too.\n- `babylon.mesh.pipelineWaitOwner.test.ts`, 5: each mesh gets its own owner in its shadow map and main passes, with its own draw contexts or its material's; the bounding box of an occlusion query gets none, nor does what an observer of a draw draws; the compositors of point splatting get their splat mesh's; the owner is given back after the draws of a mesh, also when one of them throws.\n- All the core unit tests on 6b5be442c3 (296 files): 4,878 passed, 1 expected fail (already marked on master).\n\n**Visualization test.** \"WebGPU asynchronous pipeline creation - every mesh in all its passes\" (#XX5SUM#1), against one reference image: in compatibility mode, in non-compatibility mode, with snapshot rendering, and with the option off.\n\nPrepared by Mema, the AI of our studio 53ON (Claude in the 53ON harness, with MemoriaBios, our long-term memory), and reviewed by me.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "enriqxxx",
+                    "url": "https://github.com/enriqxxx"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipelineTree.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuSnapshotRendering.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianPointSplattingController.pure.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/mesh.pure.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.pure.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/scene.pure.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuCacheRenderPipeline.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuDrawSubmission.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuEngine.asynchronousPipelineCreation.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuEngine.recordedDraws.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuSnapshotRendering.test.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.dispose.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.mesh.pipelineWaitOwner.test.ts",
+                    "packages/dev/core/test/unit/Scene/babylon.scene.drawsMayWait.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgpu-asynchronous-pipeline-creation.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19177",
+                "title": "fix(inspector): make shared UI declarations self-contained",
+                "description": "## Summary\n\n`@babylonjs/inspector` bundles shared UI at runtime, but its published declarations referenced `@babylonjs/shared-ui-components`, which is not a consumer dependency. This packages the shared UI declarations locally and rewrites their imports during the existing post-compile transform, without adding a public dependency.\n\n- Add an opt-in local-package path mapping to the build-tools declaration transform, preserving existing behavior for other packages.\n- Copy the full shared UI declaration tree into Inspector's package before rewriting imports.\n- Keep the Inspector README focused on consumer-facing usage.\n\n## Validation\n\n- Inspector declaration build completed successfully.\n- Build-tools post-processing tests passed.\n- Packed Inspector consumer imports for `ShowInspector` and `ServiceDefinition` from both entry points passed without shared UI installed.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/postCompileTransform.ts",
+                    "packages/dev/buildTools/test/unit/postProcessing.test.ts",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/inspector-v2/scripts/declarations.mjs"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19176",
+                "title": "Add texture editing to Inspector Lite",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\nFollow-up to #19156 (Lite texture previews). Enables texture editing in Inspector Lite while reusing the existing Inspector v2 texture editor.\r\n\r\n## Changes\r\n- **Shared editor core:** Introduces a `TextureEditorSource` contract (`textureEditorSource.ts`). The editor canvas, properties, and status components consume it instead of Babylon.js texture internals.\r\n- **Babylon.js adapter:** `babylonTextureEditorSource.ts` keeps the existing Babylon.js editor behavior unchanged.\r\n- **Lite adapter:** `liteTextureEditorSource.ts` supports single-sample 2D RGBA8 textures (`rgba8unorm` and `rgba8unorm-srgb`) that have `COPY_DST`. It reads and writes through Lite's public APIs.\r\n- **Lite UI:** Adds an Edit action to the Lite texture properties. The action is disabled, with the reason shown, for textures that can't be edited.\r\n\r\n## Scope and policy\r\n- Edits are written in place. The texture keeps its identity and dimensions, so every material that shares it sees the changes.\r\n- Reset restores the pixels captured when the editor was opened.\r\n- Uploaded images must match the texture's current size; mismatched sizes are rejected. Resizing is not supported.\r\n- Cube, array, 3D, HDR/float, compressed, depth, and integer textures can still be previewed but not edited.\r\n- The editor checks that the texture hasn't been disposed. Closing it releases only the editor's own resources; the source texture is not disposed.\r\n\r\n## Tests\r\n- New unit tests for the Lite adapter, plus updated unit and integration tests.\r\n\r\nNote: committed with pre-commit hooks bypassed at the author's request; PR checks will validate.\r\n\n\r\n\n## Screenshots\nTexture editor opened from Inspector Lite on a 512×512 `rgba8unorm-srgb` texture, with a paintbrush stroke:\n\n![Inspector Lite texture editor with a painted stroke](https://github.com/user-attachments/assets/ecd1e82b-f893-445f-9694-6c08ebc2031a)\n\nThe edit is written in place, so the scene's duck material and the Lite texture preview update immediately:\n\n![Inspector Lite properties pane with the Edit Texture button and the edited texture applied in the scene](https://github.com/user-attachments/assets/940b8f50-de69-41f7-b76e-62c3a5b8c838)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/textures/baseTextureProperties.tsx",
+                    "packages/dev/inspector-v2/src/components/textureEditor/babylonTextureEditorSource.ts",
+                    "packages/dev/inspector-v2/src/components/textureEditor/canvasManager.ts",
+                    "packages/dev/inspector-v2/src/components/textureEditor/properties.tsx",
+                    "packages/dev/inspector-v2/src/components/textureEditor/status.tsx",
+                    "packages/dev/inspector-v2/src/components/textureEditor/textureEditor.tsx",
+                    "packages/dev/inspector-v2/src/components/textureEditor/textureEditorSource.ts",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/liteTextureEditorSource.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/texturePreviewProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/texturePropertiesService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteTexturePreview.test.ts",
+                    "packages/dev/inspector-v2/test/unit/litePropertiesServices.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteTextureEditorSource.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteTexturePreview.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/textureEditorCanvasManager.test.ts",
+                    "packages/dev/inspector-v2/test/unit/textureEditorMip.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19151",
+                "title": "KTX2: load the MSC transcoder on a main thread without a DOM",
+                "description": "Without workers, the KTX2 decoder loads the MSC (ETC1S/Basis) transcoder by injecting a `<script>` element. Babylon Native runs the decoder on the main thread with no DOM (its `document` has no element API), so transcoding failed with:\n\n```\nFailed to load KTX2 texture data: KTX2 container - could not transcode the data. TypeError: document.getElementsByTagName is not a function.\n```\n\nWhen the DOM element API isn't available, fetch the transcoder script and evaluate it instead. The script declares `MSC_TRANSCODER` with a top-level `var`, so it's returned from the function scope it's evaluated in and assigned to `globalThis`, as the existing `JSModule` path expects.\n\nBrowsers (with or without workers) take the same paths as before.\n\n**Testing**\nBabylonNative visual test 330 (\"Mesh blending - coastal cliff scenery\", which uses ETC1S KTX2 textures) now transcodes and matches the reference on macOS Metal.\n\n\nRelated: #19150 and BabylonJS/BabylonNative#2084, which re-enables test 330 once both ship.\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Materials/Textures/mscTranscoder.test.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "19150",
+                "title": "Native: support mesh blending when the runtime supports integer color attachments",
+                "description": "Mesh blending (#18915) explicitly rejects Babylon Native because the runtime couldn't render the `R8UI` mesh-blending tag attachment. This enables it on Native runtimes that support integer color attachments.\n\n**Changes**\n- `getNativeTextureFormat`: map `TEXTUREFORMAT_RED_INTEGER` + `TEXTURETYPE_UNSIGNED_BYTE` to `TEXTURE_FORMAT_R8U`.\n- New `EngineFeatures.supportMeshBlending`:\n  - WebGL: `webGLVersion !== 1`; WebGPU: `true`; NullEngine: `false`.\n  - Native: `_native.Engine.CAPS_INTEGER_COLOR_ATTACHMENTS`, so runtimes without the fix keep rejecting mesh blending with the existing error, instead of hitting a fatal pipeline error.\n- `_IsMeshBlendingSupported` uses the feature on Native.\n- New `_CanBlendWithMeshBlendTag`: transparent meshes with the tag attachment need per-target blend parameters only on WebGL2, because WebGL errors when blending is enabled with integer attachments. WebGPU and Native never blend integer attachments. Used by `GeometryBufferRenderer` and `FrameGraphGeometryRendererTask`.\n- Unit tests: Native is rejected without the runtime capability, and accepted (including transparent meshes) with it.\n\n**Runtime side**\n- bgfx Metal fix (blending and clears of integer color attachments): upstream bgfx, brought into BabylonNative via BabylonJS/bgfx `bk-update-11`\n- BabylonNative: exports `CAPS_INTEGER_COLOR_ATTACHMENTS`: BabylonJS/BabylonNative#2084 (merged)\n\n**Testing**\nWith this change, the bgfx fix and the BabylonNative change, all 19 mesh-blending visual tests (327–339, 545–550) pass on macOS Metal, and the full macOS Metal visual suite stays at 851/851.\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeHelpers.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/engineFeatures.ts",
+                    "packages/dev/core/src/Engines/nullEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/Meshes/meshBlendingTag.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/geometryRendererTask.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/meshBlendingTask.test.ts",
+                    "packages/dev/core/test/unit/PostProcesses/meshBlendingPostProcess.test.ts",
+                    "packages/dev/core/test/unit/Rendering/geometryBufferRenderer.test.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19175",
+                "title": "Native: start with culling disabled like WebGL",
+                "description": "## Summary\n\n- Start ThinNativeEngine's cached culling state disabled, matching WebGL and the new native default.\n- Add focused coverage for the initial cache and the first culling-enabled state command.\n\nCompanion to BabylonJS/BabylonNative#2069.\n\n## Testing\n\n- `npx vitest run packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts` (122 passed)\n- `npx prettier --check packages/dev/core/src/Engines/thinNativeEngine.pure.ts packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts`\n- `npx eslint --quiet packages/dev/core/src/Engines/thinNativeEngine.pure.ts packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts`",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "native"
+                ]
+            },
+            {
+                "pr": "19174",
+                "title": "chore(deps): apply eligible security fixes",
+                "description": "## Summary\n\n- Update `hono` from 4.13.14 to 4.13.17.\n- Update `@hono/node-server` from 2.1.5 to 2.1.6.\n- Apply every currently compatible Hono security fix that satisfies the repository's seven-day npm release quarantine.\n\n## Security audit\n\n`npx --yes npm@latest audit --json` improved from 22 affected packages (3 low, 19 moderate) to 20 (3 low, 17 moderate), with no high or critical findings. The resolved entries are `hono` and `@hono/node-server`.\n\nThe 20 residual affected-package entries trace to three advisory families:\n\n- `deepmerge` ([GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4), low): no patched npm release exists; 4.3.1 is current.\n- `glob` ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4), moderate): remaining copies are constrained to glob 13 by `nyc`/`test-exclude`; a glob 14 override would cross an unsupported major boundary.\n- `minimatch` ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), moderate): several linting, documentation, coverage, and Nx dependency paths still constrain vulnerable minimatch majors. Two compatible parent updates are still quarantined and are listed below; other affected parents do not yet offer compatible patched releases.\n\n## Seven-day release-age policy\n\nThe immutable run time was `2026-11-16T13:51:35Z`, giving a cutoff of `2026-11-09T13:51:35Z`.\n\nEvery newly resolved registry version was checked with npm 12.2.2:\n\n| Package | Version | Published | Age at run |\n| --- | --- | --- | --- |\n| `hono` | 4.13.17 | 2026-11-07 04:56:44 UTC | 9.3 days |\n| `@hono/node-server` | 2.1.6 | 2026-11-02 10:22:05 UTC | 14.1 days |\n\n## Under-seven-day security exceptions\n\nNone.\n\n## Deferred recent releases\n\nNone. This owner-directed PR is limited to eligible security fixes rather than routine dependency upgrades.\n\n## Deferred quarantined security fixes\n\n| Package | Current version | Earliest fixed version | Published | Eligible date | Severity | Advisory | Dependency path |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| `eslint` | 10.13.0 | 10.15.0 | 2026-11-13 21:33:34 UTC | 2026-11-20 21:33:34 UTC | Moderate | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) | `eslint > minimatch` |\n| `eslint-plugin-jsdoc` | 65.4.2 | 65.4.6 | 2026-11-13 14:11:33 UTC | 2026-11-20 14:11:33 UTC | Moderate | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) | `eslint-plugin-jsdoc > @typescript-eslint/utils > @typescript-eslint/typescript-estree > minimatch` |\n\n## Validation\n\n- `npx --yes npm@latest ci`\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run build:source`\n- Built all seven MCP server workspaces: Flow Graph, NME, NGE, NRGE, NPE, Smart Filters, and GUI\n- Focused MCP unit tests: 26 files, 289 tests passed (`REUSE_BROWSER=1`)\n- Final `npx --yes npm@latest audit --json`: 3 low, 17 moderate, 0 high, 0 critical\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19172",
+                "title": "Fix WebGPU ReflectionBlock fragment irradiance compilation",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFixes the WGSL compilation error reported in [this forum thread](https://forum.babylonjs.com/t/webgpu-nodematerial-reflectionblock-with-forceirradianceinfragment-true-fails-to-compile-unresolved-value-reflectionmatrix/64811).\n\n`ReflectionBlock.getCode()` passes the reflection matrix to the fragment `reflectionBlock()` call without the `uniforms.` prefix required by WGSL. The argument becomes active when irradiance is computed in the fragment shader, including with `forceIrradianceInFragment = true`, and fails with `unresolved value 'reflectionMatrix'`.\n\nUse the existing language-dependent uniform prefix, matching the vertex path and neighboring uniform arguments. GLSL output is unchanged. Add regression tests that build a PBR node material with an environment texture and inspect the actual reflection call in WGSL and GLSL; the WGSL case fails before the fix.\n\n### Validation\n- 17 targeted node-material unit tests passed.\n- Core-package TypeScript check, changed-file ESLint, and Prettier passed.\n- Temporary devhost scene compiled both irradiance modes on native WebGPU/WGSL and WebGL2/GLSL. Both WebGPU fragment shader modules reported no compilation messages, and the expected vertex/fragment irradiance defines were verified.\n- Temporary devhost edits were removed and the validation server stopped.\n- Self-review under both general-engineering and repository-instruction lenses found no further issues. The change only affects shader generation, adds no render-loop work, and changes no public API.\n\nFull-repository checks were not run.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Node/reflectionBlock.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "19171",
+                "title": "Fix WebGPU node material cascaded shadow view matrix",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nFixes the WGSL `struct member view not found` error when a node material using `PBRMetallicRoughnessBlock` receives cascaded shadows. The shared shadow include expects `uniforms.view`, but node-material view inputs have graph-generated uniform names.\n\n- Remap the WGSL shadow include to the existing local `view` variable in both `PBRMetallicRoughnessBlock` and `LightBlock` when discovering scene lights.\n- When a block selects an explicit light, substitute its connected view input directly. This also fixes the missing local `view` reference in the corresponding GLSL path.\n- Leave the shared shader include and built-in materials unchanged.\n- Add eight regression cases covering both blocks, GLSL/WGSL, explicit/all-light emission, custom view-input names, and multiple cascaded-shadow lights.\n\nForum report: https://forum.babylonjs.com/t/64809\n\n## Validation\n\n- All 12 targeted shadow-generation and existing PBR-block unit tests pass; six new regression cases failed before the fix.\n- Core-only TypeScript check and focused regression-test typecheck pass.\n- Changed-file formatting and ESLint pass (three pre-existing unused-parameter warnings in `LightBlock`).\n- Verified in the WebGPU devhost: both automatically lit node materials render four-cascade shadows, with compiled effects and no compilation errors. Explicit-light emission is covered by the shader-generation tests.\n- Temporary devhost changes were reverted and the server stopped. Full-repository checks were not run.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.pure.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Node/Blocks/nodeMaterialShadows.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "19173",
+                "title": "Fix WebGPU shadow depth wrapper normal bias",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFixes the WGSL shader compilation failure reported in [this forum topic](https://forum.babylonjs.com/t/webgpu-shadowdepthwrapper-pbrmaterial-fails-to-compile-unresolved-value-vnormalw-when-normalbias-0/64748).\n\n`ShadowDepthWrapper` injects a normal-bias include that references bare `vNormalW`, but native WGSL StandardMaterial, PBRMaterial and OpenPBRMaterial shaders expose that normal as `vertexOutputs.vNormalW`. A nonzero shadow normal bias therefore produces an unresolved-value error.\n\nDefault the injected normal-bias include to `vertexOutputs.vNormalW` when the WGSL source declares that varying and does not declare a `vNormalW` variable. Preserve explicit normal remaps, combine the default with world-position remaps without modifying caller-owned options, and leave GLSL, custom WGSL local normals (including shaders assigning the output varying after the bias hook), disabled injection, and the shared shadow-map shader include unchanged. The additional work runs only when creating/recreating a depth effect, after the cached-effect fast path.\n\n### Regression coverage\n- Twelve focused unit cases covering Standard/PBR/OpenPBR WGSL sources, explicit remaps, world-position-only remaps, disabled injection, custom local normals and GLSL compatibility. The custom varying/local-normal ordering cases cover `var`, `let`, `const`, and `var<function>` declarations.\n- Snippet-based visualization test: [Standard/PBR/OpenPBR shadow wrappers with normal bias](https://playground.babylonjs.com/#ASETQ9#0), with a shared WebGL2/WebGPU reference image.\n\n### Validation\n- Core package TypeScript build passed.\n- Changed-file formatting and ESLint passed (three existing documentation warnings in the wrapper's unchanged MapMap helper).\n- 43 targeted unit tests passed, including adjacent shadow draw-cache coverage. The four original normal-remapping regressions and four follow-up local-normal ordering cases were each confirmed failing before their respective fixes.\n- Targeted WebGL2 and WebGPU visualization tests passed for the initial fix.\n- Devhost exercised Standard/PBR/OpenPBR on both backends with `normalBias = 0.02` for the initial fix; all six combinations produced ready shadow effects with no console errors or WebGPU validation warnings.\n\nSelf-review traced the WGSL-varying, explicit-remap, local-normal, GLSL and no-injection paths; the review-reported local-normal compatibility case is addressed. Full-repository checks were not run.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts",
+                    "packages/dev/core/test/unit/Materials/shadowDepthWrapper.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/shadowDepthWrappersNormalBias.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "19167",
+                "title": "Keep DynamicTexture invertY and premulAlpha when rebuilding after a context loss",
+                "description": "Fixes #19164\n\nA `DynamicTexture` updated with `invertY = false` comes back flipped after a context loss and restore.\n\n**Cause:** on restore, `InternalTexture._rebuild()` re-uploads `_dynamicTextureSource` with the stored `invertY` and `_premulAlpha`. Then `DynamicTexture._rebuild()` calls `update()` with no arguments, which uploads again with `invertY = true` and `premulAlpha = false` and overwrites the correct upload.\n\n**Fix:** `_rebuild()` passes the `invertY` and `_premulAlpha` that the engine recorded on the internal texture during the last `update()`. A texture that was never updated keeps the old behavior (`update()` defaults). `AdvancedDynamicTexture` goes through the same `_rebuild()`, so `applyYInversionOnUpdate = false` / `premulAlpha` now survive a restore too.\n\n**Tests:** new `dynamicTexture.rebuild.test.ts` (NullEngine, `updateDynamicTexture` spied):\n- last update `(false, true)` → rebuild uploads `(false, true)` (fails on master: uploads `true, false`)\n- last update `(true)` → rebuild uploads `(true, false)`\n- never updated → rebuild uses the `update()` defaults\n\nUnit tests for `Materials/Textures`, `Engines` and `gui`: 74 files, 752 passed. eslint, prettier and `tsc -p packages/dev/core/tsconfig.build.json` are clean.\n\n**Checked in a browser:** Chromium (WebGL2, SwiftShader), the gradient repro from the issue on a plane, 9.35.0 from the CDN, `WEBGL_lose_context` lose/restore, reading the top pixel:\n- unpatched: before `[5,0,249]`, after restore `[250,0,6]` (flipped)\n- with this `_rebuild()`: before `[5,0,249]`, after restore `[5,0,249]`\n- with `update(true)` both versions stay the same before and after.\n",
+                "author": {
+                    "name": "vladosskins178",
+                    "url": "https://github.com/vladosskins178"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/dynamicTexture.rebuild.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "9.37.0": [
+            {
+                "pr": "19165",
+                "title": "Fix(USDZ): decode tangent-space normal maps with scale and bias",
+                "description": "### Description\nPer the [Pixar UsdPreviewSurface specification](https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html#normal-maps), normal map textures store tangent-space normals encoded in the `[0, 1]` color range. In order to decode them into the standard `[-1, 1]` vector range, `UsdUVTexture` requires:\n- `float4 inputs:scale = (2 * scale, 2 * scale, 2, 1)`\n- `float4 inputs:bias = (-scale, -scale, -1, 0)`\n\nPreviously, `usdzExporter.ts` did not author `inputs:scale` or `inputs:bias` on `UsdUVTexture` for normal maps, causing normal vectors to be read directly as positive `[0, 1]` values and resulting in flattened or distorted surface normals in Apple AR Quick Look, RealityKit, and USD viewers.\n\n### Changes\n- Added `inputs:scale` and `inputs:bias` authored to `UsdUVTexture` for normal maps, factoring in `texture.level`.\n- Added unit test in `usdzExporter.test.ts` verifying that normal map textures output `inputs:scale` and `inputs:bias`.\n\n### Testing\n- Verified with `npx vitest run --project=unit usdzExporter` (all tests passing).\n- Verified with `npm run build:source` and `npm run lint:changed`.",
+                "author": {
+                    "name": "ShakilUrRehman21",
+                    "url": "https://github.com/ShakilUrRehman21"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts",
+                    "packages/dev/serializers/test/unit/USDZ/usdzExporter.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19169",
+                "title": "Decode base64 data URLs as UTF-8 when loading text",
+                "description": "Loading text from a base64 data URL garbles every non-ASCII character. For example, with a `.babylon` or `.gltf` file passed as `data:...;base64,...`, a mesh named `Würfel` comes back as `WÃ¼rfel`.\n\n`LoadFile` handles base64 data URLs itself. With `useArrayBuffer` false it returns `DecodeBase64UrlToString(url)`, whose doc says it returns \"a UTF-8 encoded string\", but it was just `atob()`. `atob` gives one character per byte, so every multi-byte UTF-8 sequence turns into Latin-1 mojibake. The same file loaded from a normal URL is decoded as UTF-8, so the result depended on how the file was passed in.\n\n`DecodeBase64UrlToString` now decodes the bytes from `DecodeBase64UrlToBinary` with the existing `Decode` helper from `stringTools` (TextDecoder, with the same byte-per-char fallback where TextDecoder is missing). ASCII content is unchanged. `DecodeBase64ToString` itself is left as is, since its doc says it returns ASCII.\n\nTests: two cases in `core/test/unit/Misc/fileTools.test.ts`, one calling `DecodeBase64UrlToString` directly and one going through `LoadFile` with `useArrayBuffer` false. Both use the text `{\"name\":\"Würfel 立方体 🎲\"}`. Before the fix they get `{\"name\":\"WÃ¼rfel ç«æ¹ä½ ð²\"}`; after, they get the original text. I ran the core `Misc` and `Loading` unit tests and the loaders `glTF` unit tests with and without the fix, and the only difference is these two tests. A few files in those folders fail in both runs because this checkout has no generated shader modules (`build:shaders` wasn't run), plus one `textureTools` test. prettier is clean and eslint reports no errors on the changed files.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.pure.ts",
+                    "packages/dev/core/test/unit/Misc/fileTools.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19162",
+                "title": "Clamp color components in Color3/Color4 toHexString",
+                "description": "`Color3.toHexString()` and `Color4.toHexString()` produce invalid strings when a component is outside [0, 1], which is normal for HDR colors (emissive above 1, for instance):\n\n```js\nnew Color3(0.5, 1, 1.2).toHexString();       // \"#80FF132\"\nnew Color3(2, 0.5, -0.25).toHexString();     // \"#1FE800-40\"\nnew Color4(4, -1, 0.5, 1.2).toHexString();   // \"#3FC0-FF80132\"\n```\n\n**Cause:** both methods pass `Math.round(component * 255)` straight to `ToHex`, so 1.2 becomes `132` (three digits) and a negative value becomes `-40`. The result has the wrong length, so `FromHexString` rejects it and returns black, and an `<input type=\"color\">` given that value (the Inspector V2 color picker sets `gammaColor.toHexString()` on one) falls back to black as well.\n\n**Fix:** clamp each component to [0, 1] before converting, in both `Color3.toHexString` and `Color4.toHexString` (including alpha). In-range colors give exactly the same string as before. The doc comments now mention the clamping.\n\n**Tests:** a new unit test, `test/unit/Math/babylon.math.color.test.ts`, checks an in-range color, out-of-range Color3 and Color4 values (with and without `returnAsColor3`), and that `FromHexString` reads back the clamped string. The two out-of-range cases fail before the fix.\n",
+                "author": {
+                    "name": "SwastikTripathi",
+                    "url": "https://github.com/SwastikTripathi"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.pure.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.color.test.ts",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorPickerComponent.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/lines/colorPickerLine.test.tsx",
+                    "packages/dev/sharedUiComponents/test/unit/lines/colorPickerLineRealPicker.test.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19157",
+                "title": "Gaussian Splatting: keep full and partial texture uploads in call order on Native",
+                "description": "Follow-up to the review on #19144 (https://github.com/BabylonJS/Babylon.js/pull/19144#issuecomment-6837994914).\n\n## Problem\n\nOn Native, Gaussian Splatting uploads complete textures with `updateRawTexture` and partial rows with `updateTextureData`. If rendering has already started in the frame, Babylon Native stages a raw upload of an existing texture as a blit that runs in view order, so earlier cameras keep their data. `updateTextureData` maps to `bgfx::updateTexture2D`, which bgfx applies at the start of the frame, before any view.\n\nSo a full upload followed by a partial update in the same frame ends with the **full upload as the final write**, and the partial update is lost.\n\nI reproduced this with a Babylon Native unit test on current master, using D3D11. In the second camera's `onBeforeCameraRenderObservable`, it does a full red `RawTexture.update` and then a green `engine.updateTextureData`. The texture sampled red. When both uploads go through `updateTextureData`, it samples green.\n\n## Fix\n\nOn Native, `_updateTextureFromData` and `_updateShTextureData` now send complete uploads through `updateTextureData` as well, so full and partial updates apply in call order. The engine is identified by `engine.name === \"Native\"`.\n\n- The SH path keeps its zero padding to the full texture size and its alignment handling.\n- `updateTextureData` uses the same `invertY` flip as `loadRawTexture`.\n- NullEngine keeps the `updateRawTexture` path, including when it runs inside a Native runtime.\n\n## Verification\n\n- New unit test \"keeps a partial update after a full upload in the same frame in call order on Native\" checks two full-then-partial sequences, one on an SH texture and one on a centers texture. All four uploads must reach `updateTextureData` in call order, and none may reach `updateRawTexture`. It fails without the fix.\n- `packages/dev/core/test/unit/Meshes`: 483/483 pass. `tsc -p packages/dev/core/tsconfig.build.json --noEmit` is clean.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19147",
+                "title": "Use a GPU-independent hash in the procedural textures library",
+                "description": "## Summary\r\n\r\nThe brick, cloud, fire, grass, marble, road and wood procedural textures hash lattice points with `fract(cos(dot(n, k)) * 43758.5453)`. `cos` of large arguments is approximated differently by each GPU and driver, so these textures render differently on each platform. Rendering \"Procedural textures playground\" (`#24C4KC#67`) gives:\r\n\r\n| Comparison | Before | After |\r\n|---|---|---|\r\n| Chrome (ANGLE D3D11, NVIDIA) vs SwiftShader | 45.1% | 0.12% |\r\n| Chrome (ANGLE D3D11) vs the current reference image | 23.0% | (new reference) |\r\n| Babylon Native D3D11 vs Chrome D3D11 | 23.97% | 0.000% |\r\n| Babylon Native Vulkan vs Chrome D3D11 | — | 0.024% |\r\n\r\n(percentage of pixels with a channel difference above 25; measured with an earlier revision of the hash. The current hash output is bit-identical across SwiftShader and D3D11.)\r\n\r\n## Changes\r\n\r\n- `rand` is an exact integer hash: a permutation polynomial modulo the prime 4001, evaluated in `highp`.\r\n  - Every intermediate is an integer below 2^24, so every GPU computes the same value regardless of FMA contraction or how `1/4001` rounds. On SwiftShader and D3D11 the raw output is bit-identical.\r\n  - Because 4001 is prime, it is coprime to the power-of-two layer scales, so the textures repeat only every 4001 pixels.\r\n  - It costs about nine multiply/floor/fma steps: 512² grass on SwiftShader takes 2.1 ms vs 0.9–1.3 ms with the `cos` hash.\r\n  - It is guarded by `#ifdef GL_FRAGMENT_PRECISION_HIGH` (like `pbrIBLFunctions.fx`). Devices without fragment highp keep the original hash.\r\n- `proceduralHash.test.ts` checks:\r\n  - that all shaders share the hash\r\n  - exactness under perturbed rounding\r\n  - no repeat within the period\r\n  - no short-range or lattice-symmetry correlation\r\n  - per-line variance\r\n- The road texture's grain was `mod(gl_FragCoord.y * 100.0, fbm(vUV * 2.0))`. Its quotient reaches ~10^5, so a 1-ULP difference in `fbm` changes the result. It is now `fbm(vUV * 2.0) * rand(gl_FragCoord.xy)`, which has the same `[0, fbm)` distribution and mean (verified numerically: 0.295 vs 0.296 with the old hash).\r\n\r\nThe textures keep their character, but the random values change, so patterns differ from before (for example, the road comes out somewhat lighter in this scene). Before this change the output already differed between GPUs.\r\n\r\n## Reference images\r\n\r\n`proceduralTexturePlayground.png` needs a new reference. I'll update it from this PR's CI render. Also using these textures:\r\n- \"DepthRenderer rhs\" (Fire): my local old-vs-new diff is 0.92%. I'll update its reference if CI flags it.\r\n- \"depth-renderer\": unchanged (0%).\r\n\r\nOnce this ships, Babylon Native can enable \"Procedural textures playground\", which is currently excluded because of the GPU-dependent hash.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    "packages/dev/proceduralTextures/src/brick/brickProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/cloud/cloudProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/fire/fireProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/grass/grassProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/marble/marbleProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/road/roadProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/src/wood/woodProceduralTexture.fragment.fx",
+                    "packages/dev/proceduralTextures/test/unit/proceduralHash.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/proceduralTexturePlayground.png"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "native",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "19156",
+                "title": "Add texture previews to Inspector Lite",
+                "description": "Inspector Lite users need to inspect and export textures without losing the existing Babylon.js Inspector preview behavior.\n\nThis extracts a shared preview core with Babylon.js and Lite adapters. Lite supports channel filtering, cube faces, array layers, 3D slices, mip levels, refresh, and PNG export using the public readback APIs in `@babylonjs/lite` 1.39.3. The test scene also includes a textured Duck model.\n\n### Screenshots\n\nDuck texture preview:\n\n![Inspector Lite previewing the Duck model texture](https://github.com/user-attachments/assets/a013db11-04f4-45bd-b1bb-41972e9ec8d8)\n\n3D texture slice preview:\n\n![Inspector Lite previewing a 3D texture slice](https://github.com/user-attachments/assets/6b078620-9762-4dc9-bfeb-0dae846b306f)\n\n### Validation\n\n- `npm run build:source`, `npm run lint:check`, and `npm run format:check`\n- 31 focused Inspector unit tests\n- Four browser integration tests repeated four times without retries\n\nRelates to BabylonJS/Babylon-Lite#55",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/core/test/unit/Misc/textureTools.test.ts",
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/components/properties/textures/texturePreview.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/textures/texturePreviewCore.tsx",
+                    "packages/dev/inspector-v2/src/components/textureEditor/canvasManager.ts",
+                    "packages/dev/inspector-v2/src/components/textureEditor/status.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/captureController.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/texturePreviewProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/texturePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/misc/download.ts",
+                    "packages/dev/inspector-v2/src/misc/textureChannels.ts",
+                    "packages/dev/inspector-v2/src/misc/textureTools.ts",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteTexturePreview.test.ts",
+                    "packages/dev/inspector-v2/test/unit/litePropertiesServices.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteTexturePreview.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/p4ImportBoundaries.test.ts",
+                    "packages/dev/inspector-v2/test/unit/textureEditorMip.test.ts",
+                    "packages/dev/inspector-v2/test/unit/texturePreview.test.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19160",
+                "title": "NativeEngine: queue texture deletes behind earlier commands",
+                "description": "## Summary\n\n`deleteTexture` is an immediate native call. Commands already encoded in the native command stream but not yet submitted can still reference the texture. For example, `EffectLayer.render()` composites with its main texture and then recreates it on the first frame, so the queued `SetTexture` sees a freed handle. On Metal, the validation layer then reports a missing sampler binding.\n\nThis encodes a `COMMAND_DELETETEXTURE` instead, the same way framebuffer, buffer, program and vertex-array deletes are already queued. Both `_deleteTexture` and `NativeHardwareTexture.release` go through the new `ThinNativeEngine._deleteNativeTexture`. Runtimes that don't expose the command keep the immediate `deleteTexture` call, so older Babylon Native builds behave as before.\n\nThe native side is BabylonJS/BabylonNative#2071.\n\n## Tests\n\n- New unit test: a texture released after an earlier command is deleted through the command stream, after that command, and the immediate `deleteTexture` is not called. It fails without this change.\n- New unit test: without `COMMAND_DELETETEXTURE`, the texture is deleted immediately.\n- `thinNativeEngine.test.ts`: 115/115 pass. Prettier and eslint are clean.",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19159",
+                "title": "Inspect Lite scene renderables",
+                "description": "Babylon Lite's scene-hosted text, sprites, and billboards were not discoverable in Inspector. Lite 1.39.3 exposes collection APIs for these renderables, allowing Inspector to show and inspect them separately from scene hierarchy nodes and standalone renderer layers.\n\n- Add Explorer groups with live membership updates, selection cleanup, visibility controls, and supported properties.\n- Update the Lite dependency and add populated test-app examples, including visible animated particles.\n- Add unit and browser coverage for discovery, property edits, and removal.\n\nParticle-owned billboards also appear in the billboard collection. The test fixture orders text after sprites to avoid a Lite 1.39.3 bind-group mismatch in the default view; this is not a general fix for that upstream rendering issue.\n\n**Validation:** Source build, formatting, lint, advisory lint, focused Inspector tests, and the browser test passed. The full unit run had eight timeouts and one missing test-tools build; all seven affected suites passed when retried with fewer workers after building test-tools.\n\n### Screenshots\n\nScene text:\n![Scene text selected in the Inspector](https://github.com/user-attachments/assets/3c0d62f8-f5ad-4f71-8ac9-dd252a625dc3)\n\nDepth-hosted sprite layer:\n![Depth-hosted sprite layer properties in the Inspector](https://github.com/user-attachments/assets/2ee29546-eb4f-44a7-afcf-b64ee6895f9a)\n\nBillboard system:\n![Billboard system properties in the Inspector](https://github.com/user-attachments/assets/b4a222d8-e4d7-417f-8a3b-172ed2257b4e)\n\nRelates to BabylonJS/Babylon-Lite#55\n\nLite collection APIs: BabylonJS/Babylon-Lite#907",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/readme.md",
+                    "packages/dev/inspector-v2/src/lite/components/properties/sceneNodeProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/sceneRenderableUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/sceneRenderablePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/spriteLayerPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/sceneRenderableExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/integration/liteSceneRenderables.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteSceneRenderableMembership.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSceneRenderables.test.tsx",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19163",
+                "title": "Fix Sandbox tests waiting for loading screens",
+                "description": "## Summary\n- Replace the five stale `#babylonjsLoadingDiv` waits with one shared load-completion helper.\n- Wait for the scene-dependent Inspector button before checking that every `[id^=\"babylonjsLoadingDiv\"]` overlay has been removed. This handles canvas-indexed IDs such as `babylonjsLoadingDiv-0` and avoids succeeding before app startup.\n- Keep screenshot tolerances and reference images unchanged.\n\nThis fixes the loading-screen race investigated in the unrelated #19156 CI failure. With the original waits, a local reproduction still had `babylonjsLoadingDiv-0` at opacity 0.63 when the screenshot would begin; the corrected waits returned with zero loading screens.\n\n## Validation\nUsing the deployed Sandbox with Firefox and snapshot URLs (this PR changes tests only):\n- Model-query screenshot: **5/5 passed** against `refs/heads/master`, **3/3 passed** against `refs/pull/19156/merge`, without retries.\n- Four of the five affected tests passed against master. The Inspector-open test passed the new loading wait and visibility assertion but its screenshot differed in Windows font/layout rendering (27,316 pixels versus the existing 15,000-pixel limit). No baseline or tolerance changes were made.\n- `npm run format:check`, `npm run lint:check`, `npm run lint:advisory`, and `npm run build:source` passed.\n- Full unit run: 561 files passed, 6 had unrelated timeouts. Focused reruns cleared the build-helper, tree-shaking, KTX2, formatting, and loader failures; lint initialization and a UMD dynamic-import test still timed out. These limitations were reviewed and approved before opening this PR.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/sandbox/test/interaction.sandbox.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "19155",
+                "title": "Remove retries from native visualization tests",
+                "description": "*[Created by Copilot on behalf of @bghgary]*\r\n\r\nA single visualization failure currently restarts the entire suite, delaying feedback and potentially hiding intermittent failures. Setup retries remain unchanged.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": [
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19154",
+                "title": "Add CDN deploy pipeline for stable releases; retire cd-publish trigger",
+                "description": "Babylon.js npm publishing now runs in the internal engine release pipeline. That pipeline does not upload the versioned CDN snapshot, and the old `cd-publish.yml` trigger (`.build/config.json` on master) never fires in the new flow. If it did fire, it would publish to npm, push to master and create the release a second time.\n\n## New flow\n\n```\ninternal engine release → npm publish (ESRP)\n  → push \"Version update X\" + tag X to master\n  → GitHub release X with cdnSnapshot.zip\n     → cd-cdn-deploy.yml (\"CDN deploy pipeline\", tag trigger)\n        → cd-tools.yml (\"Tools CD\") via resources.pipelines\n```\n\nPreview releases create no tag or release, so the CDN is never deployed for them.\n\n## Changes\n\n**`.azure-pipelines/cd-cdn-deploy.yml` (new)**\n- **Triggers:** tags `*.*.*` (excluding `*-*`), plus a manual `version` parameter for reruns and backfills. It has no branch CI trigger and no PR trigger.\n- **Variable groups:** `BabylonJS-CI-Infrastructure` and `BabylonJS-Deployment` only. It does not use `NPM_Publish`.\n- **Steps:**\n  1. Resolve the version from the parameter or the tag. Reject prerelease versions.\n  2. Verify that the tag exists and is reachable from `origin/master`.\n  3. Poll the GitHub API for up to 30 minutes until release `X` exists, is neither a draft nor a prerelease, and has `cdnSnapshot.zip` in state `uploaded`. The tag is pushed before the release is created and the asset is uploaded, so a tag-triggered run usually waits here. The optional `GitHubReadToken` secret makes polling authenticated and every 30 s; without it, requests are anonymous every 60 s.\n  4. Download the asset with retries and check its byte count. Require at least 50 MB.\n  5. Run `unzip -t`, reject entries outside `.snapshot/` or containing `..`, and require the core files plus `.snapshot/fileSizes.json`. Check that `babylon.js` reports the version.\n  6. Repack `snapshot.zip` without the `.snapshot/` prefix, matching cd-publish's layout, and build `fileSize.zip`.\n  7. Upload and verify through the shared template.\n- It never publishes to npm, pushes to git, or creates tags or releases. It is idempotent and safe to rerun.\n\n**`.azure-pipelines/templates/cdn-snapshot-deploy.yml` (new)**\n- Holds the upload and verification logic extracted from cd-publish:\n  - the two `curl --fail-with-body $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)` uploads to `cdn/master/v<version>`, with `saveZip=true` for the snapshot only;\n  - the `cdn.babylonjs.com/v<version>` polling (600 s total, every 15 s).\n- Both pipelines use it.\n\n**`cd-publish.yml` (retired, not deleted)**\n- Set to `trigger: none` with a RETIRED header, so it can never publish to npm, push or create a release automatically.\n- I kept it rather than deleting it so it remains a manual emergency fallback, with its run history and definition 50 intact. It can be deleted later once the new flow has shipped a few releases.\n\n**`cd-tools.yml` and `templates/checkout-with-tag-override.yml`**\n- Both now point at `\"CDN deploy pipeline\"`. cd-tools accepts both `master` and `refs/tags/*` source branches. Its cron triggers are unchanged.\n\n**`ci-monorepo.yml`**\n- Its resource now points at `\"CDN deploy pipeline\"`, but it is kept master-only. Tag runs would set `Build.SourceBranch=refs/tags/X`, which breaks its build name, its Deploy condition and the `cdn/$(Build.SourceBranchName)` paths.\n- The release's \"Version update\" push to master already triggers this pipeline through CI.\n\n**`VARIABLE-GROUPS.md`**\n- Updated variable group links and pipeline names.\n- Added the optional `GitHubReadToken` secret.\n- Added a \"Stable Release Flow\" section.\n\n## Manual ADO steps after merge\nThese are in dev.azure.com/babylonjs, project ContinousIntegration.\n1. Create a pipeline from `.azure-pipelines/cd-cdn-deploy.yml` using the existing BabylonJS/Babylon.js GitHub connection.\n2. Name it exactly **`CDN deploy pipeline`**.\n3. Authorize `BabylonJS-CI-Infrastructure` and `BabylonJS-Deployment`.\n4. Make sure no UI trigger override is set, so the YAML tag trigger stays active. Optionally add a `GitHubReadToken` secret variable.\n5. Authorize the new pipeline resource for Tools CD (49) and Monorepo CI (48) on their first run.\n6. Optionally disable definition 50 (\"Publish pipeline\").\n\n## Notes\n- **Reruns:** uploads to the deployment server overwrite blobs in `cdn/master/v<version>`, including the saved `cdnSnapshot.zip`. They do not delete files that exist in storage but not in the new zip. Reruns are therefore safe.\n- **Other dependents on cd-publish:** only Tools CD, Monorepo CI and the checkout template referenced \"Publish pipeline\", and all three are updated here. No docs or sandbox pipelines reference it.\n- **Validation:**\n  - All changed YAML files parse.\n  - Every script block in the two new files passes `bash -n`.\n  - `prettier --check .azure-pipelines/` passes.\n  - No pipelines were queued.\n\n### Update: Monorepo CI after tag-triggered deploys\nMonorepo CI's completion trigger now includes `refs/tags/*`. A run triggered from a release tag is treated as a master run (`BuildName=refs/heads/master`, `DeployBranch=master`), so the general CDN (`cdn/master`) is rebuilt, uploaded and purged after every stable release, as it was with cd-publish.\n\n### Confirmed answers\n- The deployment server overwrites an existing `cdn/master/v<version>` path, so reruns are safe.\n- Only Tools CD (Playground) and Monorepo CI (general CDN) depended on cd-publish. Both now follow \"CDN deploy pipeline\".\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/VARIABLE-GROUPS.md",
+                    ".azure-pipelines/cd-cdn-deploy.yml",
+                    ".azure-pipelines/cd-publish.yml",
+                    ".azure-pipelines/cd-tools.yml",
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".azure-pipelines/templates/cdn-snapshot-deploy.yml",
+                    ".azure-pipelines/templates/checkout-with-tag-override.yml"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "19152",
+                "title": "Floating origin: offset projective world matrices correctly (fixes CameraGizmo frustum)",
+                "description": "With floating origin on (`useFloatingOrigin` on the scene, or `useLargeWorldRendering` on the engine), `CameraGizmo`'s frustum is drawn wrong: instead of a pyramid from the camera, its lines run off across the scene.\r\n\r\n**Repro:** [Simple example in Playground](https://playground.babylonjs.com/#IZ715B). Set `useFloatingOrigin` to `false` to see it as it should be: a pyramid from the camera down to the red square, where its view meets the ground.\r\n\r\n| Before | After |\r\n|---|---|\r\n| <img width=\"900\" height=\"600\" alt=\"before\" src=\"https://github.com/user-attachments/assets/541af76c-692f-431d-860a-0938317b55d5\" /> | <img width=\"900\" height=\"600\" alt=\"after\" src=\"https://github.com/user-attachments/assets/946335d4-5ece-4425-9ba1-5adeb9168b82\" /> |\r\n\r\n**Cause:** `OffsetWorldToRef` (`floatingOriginMatrixOverrides.ts`) subtracts the offset from the translation row only. That's `world * translation(-offset)` for an affine matrix, but not for a projective one. `CameraGizmo` draws the frustum through the camera's inverse projection (see `CameraGizmo._update`), so its world matrix is projective, and the frustum is distorted. The further the camera is from the origin, the worse it gets.\r\n\r\n**Fix:** each row moves by its w (its last column) times the offset, which is the full `world * translation(-offset)`. For an affine matrix, w is 0 in the first three rows and 1 in the last, so that's exactly what it did before. `world`, `worldView`, `worldViewProjection` and the node material `u_World...` uniforms all go through `OffsetWorldToRef`, so they're all fixed.\r\n\r\n**Tests:** a new unit test, `test/unit/Materials/floatingOriginMatrixOverrides.test.ts`, checks that an offset world matrix places each corner of a cube exactly `offset` from where the original places it, for an affine matrix and for a projective one like the gizmo's. The projective case fails before the fix. The core unit tests all pass (281 files, 4,736 tests).\r\n",
+                "author": {
+                    "name": "trymedo",
+                    "url": "https://github.com/trymedo"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/floatingOriginMatrixOverrides.ts",
+                    "packages/dev/core/test/unit/Materials/floatingOriginMatrixOverrides.test.ts"
+                ],
+                "tags": []
+            }
+        ],
         "9.36.0": [
             {
                 "pr": "19153",

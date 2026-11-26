@@ -8,13 +8,18 @@ import {
     type TextureReadbackInfo,
 } from "@babylonjs/lite";
 import { Body1 } from "@fluentui/react-components";
-import { type FunctionComponent, useCallback } from "react";
+import { createElement, type ComponentType, type FunctionComponent, useCallback, useRef, useState } from "react";
 
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { ChildWindow, type ChildWindow as ChildWindowHandle } from "shared-ui-components/fluent/hoc/childWindow";
+import { EditRegular } from "@fluentui/react-icons";
 
-import { TexturePreviewCore, type TexturePreviewSelection } from "../../../../components/properties/textures/texturePreviewCore";
+import { TexturePreviewCore, type TexturePreviewImperativeRef, type TexturePreviewSelection } from "../../../../components/properties/textures/texturePreviewCore";
+import { type TextureEditorProps } from "../../../../components/textureEditor/textureEditor";
 import { ApplyTextureChannels } from "../../../../misc/textureChannels";
 import { type ISceneResourceIndexService } from "../scene/sceneResourceIndexService";
+import { GetLiteTextureEditability, LiteTextureEditorSource } from "./liteTextureEditorSource";
 
 type LiteTexture = Texture2D | CubeTexture;
 
@@ -29,6 +34,7 @@ type TexturePreviewPropertiesProps = Readonly<{
     texture: LiteTexture;
     engine: EngineContext;
     resourceIndexService: ISceneResourceIndexService;
+    textureEditor: ComponentType<TextureEditorProps>;
 }>;
 
 function GetDownloadFileName(name: string | undefined): string {
@@ -43,7 +49,12 @@ function GetDownloadFileName(name: string | undefined): string {
  * @internal
  */
 export const TexturePreviewProperties: FunctionComponent<TexturePreviewPropertiesProps> = (props) => {
-    const { texture, engine, resourceIndexService } = props;
+    const { texture, engine, resourceIndexService, textureEditor } = props;
+    const childWindow = useRef<ChildWindowHandle>(null);
+    const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
+    const [editorSource, setEditorSource] = useState<LiteTextureEditorSource | null>(null);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const editability = GetLiteTextureEditability(texture);
     const getSnapshot = useCallback((): PreviewSnapshot => {
         if (resourceIndexService.isDisposed) {
             return { texture, error: "The Inspector is closed." };
@@ -81,16 +92,45 @@ export const TexturePreviewProperties: FunctionComponent<TexturePreviewPropertie
     }
 
     const { info } = snapshot;
+    const openEditor = () => {
+        if (!editability.canEdit) {
+            return;
+        }
+        setEditorSource(new LiteTextureEditorSource(engine, editability.texture, () => !resourceIndexService.isDisposed && !!resourceIndexService.getTextureRecord(texture)));
+        childWindow.current?.open();
+    };
     return (
-        <TexturePreviewCore
-            source={texture}
-            kind={info.kind}
-            depth={info.kind === "3d" ? info.depthOrArrayLayers : 1}
-            layerCount={info.kind === "2d-array" ? info.depthOrArrayLayers : 0}
-            maxLod={Math.max(0, info.mipLevelCount - 1)}
-            refreshable
-            getPixelsAsync={getPixelsAsync}
-            downloadFileName={GetDownloadFileName(snapshot.name)}
-        />
+        <>
+            <TexturePreviewCore
+                source={texture}
+                kind={info.kind}
+                depth={info.kind === "3d" ? info.depthOrArrayLayers : 1}
+                layerCount={info.kind === "2d-array" ? info.depthOrArrayLayers : 0}
+                maxLod={Math.max(0, info.mipLevelCount - 1)}
+                refreshable
+                getPixelsAsync={getPixelsAsync}
+                downloadFileName={GetDownloadFileName(snapshot.name)}
+                imperativeRef={texturePreviewImperativeRef}
+            />
+            <ButtonLine
+                label="Edit Texture"
+                icon={EditRegular}
+                disabled={!editability.canEdit}
+                title={editability.canEdit ? "Edit Texture" : editability.reason}
+                ariaLabel="Edit Texture"
+                onClick={openEditor}
+            />
+            {/* Reopening fires close for the replaced popup and then open for the new one, so render based on the latest open state. */}
+            <ChildWindow id="Lite Texture Editor" imperativeRef={childWindow} onOpenChange={setIsEditorOpen}>
+                {isEditorOpen &&
+                    editorSource &&
+                    createElement(textureEditor, {
+                        source: editorSource,
+                        onUpdate: () => {
+                            void texturePreviewImperativeRef.current?.refresh();
+                        },
+                    })}
+            </ChildWindow>
+        </>
     );
 };

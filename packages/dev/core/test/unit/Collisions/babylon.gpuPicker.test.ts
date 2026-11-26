@@ -3,13 +3,19 @@ import { GPUMultiPickReadbackStrategy, GPUPicker, type IGPUMultiPickOptions } fr
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { pickingPixelShader } from "core/Shaders/picking.fragment";
 import { type Nullable } from "core/types";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Engine } from "core/Engines/engine";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { CreateMockWebGL2Canvas } from "../Engines/mockWebGL2Canvas";
 
 type ClientRectSize = {
     width: number;
     height: number;
 };
 
-type GPUPickerInternals = GPUPicker & {
+type GPUPickerInternals = {
     _cachedScene: Nullable<{
         getEngine: () => {
             getRenderWidth: () => number;
@@ -21,30 +27,9 @@ type GPUPickerInternals = GPUPicker & {
     _isDepthTexturePacked: boolean;
     _useDepthPicking: boolean;
     _getDepthFromBuffer: (pixels: ArrayBufferView, x: number, y: number, width: number, height: number) => Nullable<number>;
-    _getDepthPickingInfoFromBuffer: (
-        pixels: ArrayBufferView,
-        x: number,
-        y: number,
-        bufferLeft: number,
-        bufferBottom: number,
-        bufferWidth: number,
-        bufferHeight: number,
-        renderHeight: number,
-        view: Matrix,
-        projection: Matrix,
-        cameraPosition: Vector3,
-        viewport: { x: number; y: number; width: number; height: number }
-    ) => Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }>;
-    _getDepthPickingInfoAsync: (
-        x: number,
-        y: number,
-        renderWidth: number,
-        renderHeight: number,
-        view: Matrix,
-        projection: Matrix,
-        cameraPosition: Vector3,
-        viewport: { x: number; y: number; width: number; height: number }
-    ) => Promise<Nullable<{ pickedPoint?: Vector3; normal?: Vector3 }>>;
+    _getDepthPickingView: GPUPicker["_getDepthPickingView"];
+    _getDepthPickingInfoFromBuffer: GPUPicker["_getDepthPickingInfoFromBuffer"];
+    _getDepthPickingInfoAsync: GPUPicker["_getDepthPickingInfoAsync"];
     _getRenderInfo: () => { rttSizeW: number; rttSizeH: number; scaleX: number; scaleY: number };
     _prepareForPicking: (x: number, y: number, scaleX: number, scaleY: number) => { x: number; y: number };
     _readDepthTexturePixelsAsync: (x: number, y: number, w: number, h: number) => Promise<Nullable<ArrayBufferView>>;
@@ -53,10 +38,46 @@ type GPUPickerInternals = GPUPicker & {
 };
 
 const createPicker = (): GPUPickerInternals => {
-    return new GPUPicker() as GPUPickerInternals;
+    return new GPUPicker() as unknown as GPUPickerInternals;
 };
 
 describe("GPUPicker", () => {
+    it.each(["single", "multi", "box"] as const)("allows retrying a %s pick after material readiness throws", async (mode) => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const picker = new GPUPicker();
+        try {
+            picker.setPickingList([new Mesh("__root__", scene)]);
+            const material = picker.defaultRenderMaterials.find((material) => material !== null)!;
+            const error = new Error("Picking material readiness failed");
+            const isReady = vi.spyOn(material, "isReady").mockImplementation(() => {
+                throw error;
+            });
+            const renderPassId = engine.currentRenderPassId;
+            const pick = () =>
+                mode === "single"
+                    ? picker.pickAsync(0, 0)
+                    : mode === "multi"
+                      ? picker.multiPickAsync([
+                            { x: 0, y: 0 },
+                            { x: 1, y: 1 },
+                        ])
+                      : picker.boxPickAsync(0, 0, 1, 1);
+
+            await expect(pick()).rejects.toBe(error);
+            expect(picker.pickingInProgress).toBe(false);
+            expect(engine.currentRenderPassId).toBe(renderPassId);
+
+            await expect(pick()).rejects.toBe(error);
+            expect(isReady).toHaveBeenCalledTimes(2);
+            expect(picker.pickingInProgress).toBe(false);
+        } finally {
+            picker.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
     it("uses high precision integers for WebGL2 picking ID bit shifts", () => {
         expect(pickingPixelShader.shader).toContain("precision highp int;");
     });
@@ -101,14 +122,62 @@ describe("GPUPicker", () => {
         } as any;
         picker._readDepthTexturePixelsAsync = vi.fn().mockResolvedValue(null);
 
-        await picker._getDepthPickingInfoAsync(10, 20, 100, 100, Matrix.IdentityReadOnly, Matrix.IdentityReadOnly, Vector3.Zero(), {
-            x: 0,
-            y: 0,
-            width: 100,
-            height: 100,
+        await picker._getDepthPickingInfoAsync(10, 20, 100, 100, {
+            view: Matrix.IdentityReadOnly,
+            projection: Matrix.IdentityReadOnly,
+            cameraPosition: Vector3.Zero(),
+            viewport: { x: 0, y: 0, width: 100, height: 100 },
+            halfZRange: true,
         });
 
         expect(picker._readDepthTexturePixelsAsync).toHaveBeenCalledWith(9, 19, 3, 3);
+    });
+
+    it.each([false, true])("reconstructs depth picking with the scene's range (half-range engine created first: %s)", async (halfRangeFirst) => {
+        vi.stubGlobal("WebGL2RenderingContext", { SRGB: 0x8c40, SRGB8: 0x8c41, SRGB8_ALPHA8: 0x8c43 });
+        const engines = [halfRangeFirst, !halfRangeFirst].map((useNDCHalfZRange) => {
+            const { canvas } = CreateMockWebGL2Canvas(true);
+            return new Engine(canvas, false, { useNDCHalfZRange });
+        });
+
+        try {
+            for (const engine of engines) {
+                const scene = new Scene(engine);
+                const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                scene.activeCamera = camera;
+                camera.minZ = 1;
+                camera.maxZ = 10;
+                scene.updateTransformMatrix();
+
+                const pickedZ = 1.25;
+                const projection = scene.getProjectionMatrix();
+                const ndcDepth = Vector3.TransformCoordinates(new Vector3(0, 0, pickedZ), projection).z;
+                const depth = engine.isNDCHalfZRange ? ndcDepth : (ndcDepth + 1) * 0.5;
+                const pixels = new Float32Array(3 * 3 * 4);
+                for (let offset = 0; offset < pixels.length; offset += 4) {
+                    pixels[offset] = depth;
+                    pixels[offset + 3] = 1;
+                }
+
+                const picker = createPicker();
+                picker._cachedScene = scene;
+                picker._readDepthTexturePixelsAsync = vi.fn().mockResolvedValue(pixels);
+                const depthView = picker._getDepthPickingView(3, 3);
+                if (depthView === null) {
+                    throw new Error("Expected a depth picking view for the active camera.");
+                }
+                const info = await picker._getDepthPickingInfoAsync(1, 1, 3, 3, depthView);
+                expect(info?.pickedPoint?.z).toBeCloseTo(pickedZ);
+                expect(info?.normal?.x).toBeCloseTo(0);
+                expect(info?.normal?.y).toBeCloseTo(0);
+                expect(info?.normal?.z).toBeCloseTo(-1);
+            }
+        } finally {
+            for (const engine of engines) {
+                engine.dispose();
+            }
+            vi.unstubAllGlobals();
+        }
     });
 
     it("uses a camera-facing normal when depth neighbors cannot form a surface", () => {
@@ -117,11 +186,12 @@ describe("GPUPicker", () => {
 
         const pixels = new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 1, 0.5, 0, 0, 1, 0.5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-        const info = picker._getDepthPickingInfoFromBuffer(pixels, 1, 1, 0, 0, 3, 3, 3, Matrix.IdentityReadOnly, Matrix.IdentityReadOnly, new Vector3(0, 0, -1), {
-            x: 0,
-            y: 0,
-            width: 3,
-            height: 3,
+        const info = picker._getDepthPickingInfoFromBuffer(pixels, 1, 1, 0, 0, 3, 3, 3, {
+            view: Matrix.IdentityReadOnly,
+            projection: Matrix.IdentityReadOnly,
+            cameraPosition: new Vector3(0, 0, -1),
+            viewport: { x: 0, y: 0, width: 3, height: 3 },
+            halfZRange: false,
         });
 
         expect(info?.pickedPoint).toBeDefined();
@@ -135,11 +205,12 @@ describe("GPUPicker", () => {
 
         const pixels = new Float32Array([0.45, 0, 0, 1, 0, 0, 0, 0, 0.55, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-        const info = picker._getDepthPickingInfoFromBuffer(pixels, 1, 1, 0, 0, 3, 3, 3, Matrix.IdentityReadOnly, Matrix.IdentityReadOnly, new Vector3(0, 0, -1), {
-            x: 0,
-            y: 0,
-            width: 3,
-            height: 3,
+        const info = picker._getDepthPickingInfoFromBuffer(pixels, 1, 1, 0, 0, 3, 3, 3, {
+            view: Matrix.IdentityReadOnly,
+            projection: Matrix.IdentityReadOnly,
+            cameraPosition: new Vector3(0, 0, -1),
+            viewport: { x: 0, y: 0, width: 3, height: 3 },
+            halfZRange: false,
         });
 
         expect(info?.normal).toBeDefined();

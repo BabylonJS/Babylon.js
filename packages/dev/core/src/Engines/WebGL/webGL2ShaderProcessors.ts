@@ -1,7 +1,35 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { type IShaderProcessor } from "../Processors/iShaderProcessor";
 
-const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
+const VaryingRegex = /varying/;
+const ExtensionDirectiveRegex = /#extension[^\r\n]*/g;
+const RemovableExtensions = ["GL_OVR_multiview2", "GL_OES_standard_derivatives", "GL_EXT_shader_texture_lod", "GL_EXT_frag_depth", "GL_EXT_draw_buffers"];
+const RemovableBehaviors = ["enable", "require"];
+const DrawBuffersExtension = ["GL_EXT_draw_buffers"];
+const RequireBehavior = ["require"];
+
+// Returns the end of the "#extension <name> ... <behavior>" span in a directive line (the same span the previous
+// greedy regex matched), or -1 when no listed extension is found. Uses string scanning to stay linear.
+function GetExtensionSpanEnd(directive: string, extensions: string[], behaviors: string[]): number {
+    let behaviorIndex = -1;
+    let behaviorLength = 0;
+    for (const behavior of behaviors) {
+        const index = directive.lastIndexOf(behavior);
+        if (index > behaviorIndex) {
+            behaviorIndex = index;
+            behaviorLength = behavior.length;
+        }
+    }
+    if (behaviorIndex === -1) {
+        return -1;
+    }
+    for (const extension of extensions) {
+        if (directive.lastIndexOf(extension, behaviorIndex - extension.length - 1) > "#extension".length) {
+            return behaviorIndex + behaviorLength;
+        }
+    }
+    return -1;
+}
 
 /** @internal */
 export class WebGL2ShaderProcessor implements IShaderProcessor {
@@ -20,11 +48,14 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
     }
 
     public postProcessor(code: string, defines: string[], isFragment: boolean) {
-        const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
+        let hasDrawBuffersExtension = false;
 
         // Remove extensions
-        const regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
-        code = code.replace(regex, "");
+        code = code.replace(ExtensionDirectiveRegex, (directive) => {
+            hasDrawBuffersExtension ||= GetExtensionSpanEnd(directive, DrawBuffersExtension, RequireBehavior) !== -1;
+            const end = GetExtensionSpanEnd(directive, RemovableExtensions, RemovableBehaviors);
+            return end === -1 ? directive : directive.substring(end);
+        });
 
         // Replace instructions
         code = code.replace(/texture2D\s*\(/g, "texture(");

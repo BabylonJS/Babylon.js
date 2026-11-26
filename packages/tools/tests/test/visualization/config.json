@@ -1398,6 +1398,13 @@
             "dependsOn": ["Animations", "Gizmos", "LibMaterials", "Lights", "Materials", "NodeMaterial", "ProceduralTextures", "Shaders", "Shadows"]
         },
         {
+            "title": "Shadow depth wrappers with normal bias",
+            "playgroundId": "#ASETQ9#0",
+            "referenceImage": "shadowDepthWrappersNormalBias.png",
+            "renderCount": 10,
+            "dependsOn": ["Lights", "Materials", "PBR", "Shadows"]
+        },
+        {
             "title": "Displacement map",
             "playgroundId": "#WZ8JL4#1",
             "referenceImage": "displacementMap.png",
@@ -6070,6 +6077,37 @@
             "dependsOn": ["Materials", "Meshes", "Textures"]
         },
         {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes - non-compatibility mode",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "replace": "const compatibilityMode = true;, const compatibilityMode = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes - snapshot rendering",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "replace": "const snapshotRendering = false;, const snapshotRendering = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
+            "title": "WebGPU asynchronous pipeline creation - every mesh in all its passes - synchronous creation",
+            "playgroundId": "#XX5SUM#1",
+            "referenceImage": "webgpu-asynchronous-pipeline-creation.png",
+            "replace": "const asynchronousPipelineCreation = true;, const asynchronousPipelineCreation = false;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
+        },
+        {
             "title": "SubMesh indirect draw buffer - GPU-written arguments per pass",
             "playgroundId": "#1GU3CM#2",
             "referenceImage": "submesh-indirect-draw-buffer.png",
@@ -6083,6 +6121,114 @@
             "replace": "const compatibilityMode = false;, const compatibilityMode = true;",
             "excludedEngines": ["webgl1", "webgl2"],
             "dependsOn": ["Compute", "Meshes", "Shadows"]
+        },
+        {
+            "title": "WebGL2 half-range depth - fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"]
+        },
+        {
+            "title": "WebGL2 half-range depth - volumetric lighting occlusion",
+            "playgroundId": "#YAZ8XO#0",
+            "referenceImage": "webgl2-half-range-depth-volumetric.png",
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "FrameGraph", "Lights", "Rendering", "Textures"]
+        },
+        {
+            "title": "WebGL2 half-range depth - right-handed fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;"
+        },
+        {
+            "title": "WebGL2 - right-handed orthographic fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-orthographic-fluid-occlusion.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Cameras", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, camera.fov = 0.9;, camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA; camera.orthoLeft = -2.4; camera.orthoRight = 2.4; camera.orthoBottom = -1.35; camera.orthoTop = 1.35;"
+        },
+        {
+            "title": "WebGPU depth - right-handed fluid particle occlusion",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, engine.webGLVersion !== 2 || engine.isNDCHalfZRange !== requestedHalfRange, !engine.isWebGPU || !engine.isNDCHalfZRange"
+        },
+        {
+            "title": "WebGL2 half-range depth - right-handed fluid particle occlusion with reversed Z",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;",
+            "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGPU depth - right-handed fluid particle occlusion with reversed Z",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-rhs.png",
+            "renderCount": 32,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "replace": "const scene = new BABYLON.Scene(engine);, const scene = new BABYLON.Scene(engine); scene.useRightHandedSystem = true;, engine.webGLVersion !== 2 || engine.isNDCHalfZRange !== requestedHalfRange, !engine.isWebGPU || !engine.isNDCHalfZRange",
+            "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGL2 half-range depth - volumetric lighting occlusion with reversed Z",
+            "replace": "output.sourceTexture = volume.outputTexture;, output.sourceTexture = volume.outputTexture; output.depthTest = false;",
+            "playgroundId": "#YAZ8XO#0",
+            "referenceImage": "webgl2-half-range-depth-volumetric.png",
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "FrameGraph", "Lights", "Rendering", "Textures"],
+            "useReverseDepthBuffer": "true"
+        },
+        {
+            "title": "WebGL2 half-range depth - infinite-far fluid rendering with fixed thickness",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "useReverseDepthBuffer": "true",
+            "replace": "camera.maxZ = 20;, camera.maxZ = 0;"
+        },
+        {
+            "title": "WebGL2 half-range depth - infinite-far fluid rendering with variable thickness",
+            "playgroundId": "#7U2BZN#0",
+            "referenceImage": "webgl2-half-range-depth-fluid-variable-thickness.png",
+            "renderCount": 32,
+            "useNDCHalfZRange": true,
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromPerformance": true,
+            "dependsOn": ["Engine", "Rendering", "Particles", "Textures", "PostProcesses"],
+            "useReverseDepthBuffer": "true",
+            "replace": "camera.maxZ = 20;, camera.maxZ = 0;, fluid.targetRenderer.useFixedThickness = true;, fluid.targetRenderer.useFixedThickness = false;, fluid.targetRenderer.minimumThickness = 0.35;, fluid.targetRenderer.minimumThickness = 0;"
         }
     ]
 }

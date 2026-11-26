@@ -43,6 +43,7 @@ import { TextLayerPropertiesServiceDefinition } from "../../src/lite/services/pa
 import { TexturePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/texturePropertiesService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../src/services/panes/properties/propertiesService";
 import { SelectionServiceIdentity } from "../../src/services/selectionService";
+import { TextureEditorServiceDefinition, TextureEditorServiceIdentity } from "../../src/services/textureEditor/textureEditorService";
 import { MakeWatcherServiceDefinitions } from "../../src/services/watcherService";
 
 type RegisteredContent = Parameters<IPropertiesService["addSectionContent"]>[0];
@@ -180,12 +181,13 @@ describe("Babylon Lite properties services", () => {
             getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material, scenes: [scene] } : undefined),
             getTextureRecord: (candidate: object) => (candidate === texture ? { entity: texture } : undefined),
         } as unknown as ISceneResourceIndexService;
+        const textureEditorService = TextureEditorServiceDefinition.factory();
 
         const services = [
             EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
             RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
             MaterialPropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!),
-            TexturePropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!, engineContext),
+            TexturePropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!, engineContext, textureEditorService),
             TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
             SpriteLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
         ];
@@ -198,6 +200,7 @@ describe("Babylon Lite properties services", () => {
             SceneResourceIndexServiceIdentity,
             SelectionServiceIdentity,
             EngineContextIdentity,
+            TextureEditorServiceIdentity,
         ]);
         expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
@@ -214,6 +217,11 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate(texture)).toBe(true);
         const textureContent = registrations.get("Babylon Lite Texture Properties")!.content;
         expect(textureContent.map(({ section }) => section)).toEqual(["Preview", "General"]);
+        const texturePreview = textureContent[0].component({ context: texture });
+        if (!isValidElement<{ textureEditor: unknown }>(texturePreview)) {
+            throw new Error("Expected the texture preview property provider to render a component.");
+        }
+        expect(texturePreview.props.textureEditor).toBe(textureEditorService.component);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate(textLayer)).toBe(true);
         expect(registrations.get("Babylon Lite Sprite Layer Properties")?.predicate(spriteLayer)).toBe(true);
 

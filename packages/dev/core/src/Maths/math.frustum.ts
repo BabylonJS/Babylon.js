@@ -9,33 +9,42 @@ export class Frustum {
     /**
      * Gets the planes representing the frustum
      * @param transform matrix to be applied to the returned planes
+     * @param halfZRange whether the transform uses an NDC depth range of [0, 1] (default: false)
      * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
      */
-    public static GetPlanes(transform: DeepImmutable<Matrix>): Plane[] {
+    public static GetPlanes(transform: DeepImmutable<Matrix>, halfZRange = false): Plane[] {
         const frustumPlanes = [];
         for (let index = 0; index < 6; index++) {
             frustumPlanes.push(new Plane(0.0, 0.0, 0.0, 0.0));
         }
-        Frustum.GetPlanesToRef(transform, frustumPlanes);
+        Frustum.GetPlanesToRef(transform, frustumPlanes, halfZRange);
         return frustumPlanes;
     }
 
     /**
-     * Gets the near frustum plane transformed by the transform matrix
+     * Gets the frustum plane for the lower clip-space Z bound, which is the near plane in standard Z and the far plane in reversed Z.
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resulting frustum plane
+     * @param halfZRange whether the transform uses an NDC depth range of [0, 1] (default: false)
      */
-    public static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void {
+    public static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane, halfZRange = false): void {
         const m = transform.m;
-        frustumPlane.normal.x = m[3] + m[2];
-        frustumPlane.normal.y = m[7] + m[6];
-        frustumPlane.normal.z = m[11] + m[10];
-        frustumPlane.d = m[15] + m[14];
+        if (halfZRange) {
+            frustumPlane.normal.set(m[2], m[6], m[10]);
+            frustumPlane.d = m[14];
+            // An infinite reversed-Z projection has a constant lower bound. Preserve it when there is no normal to normalize.
+            if (m[2] === 0 && m[6] === 0 && m[10] === 0) {
+                return;
+            }
+        } else {
+            frustumPlane.normal.set(m[3] + m[2], m[7] + m[6], m[11] + m[10]);
+            frustumPlane.d = m[15] + m[14];
+        }
         frustumPlane.normalize();
     }
 
     /**
-     * Gets the far frustum plane transformed by the transform matrix
+     * Gets the frustum plane for the upper clip-space Z bound, which is the far plane in standard Z and the near plane in reversed Z.
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resulting frustum plane
      */
@@ -108,12 +117,13 @@ export class Frustum {
      * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
      * @param transform transformation matrix to be applied to the resulting frustum planes
      * @param frustumPlanes the resulting frustum planes
+     * @param halfZRange whether the transform uses an NDC depth range of [0, 1] (default: false)
      */
-    public static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void {
-        // Near
-        Frustum.GetNearPlaneToRef(transform, frustumPlanes[0]);
+    public static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[], halfZRange = false): void {
+        // Lower Z
+        Frustum.GetNearPlaneToRef(transform, frustumPlanes[0], halfZRange);
 
-        // Far
+        // Upper Z
         Frustum.GetFarPlaneToRef(transform, frustumPlanes[1]);
 
         // Left

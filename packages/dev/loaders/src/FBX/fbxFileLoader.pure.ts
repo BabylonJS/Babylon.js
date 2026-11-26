@@ -2102,7 +2102,9 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     private static _getMimeType(fileName: string): string {
-        const mimeType = GetMimeType(fileName);
+        // Encode the literal filename so '#' and '?' in embedded texture names are
+        // not mistaken for URL fragment or query-string delimiters by GetMimeType.
+        const mimeType = GetMimeType(encodeURIComponent(fileName));
         if (mimeType) {
             return mimeType;
         }
