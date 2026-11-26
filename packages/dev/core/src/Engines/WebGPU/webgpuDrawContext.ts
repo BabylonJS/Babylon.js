@@ -61,6 +61,12 @@ export class WebGPUDrawContext implements IDrawContext {
     /** Pipeline recorded in the previous depth-only fast bundle. @internal */
     public _previousFastBundleWithoutColorWritePipeline?: GPURenderPipeline;
 
+    /** Geometry and draw command shared by all cached pipeline variants. @internal */
+    public _fastBundleDraw?: Pick<
+        IWebGPURecordedDraw,
+        "indexBuffer" | "indexFormat" | "vertexBuffers" | "vertexOffsets" | "indirectBuffer" | "indirectByteOffset" | "indexed" | "count" | "instances" | "start"
+    >;
+
     /** Drops all fast bundles and their pipeline references. @internal */
     public _invalidateFastBundles(): void {
         this.fastBundle = undefined;
@@ -71,6 +77,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this._previousFastBundlePipeline = undefined;
         this._previousFastBundleWithoutColorWrite = undefined;
         this._previousFastBundleWithoutColorWritePipeline = undefined;
+        this._fastBundleDraw = undefined;
     }
 
     /**

@@ -201,6 +201,36 @@ describe("WebGPU draw submission", () => {
         expect(state._bundleList.addBundle.mock.calls.slice(4)).toEqual([...replacement, ...replacement].map((bundle) => [bundle]));
     });
 
+    it.each(["index buffer", "vertex buffer", "draw range"])("does not reuse a previous pipeline's bundle with a different %s", (change) => {
+        const { engine, state, bundleEncoder, pipeline } = createEngine();
+        const first = { id: 1 };
+        const reversed = { id: 2 };
+        const replacement = { id: 3 };
+        bundleEncoder.finish.mockReturnValueOnce(first).mockReturnValueOnce(reversed).mockReturnValueOnce(replacement);
+        engine.compatibilityMode = false;
+
+        engine.drawElementsType(0, 0, 3);
+        state._cacheRenderPipeline.getRenderPipeline.mockReturnValue({ winding: "reversed" });
+        engine.drawElementsType(0, 0, 3);
+        state._cacheRenderPipeline.getRenderPipeline.mockReturnValue(pipeline);
+
+        const newBuffer = { underlyingResource: { label: "new geometry" }, is32Bits: true };
+        if (change === "index buffer") {
+            state._currentIndexBuffer = newBuffer;
+            Object.assign(engine, { _currentIndexBuffer: newBuffer });
+        } else if (change === "vertex buffer") {
+            state._cacheRenderPipeline.vertexBuffers[0].effectiveBuffer = newBuffer;
+        }
+        const start = change === "draw range" ? 3 : 0;
+        engine.drawElementsType(0, start, 3);
+        engine.drawElementsType(0, start, 3);
+
+        expect(state._bundleList.addBundle.mock.calls).toEqual([[first], [reversed], [replacement], [replacement]]);
+        expect(bundleEncoder.drawIndexed).toHaveBeenLastCalledWith(3, 1, start, 0, 0);
+        expect(bundleEncoder.setIndexBuffer).toHaveBeenLastCalledWith(state._currentIndexBuffer.underlyingResource, "uint32", 0);
+        expect(bundleEncoder.setVertexBuffer).toHaveBeenLastCalledWith(0, state._cacheRenderPipeline.vertexBuffers[0].effectiveBuffer.underlyingResource, 8);
+    });
+
     it("accepts the legacy provider type and submits its draws directly", () => {
         const { engine, renderPass } = createEngine();
         const provider = {
