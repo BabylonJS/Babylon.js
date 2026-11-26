@@ -27,6 +27,7 @@ function createEngine() {
     const bindGroups = [{}];
     const state = {
         _compatibilityMode: true,
+        _colorWriteLocal: true,
         _renderPassCommandRecorderProvider: null,
         _renderPassCommandBatching: null,
         _snapshotRendering: { record: false, play: false },
@@ -40,6 +41,7 @@ function createEngine() {
             setIndirectData: vi.fn(),
             isDirty: () => false,
             fastBundle: undefined as object | undefined,
+            _fastBundleColorWrite: true,
             indirectDrawBuffer: null as object | null,
             _enableIndirectDrawInCompatMode: false,
         },
@@ -56,6 +58,7 @@ function createEngine() {
         _currentIndexBuffer: indexBuffer,
         _cacheRenderPipeline: {
             indexBuffer,
+            setWriteMask: vi.fn(),
             getRenderPipeline: () => pipeline,
             vertexBuffers: [{ effectiveBuffer: indexBuffer, _validOffsetRange: false, byteOffset: 8 }],
             colorFormats: ["bgra8unorm"],
@@ -96,6 +99,27 @@ function createProvider(): IWebGPURenderPassCommandRecorderProvider {
 }
 
 describe("WebGPU draw submission", () => {
+    it("never reuses a bundle recorded with the other color-write state", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const depthOnly = {};
+        const withColor = {};
+        const nextDepthOnly = {};
+        engine.compatibilityMode = false;
+        bundleEncoder.finish.mockReturnValueOnce(depthOnly).mockReturnValueOnce(withColor).mockReturnValueOnce(nextDepthOnly);
+
+        engine.setColorWrite(false);
+        engine.drawElementsType(0, 0, 3);
+        engine.drawElementsType(0, 0, 3);
+        engine.setColorWrite(true);
+        engine.drawElementsType(0, 0, 3);
+        engine.drawElementsType(0, 0, 3);
+        engine.setColorWrite(false);
+        engine.drawElementsType(0, 0, 3);
+
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(3);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([[depthOnly], [depthOnly], [withColor], [withColor], [nextDepthOnly]]);
+    });
+
     it("accepts the legacy provider type and submits its draws directly", () => {
         const { engine, renderPass } = createEngine();
         const provider = {

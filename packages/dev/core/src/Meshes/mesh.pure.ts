@@ -2402,6 +2402,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 vertexAndArrayObjectBuffers["previousWorld3"] = instancesPreviousBuffer.createVertexBuffer("previousWorld3", 12, 4);
             }
             this._invalidateInstanceVertexArrayObject();
+            this._invalidateVertexBufferBindings();
         } else {
             if (!this._instanceDataStorage.isFrozen || this._instanceDataStorage.forceMatrixUpdates) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
@@ -3672,6 +3673,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Restore submeshes
         this.releaseSubMeshes();
         this.subMeshes = submeshes;
+        this._invalidateVertexBufferBindings();
         return this;
     }
 
@@ -3828,6 +3830,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @internal */
     public _invalidateInstanceVertexArrayObject() {
         // Do nothing
+    }
+
+    /** Invalidates bindings cached by WebGPU draws without resetting their draw contexts. @internal */
+    public _invalidateVertexBufferBindings(): void {
+        if (this.getEngine().isWebGPU && this.subMeshes) {
+            for (const subMesh of this.subMeshes) {
+                subMesh._invalidateVertexBuffers();
+            }
+        }
     }
 
     /**

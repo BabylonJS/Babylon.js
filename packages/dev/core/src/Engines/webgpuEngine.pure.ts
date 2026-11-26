@@ -4275,7 +4275,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (
             !this.compatibilityMode &&
-            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)
+            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) ||
+                this._currentMaterialContext.isDirty ||
+                this._currentMaterialContext.forceBindGroupCreation ||
+                this._currentDrawContext._fastBundleColorWrite !== this._colorWriteLocal)
         ) {
             this._currentDrawContext.fastBundle = undefined;
         }
@@ -4436,6 +4439,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (nonCompatMode) {
             this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
+            this._currentDrawContext._fastBundleColorWrite = this._colorWriteLocal;
             bundleList.addBundle(this._currentDrawContext.fastBundle);
         }
 

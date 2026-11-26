@@ -740,6 +740,7 @@ export function RegisterInstancedMesh(): void {
         }
 
         this._invalidateInstanceVertexArrayObject();
+        this._invalidateVertexBufferBindings();
 
         this._markSubMeshesAsAttributesDirty();
     };
@@ -763,6 +764,7 @@ export function RegisterInstancedMesh(): void {
             perPassVertexBuffers = this._userInstancedBuffersStorage.renderPasses[currentRenderPassId];
         }
 
+        let bindingsChanged = false;
         for (const kind in this.instancedBuffers) {
             let size = this._userInstancedBuffersStorage.sizes[kind];
             const stride = this._userInstancedBuffersStorage.strides[kind];
@@ -778,9 +780,12 @@ export function RegisterInstancedMesh(): void {
                 this._userInstancedBuffersStorage.data[kind] = new Float32Array(size);
                 this._userInstancedBuffersStorage.sizes[kind] = size;
                 if (usePerPassStorage) {
-                    if (perPassVertexBuffers![kind]) {
-                        perPassVertexBuffers![kind]!.dispose();
-                        perPassVertexBuffers![kind] = null;
+                    // Every pass uploads the shared CPU array, so all of its buffers must grow.
+                    const renderPasses = this._userInstancedBuffersStorage.renderPasses!;
+                    for (const passId in renderPasses) {
+                        const vertexBuffers = renderPasses[passId];
+                        vertexBuffers[kind]?.dispose();
+                        delete vertexBuffers[kind];
                     }
                 } else if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
                     this._userInstancedBuffersStorage.vertexBuffers[kind].dispose();
@@ -826,7 +831,7 @@ export function RegisterInstancedMesh(): void {
             if (usePerPassStorage) {
                 if (!perPassVertexBuffers![kind]) {
                     perPassVertexBuffers![kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
-                    this._invalidateInstanceVertexArrayObject();
+                    bindingsChanged = true;
                 } else {
                     perPassVertexBuffers![kind]!.updateDirectly(data, 0);
                 }
@@ -841,11 +846,16 @@ export function RegisterInstancedMesh(): void {
                         stride,
                         true
                     );
-                    this._invalidateInstanceVertexArrayObject();
+                    bindingsChanged = true;
                 } else {
                     this._userInstancedBuffersStorage.vertexBuffers[kind].updateDirectly(data, 0);
                 }
             }
+        }
+
+        if (bindingsChanged) {
+            this._invalidateInstanceVertexArrayObject();
+            this._invalidateVertexBufferBindings();
         }
     };
 

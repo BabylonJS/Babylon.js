@@ -45,6 +45,9 @@ export class WebGPUDrawContext implements IDrawContext {
      * Bundle used in fast mode (when compatibilityMode==false)
      */
     public fastBundle?: GPURenderBundle;
+    /** Whether color writes were enabled when the fast bundle was recorded. @internal */
+    public _fastBundleColorWrite = true;
+
     /**
      * Cache of the bind groups. Will be reused for the next draw if isDirty==false (and materialContext.isDirty==false)
      */
