@@ -20,6 +20,7 @@ import {
     GetNeuralV4Layout,
     PackNeuralV4WeightTexture,
     ParseNeuralV4Weights,
+    type INeuralV4Atlas,
     type INeuralV4Layout,
     type NeuralV4Group,
 } from "./neuralTextureV4";
@@ -119,11 +120,12 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             }
             const extension: IBabylonMaterialsNeuralTexture = { ...resolved, replacedSlots };
             const replaces = (slot: string) => (replacedSlots as string[]).includes(slot);
+            // Only the replaced slots and the latents take part in the neural lookup; untouched core textures keep their UVs.
             const textureInfos = [
-                material.pbrMetallicRoughness?.baseColorTexture,
-                material.normalTexture,
-                material.occlusionTexture,
-                material.pbrMetallicRoughness?.metallicRoughnessTexture,
+                replaces("baseColorTexture") ? material.pbrMetallicRoughness?.baseColorTexture : undefined,
+                replaces("normalTexture") ? material.normalTexture : undefined,
+                replaces("occlusionTexture") ? material.occlusionTexture : undefined,
+                replaces("metallicRoughnessTexture") ? material.pbrMetallicRoughness?.metallicRoughnessTexture : undefined,
                 replaces("emissiveTexture") ? material.emissiveTexture : undefined,
                 replaces(DiffuseSlot) ? specularGlossiness?.diffuseTexture : undefined,
                 replaces(SpecularGlossinessSlot) ? specularGlossiness?.specularGlossinessTexture : undefined,
@@ -145,9 +147,18 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 TrackNeuralTextureMaterialTiming(babylonMaterial, timing);
             }
             const shaderDecode = this.decodeInShader;
+            // Without extensionsRequired, an unsupported backend degrades to the core textures.
+            const required = !!this._loader.gltf.extensionsRequired?.includes(NAME);
             // v4 needs no uniform buffer (macOS Chrome disables them); the v1/v2 decoder keeps its weights in one.
-            if (shaderDecode && (v4 ? !engine.isWebGPU && engine.version < 2 : !engine.supportsUniformBuffers)) {
-                throw new Error(`${extensionContext}: Shader decoding requires WebGL 2 or WebGPU; disable decodeInShader to bake textures`);
+            // Babylon Native reports a version without supporting these shaders.
+            const shaderSupported = engine.name !== "Native" && (v4 ? engine.isWebGPU || engine.version >= 2 : engine.supportsUniformBuffers);
+            if (shaderDecode && !shaderSupported) {
+                const message = `${extensionContext}: Shader decoding requires WebGL 2 or WebGPU; disable decodeInShader to bake textures`;
+                if (required) {
+                    throw new Error(message);
+                }
+                Logger.Warn(`${message}; using fallback textures`);
+                return await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
             }
             const textureOrder = v4 ? GetNeuralV4LatentTextureOrder(layout!) : extension.latentTextures.map((_, index) => index);
             const latentsPromise = Promise.all(
@@ -202,9 +213,10 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             });
             // Some encoders retain a legacy specular/glossiness alternative alongside
             // the neural metallic/roughness payload. Load the superseded core workflow,
-            // not that alternative. The original JSON and all other extensions stay intact.
+            // not that alternative, so textures and factors come from the same workflow.
+            // The original JSON and all other extensions stay intact.
             const coreMaterial =
-                replaces("metallicRoughnessTexture") && specularGlossiness
+                specularGlossiness && !specularGlossinessNeural && (replaces("baseColorTexture") || replaces("metallicRoughnessTexture"))
                     ? { ...material, extensions: { ...material.extensions, [SpecularGlossinessName]: undefined } }
                     : material;
             const [, latents, parsedWeights] = await Promise.all([
@@ -221,8 +233,10 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                     extension,
                     layout!,
                     latents,
+                    textureOrder,
                     parsedWeights as Uint16Array,
                     replaces,
+                    required,
                     timing,
                     materialStart
                 );
@@ -230,27 +244,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             const weights = parsedWeights as Float32Array;
             if (shaderDecode) {
                 const start = timing ? performance.now() : 0;
-                // Core textures remain assigned to preserve texture defines, factors, alpha
-                // handling and tangent-space setup. Only their fragment samples are replaced.
-                const placeholder = (name: string) => this._createTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, true, name);
-                // The decoder returns encoded sRGB; ensure the PBR shader linearizes it,
-                // instead of relying on the fallback texture's hardware sRGB format.
-                if (replaces("baseColorTexture") && babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoTexture = placeholder("Neural base color");
-                }
-                if (replaces(DiffuseSlot)) {
-                    babylonMaterial.albedoTexture = placeholder("Neural diffuse");
-                }
-                if (replaces(SpecularGlossinessSlot)) {
-                    const reflectivity = placeholder("Neural specular glossiness");
-                    reflectivity.hasAlpha = true;
-                    babylonMaterial.reflectivityTexture = reflectivity;
-                    babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
-                }
-                if (replaces("emissiveTexture")) {
-                    babylonMaterial.emissiveTexture = placeholder("Neural emissive");
-                }
-                this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
+                this._assignPlaceholders(context, material, babylonMaterial, replaces);
                 new NeuralTextureMaterialPlugin(babylonMaterial, extension, latents, weights, timing);
                 timing?.("shaderPluginAndPlaceholderCreation", start);
                 timing?.("materialLoad", materialStart);
@@ -266,12 +260,18 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 Logger.Warn(`${extensionContext}: GPU bake failed; using the optional CPU fallback (${String(error)})`);
             }
             if (baked) {
-                this._assignBaked(context, material, babylonMaterial, baked, replaces);
+                this._assignNeuralTextures(context, material, babylonMaterial, baked, replaces);
                 timing?.("materialLoad", materialStart);
                 return;
             }
             if (!this.allowCPUFallback) {
-                throw new Error(`${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`);
+                const message = `${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`;
+                if (required) {
+                    throw new Error(message);
+                }
+                // The core textures are already loaded.
+                Logger.Warn(`${message}; using fallback textures`);
+                return;
             }
             const grids = await Promise.all(
                 latents.map(async (latent): Promise<INeuralTextureGrid> => {
@@ -284,67 +284,104 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
             );
             const decoded = await DecodeNeuralTextureAsync(extension, grids, weights, () => this._disposed);
             const [width, height] = extension.resolution;
-            if (decoded.baseColor) {
-                babylonMaterial.albedoTexture = this._createTexture(decoded.baseColor, width, height, true, `${babylonMaterial.name} (Neural Base Color)`);
-            }
-            if (decoded.diffuse) {
-                babylonMaterial.albedoTexture = this._createTexture(decoded.diffuse, width, height, true, `${babylonMaterial.name} (Neural Diffuse)`);
-            }
-            if (decoded.specGloss) {
-                const reflectivity = this._createTexture(decoded.specGloss, width, height, true, `${babylonMaterial.name} (Neural Specular Glossiness)`);
-                reflectivity.hasAlpha = true;
-                babylonMaterial.reflectivityTexture = reflectivity;
-                babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
-            }
-            if (decoded.emissive) {
-                babylonMaterial.emissiveTexture = this._createTexture(decoded.emissive, width, height, true, `${babylonMaterial.name} (Neural Emissive)`);
-            }
-            if (decoded.normal) {
-                const normal = this._createTexture(decoded.normal, width, height, false, `${babylonMaterial.name} (Neural Normal)`);
-                normal.level = material.normalTexture?.scale ?? 1;
-                babylonMaterial.bumpTexture = normal;
-            }
-            if (decoded.orm) {
-                const orm = this._createTexture(decoded.orm, width, height, false, `${babylonMaterial.name} (Neural ORM)`);
-                if (replaces("occlusionTexture")) {
-                    babylonMaterial.ambientTexture = orm;
-                }
-                if (replaces("metallicRoughnessTexture")) {
-                    babylonMaterial.metallicTexture = orm;
+            const cpuBaked: INeuralTextureBaked = {};
+            for (const [group, gammaSpace] of [
+                ["baseColor", true],
+                ["diffuse", true],
+                ["specGloss", true],
+                ["emissive", true],
+                ["normal", false],
+                ["orm", false],
+            ] as const) {
+                const data = decoded[group];
+                if (data) {
+                    cpuBaked[group] = this._createTexture(data, width, height, gammaSpace, `${babylonMaterial.name} (Neural ${group})`);
                 }
             }
-            this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
+            this._assignNeuralTextures(context, material, babylonMaterial, cpuBaked, replaces, false);
         });
     }
 
-    private _assignBaked(context: string, material: IMaterial, babylonMaterial: PBRMaterial, baked: INeuralTextureBaked, replaces: (slot: string) => boolean, notify = true): void {
-        for (const texture of notify ? Object.values(baked) : []) {
+    /**
+     * Shader decoding redirects the samples of the PBR slots: every replaced slot needs a bound texture.
+     * Core textures remain assigned where possible to preserve texture defines, factors, alpha handling and
+     * tangent-space setup; 1x1 placeholders stand in for the color slots and for slots without a core texture.
+     * @param context the glTF context
+     * @param material the glTF material
+     * @param babylonMaterial the Babylon material
+     * @param replaces whether the extension replaces a slot
+     */
+    private _assignPlaceholders(context: string, material: IMaterial, babylonMaterial: PBRMaterial, replaces: (slot: string) => boolean): void {
+        const placeholder = (name: string, gammaSpace = true) => this._createTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, gammaSpace, name);
+        // Depth and shadow passes test the alpha of the albedo texture without the neural plugin: keep a real one.
+        const keepAlbedo = (material.alphaMode === "MASK" || material.alphaMode === "BLEND") && !!babylonMaterial.albedoTexture;
+        const textures: INeuralTextureBaked = {};
+        // The decoder returns encoded sRGB: the placeholders let the PBR shader linearize it.
+        if (replaces("baseColorTexture") && !keepAlbedo) {
+            textures.baseColor = placeholder("Neural base color");
+        }
+        if (replaces(DiffuseSlot) && !keepAlbedo) {
+            textures.diffuse = placeholder("Neural diffuse");
+        }
+        if (replaces(SpecularGlossinessSlot)) {
+            textures.specGloss = placeholder("Neural specular glossiness");
+        }
+        if (replaces("emissiveTexture")) {
+            textures.emissive = placeholder("Neural emissive");
+        }
+        if (replaces("normalTexture") && !babylonMaterial.bumpTexture) {
+            textures.normal = placeholder("Neural normal", false);
+        }
+        if ((replaces("occlusionTexture") && !babylonMaterial.ambientTexture) || (replaces("metallicRoughnessTexture") && !babylonMaterial.metallicTexture)) {
+            textures.orm = placeholder("Neural ORM", false);
+        }
+        this._assignNeuralTextures(context, material, babylonMaterial, textures, replaces, false);
+    }
+
+    private _assignNeuralTextures(
+        context: string,
+        material: IMaterial,
+        babylonMaterial: PBRMaterial,
+        textures: INeuralTextureBaked,
+        replaces: (slot: string) => boolean,
+        notify = true
+    ): void {
+        for (const texture of notify ? Object.values(textures) : []) {
             this._loader.parent.onTextureLoadedObservable.notifyObservers(texture);
         }
-        if (baked.baseColor) {
-            babylonMaterial.albedoTexture = baked.baseColor;
+        if (textures.baseColor) {
+            babylonMaterial.albedoTexture = textures.baseColor;
         }
-        if (baked.diffuse) {
-            babylonMaterial.albedoTexture = baked.diffuse;
+        if (textures.diffuse) {
+            babylonMaterial.albedoTexture = textures.diffuse;
         }
-        if (baked.specGloss) {
-            baked.specGloss.hasAlpha = true;
-            babylonMaterial.reflectivityTexture = baked.specGloss;
+        if (textures.specGloss) {
+            textures.specGloss.hasAlpha = true;
+            babylonMaterial.reflectivityTexture = textures.specGloss;
             babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
         }
-        if (baked.emissive) {
-            babylonMaterial.emissiveTexture = baked.emissive;
+        if (textures.emissive) {
+            babylonMaterial.emissiveTexture = textures.emissive;
         }
-        if (baked.normal) {
-            baked.normal.level = material.normalTexture?.scale ?? 1;
-            babylonMaterial.bumpTexture = baked.normal;
+        // Without a core texture, the slot configuration of the core loader is applied here.
+        if (textures.normal) {
+            textures.normal.level = material.normalTexture?.scale ?? 1;
+            babylonMaterial.bumpTexture = textures.normal;
+            const rightHanded = this._loader.babylonScene.useRightHandedSystem;
+            babylonMaterial.invertNormalMapX = !rightHanded;
+            babylonMaterial.invertNormalMapY = rightHanded;
         }
-        if (baked.orm) {
+        if (textures.orm) {
             if (replaces("occlusionTexture")) {
-                babylonMaterial.ambientTexture = baked.orm;
+                babylonMaterial.ambientTexture = textures.orm;
+                babylonMaterial.useAmbientInGrayScale = true;
+                babylonMaterial.ambientTextureStrength = material.occlusionTexture?.strength ?? 1;
             }
             if (replaces("metallicRoughnessTexture")) {
-                babylonMaterial.metallicTexture = baked.orm;
+                babylonMaterial.metallicTexture = textures.orm;
+                babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
+                babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
             }
         }
         this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
@@ -358,8 +395,10 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         extension: IBabylonMaterialsNeuralTexture,
         layout: INeuralV4Layout,
         latents: BaseTexture[],
+        textureOrder: number[],
         half: Uint16Array,
         replaces: (slot: string) => boolean,
+        required: boolean,
         timing: ReturnType<typeof CreateNeuralTextureTiming> | undefined,
         materialStart: number
     ): Promise<void> {
@@ -369,24 +408,9 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         const weightsTexture = CreateNeuralV4WeightsTexture(scene, packedWeights, container);
         if (this.decodeInShader) {
             const start = timing ? performance.now() : 0;
-            // Core textures remain assigned to preserve texture defines, factors, alpha handling and tangent-space setup. Only their fragment samples are replaced.
-            const placeholder = (name: string) => this._createTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, true, name);
-            if (replaces("baseColorTexture") && babylonMaterial.albedoTexture) {
-                babylonMaterial.albedoTexture = placeholder("Neural base color");
-            }
-            if (replaces(DiffuseSlot)) {
-                babylonMaterial.albedoTexture = placeholder("Neural diffuse");
-            }
-            if (replaces(SpecularGlossinessSlot)) {
-                const reflectivity = placeholder("Neural specular glossiness");
-                reflectivity.hasAlpha = true;
-                babylonMaterial.reflectivityTexture = reflectivity;
-                babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
-            }
-            if (replaces("emissiveTexture")) {
-                babylonMaterial.emissiveTexture = placeholder("Neural emissive");
-            }
-            this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
+            this._assignPlaceholders(context, material, babylonMaterial, replaces);
+            // The weights texture is sampled at runtime, so it is a loaded texture of the asset.
+            this._loader.parent.onTextureLoadedObservable.notifyObservers(weightsTexture);
             new NeuralTextureV4MaterialPlugin(babylonMaterial, extension, layout, latents, weightsTexture, packedWeights, this.runtimeFilter, this.lodBias, timing, {
                 weights: this.runtimeWeights,
                 precision: this.runtimePrecision,
@@ -407,14 +431,20 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         }
         weightsTexture.dispose();
         if (baked) {
-            this._assignBaked(context, material, babylonMaterial, baked, replaces);
+            this._assignNeuralTextures(context, material, babylonMaterial, baked, replaces);
             timing?.("materialLoad", materialStart);
             return;
         }
         if (!this.allowCPUFallback) {
-            throw new Error(`${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`);
+            const message = `${extensionContext}: GPU baking is unavailable (requires WebGL 2 or WebGPU compute); opt into allowCPUFallback to use CPU decoding`;
+            if (required) {
+                throw new Error(message);
+            }
+            // The core textures are already loaded.
+            Logger.Warn(`${message}; using fallback textures`);
+            return;
         }
-        const atlases = await Promise.all(
+        const read = await Promise.all(
             latents.map(async (latent) => {
                 const pixels = await latent.readPixels();
                 if (!(pixels instanceof Uint8Array)) {
@@ -423,6 +453,12 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
                 return { data: pixels, ...latent.getSize() };
             })
         );
+        // The latents follow the shader texture order; the CPU decoder indexes atlases by glTF latent index.
+        const atlases: INeuralV4Atlas[] = [];
+        textureOrder.forEach((index, i) => (atlases[index] = read[i]));
+        if (this.bakeMips === "neural") {
+            Logger.Warn(`${extensionContext}: The CPU fallback decodes only the base level; its mips are generated instead of decoded per mip`);
+        }
         const groups: Array<[NeuralV4Group, string[], boolean]> = [
             ["baseColor", ["baseColorTexture"], true],
             ["normal", ["normalTexture"], false],
@@ -444,7 +480,7 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
         for (const [group, , gammaSpace] of needed) {
             cpuBaked[group] = this._createTexture(decoded[group]!, layout.width, layout.height, gammaSpace, `${babylonMaterial.name} (Neural ${group})`);
         }
-        this._assignBaked(context, material, babylonMaterial, cpuBaked, replaces, false);
+        this._assignNeuralTextures(context, material, babylonMaterial, cpuBaked, replaces, false);
     }
 
     private _createTexture(data: Uint8Array, width: number, height: number, gammaSpace: boolean, name: string): RawTexture {
@@ -460,14 +496,9 @@ export class BABYLON_materials_neural_texture implements IGLTFLoaderExtension {
     }
 }
 
-let Registered = false;
 /** Registers the experimental neural texture loader extension. */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterBABYLON_materials_neural_texture(): void {
-    if (Registered) {
-        return;
-    }
-    Registered = true;
     unregisterGLTFExtension(NAME);
     registerGLTFExtension(NAME, true, (loader) => new BABYLON_materials_neural_texture(loader));
 }

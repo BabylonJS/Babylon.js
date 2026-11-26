@@ -1,4 +1,5 @@
 import { type Scene } from "core/scene";
+import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
 import { type AssetContainer } from "core/assetContainer";
 import { Constants } from "core/Engines/constants";
 import { ShaderStore } from "core/Engines/shaderStore";
@@ -10,7 +11,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
-import { GetWebGL2Context, type INeuralTextureBaked } from "./neuralTextureBaker";
+import { GetWebGL2Context, NeuralBakedTexture, type INeuralTextureBaked } from "./neuralTextureBaker";
 import { GetNeuralV4ConstantGroup, GetNeuralV4MipSize, HalfToFloat, type INeuralV4Layout, type INeuralV4WeightTexture } from "./neuralTextureV4";
 import { GetNeuralV4BakeShader } from "./neuralTextureV4Shaders";
 import { type NeuralTextureTiming } from "./neuralTextureTiming";
@@ -156,7 +157,7 @@ export async function BakeNeuralV4Async(
                         }
                     );
                     renderTargets.push({ group, variable: entry[1], index: entry[2], target });
-                    return new Texture(null, scene, { internalTexture: target.texture!, invertY: false, noMipmap: false });
+                    return new NeuralBakedTexture(target.texture!, scene);
                 });
             }
             texture._parentContainer = container;
@@ -215,22 +216,31 @@ export async function BakeNeuralV4Async(
                 const alphaMode = engine.getAlphaMode();
                 const colorWrite = engine.getColorWrite();
                 const viewport = engine.currentViewport;
+                const scissor = w !== mw || h !== mh;
+                let saved = false;
+                let bound = false;
                 try {
                     engine.setAlphaMode(Constants.ALPHA_DISABLE);
                     engine.setColorWrite(true);
                     renderer!.saveStates();
+                    saved = true;
                     engine.bindFramebuffer(target, 0, mw, mh, true, level);
-                    if (w !== mw || h !== mh) {
+                    bound = true;
+                    if (scissor) {
                         engine.enableScissor(x, y, w, h);
                     }
                     renderer!.applyEffectWrapper(wrapper!);
                     renderer!.draw();
-                    if (w !== mw || h !== mh) {
+                } finally {
+                    if (scissor) {
                         engine.disableScissor();
                     }
-                    engine.unBindFramebuffer(target, true);
-                    renderer!.restoreStates();
-                } finally {
+                    if (bound) {
+                        engine.unBindFramebuffer(target, true);
+                    }
+                    if (saved) {
+                        renderer!.restoreStates();
+                    }
                     engine.setAlphaMode(alphaMode);
                     engine.setColorWrite(colorWrite);
                     if (viewport) {
@@ -241,24 +251,30 @@ export async function BakeNeuralV4Async(
             };
             const dispatchStart = timing ? performance.now() : 0;
             const lastMip = mips === "neural" ? mipCount - 1 : 0;
-            for (const entry of renderTargets) {
-                group = entry.index;
-                for (mip = 0; mip <= lastMip; mip++) {
-                    const [mw, mh] = GetNeuralV4MipSize(layout, mip);
-                    for (let y = 0; y < mh; y += TileSize) {
-                        for (let x = 0; x < mw; x += TileSize) {
-                            checkCancelled();
-                            drawTile(entry.target, mip, x, y, Math.min(TileSize, mw - x), Math.min(TileSize, mh - y), mw, mh);
-                            if (mw > TileSize || mh > TileSize) {
-                                // eslint-disable-next-line no-await-in-loop
-                                await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            // Tiles of big textures use the scissor: the application's own scissor is restored afterwards.
+            const restoreScissor = SaveScissor(engine, gl);
+            try {
+                for (const entry of renderTargets) {
+                    group = entry.index;
+                    for (mip = 0; mip <= lastMip; mip++) {
+                        const [mw, mh] = GetNeuralV4MipSize(layout, mip);
+                        for (let y = 0; y < mh; y += TileSize) {
+                            for (let x = 0; x < mw; x += TileSize) {
+                                checkCancelled();
+                                drawTile(entry.target, mip, x, y, Math.min(TileSize, mw - x), Math.min(TileSize, mh - y), mw, mh);
+                                if (mw > TileSize || mh > TileSize) {
+                                    // eslint-disable-next-line no-await-in-loop
+                                    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+                                }
                             }
                         }
                     }
+                    if (mips === "generate" && mipCount > 1) {
+                        engine.generateMipmaps(entry.target.texture!);
+                    }
                 }
-                if (mips === "generate" && mipCount > 1) {
-                    engine.generateMipmaps(entry.target.texture!);
-                }
+            } finally {
+                restoreScissor();
             }
             timing?.("bakeDispatch", dispatchStart);
             // WebGL texture.readPixels wraps a synchronous read: use a nonblocking GL fence instead.
@@ -297,6 +313,23 @@ export async function BakeNeuralV4Async(
             delete store[`${shaderName}PixelShader`];
         }
     }
+}
+
+/**
+ * Captures the scissor state of the engine.
+ * @param engine the engine
+ * @param gl its WebGL 2 context, or null on WebGPU
+ * @returns a function that restores the captured scissor
+ */
+function SaveScissor(engine: AbstractEngine, gl: Nullable<WebGL2RenderingContext>): () => void {
+    let box: Nullable<ArrayLike<number>> = null;
+    if (gl) {
+        box = gl.isEnabled(gl.SCISSOR_TEST) ? (gl.getParameter(gl.SCISSOR_BOX) as Int32Array) : null;
+    } else {
+        const cached = (engine as unknown as { _scissorCached?: { x: number; y: number; z: number; w: number } })._scissorCached;
+        box = cached && (cached.z || cached.w) ? [cached.x, cached.y, cached.z, cached.w] : null;
+    }
+    return () => (box ? engine.enableScissor(box[0], box[1], box[2], box[3]) : engine.disableScissor());
 }
 
 async function WaitForWebGLBakeAsync(gl: WebGL2RenderingContext, checkCancelled: () => void): Promise<void> {

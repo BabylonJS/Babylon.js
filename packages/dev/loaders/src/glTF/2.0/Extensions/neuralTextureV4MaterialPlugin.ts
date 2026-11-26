@@ -5,7 +5,7 @@ import { type MaterialDefines } from "core/Materials/materialDefines";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
-import { GetNeuralCustomCode } from "./neuralTextureMaterialPlugin";
+import { GetNeuralCustomCode, PreserveNeuralPluginOnClone } from "./neuralTextureMaterialPlugin";
 import { type INeuralV4Layout, type INeuralV4WeightTexture, HalfToFloat } from "./neuralTextureV4";
 import {
     GetNeuralV4RuntimeShader,
@@ -49,6 +49,8 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     private _weightsUbo: Nullable<DataBuffer> = null;
     private _warned = new Set<string>();
     private _debugChannels: number[] | undefined;
+    // The options of prepareDefines, which the effect is compiled and bound with; reset when a requested option changes.
+    private _effectiveOptions: Nullable<Required<INeuralV4ShaderOptions>> = null;
 
     /** Bias added to the mip level selected from the UV derivatives. */
     public lodBias: number;
@@ -81,6 +83,14 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         this.lodBias = lodBias;
         this._pluginManager._addPlugin(this);
         this._enable(true);
+        PreserveNeuralPluginOnClone(
+            material,
+            (clone) =>
+                new NeuralTextureV4MaterialPlugin(clone, extension, layout, latents, weights, packedWeights, this._runtimeFilter, this.lodBias, undefined, {
+                    weights: this._runtimeWeights,
+                    precision: this._runtimePrecision,
+                })
+        );
     }
 
     /** Filtering of the decoded texels: bilinear (the default, 4 decodes), nearest, trilinear (8 decodes) or stochastic (1 decode with a random mip and texel). */
@@ -103,6 +113,7 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     public set runtimeWeights(value: NeuralTextureRuntimeWeights) {
         if (value !== this._runtimeWeights) {
             this._runtimeWeights = value;
+            this._effectiveOptions = null;
             this.markAllDefinesAsDirty();
         }
     }
@@ -115,6 +126,7 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     public set runtimePrecision(value: NeuralTextureRuntimePrecision) {
         if (value !== this._runtimePrecision) {
             this._runtimePrecision = value;
+            this._effectiveOptions = null;
             this.markAllDefinesAsDirty();
         }
     }
@@ -172,9 +184,13 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
     }
 
     public override prepareDefines(defines: MaterialDefines): void {
-        const options = this._getEffectiveOptions();
+        const options = (this._effectiveOptions ??= this._getEffectiveOptions());
+        // The generated code embeds the layout and its dimensions as literals, and the compiled effect is cached by defines.
         defines["NEURAL_LAYOUT"] = HashString(
             JSON.stringify([
+                this._layout.width,
+                this._layout.height,
+                this._layout.mipCount,
                 this._layout.channels,
                 this._layout.grids,
                 this._extension.outputs,
@@ -205,7 +221,7 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         uniformBuffer.updateFloat4("neuralParams", this._material.getScene().getFrameId() & 0xffff, this.lodBias, this.forceMip, 0);
         this._latents.forEach((latent, i) => uniformBuffer.setTexture(`neuralLatent${i}`, latent));
         uniformBuffer.setTexture("neuralWeightTex", this._weights);
-        if (this._runtimeWeights === "uniform" && subMesh.effect) {
+        if (this._effectiveOptions?.weights === "uniform" && subMesh.effect) {
             if (!this._weightsUbo) {
                 const half = this._packedWeights.data;
                 const data = new Float32Array(half.length);
@@ -251,7 +267,7 @@ export class NeuralTextureV4MaterialPlugin extends MaterialPluginBase {
         return GetNeuralCustomCode(
             extension,
             shaderLanguage,
-            GetNeuralV4RuntimeShader(this._layout, extension.outputs, shaderLanguage, this._runtimeFilter, this._getEffectiveOptions())
+            GetNeuralV4RuntimeShader(this._layout, extension.outputs, shaderLanguage, this._runtimeFilter, this._effectiveOptions ?? this._getEffectiveOptions())
         );
     }
 }

@@ -12,6 +12,9 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Texture } from "core/Materials/Textures/texture.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
+import { RegisterEnginesWebGPUExtensionsEngineComputeShader } from "core/Engines/WebGPU/Extensions/engine.computeShader.pure";
 import { type Nullable } from "core/types";
 import { type IBabylonMaterialsNeuralTexture } from "./BABYLON_materials_neural_texture.types";
 import { GetNeuralTexturePackedSize, GetNeuralTextureShader, PackNeuralTextureWeights } from "./neuralTextureShaders";
@@ -43,6 +46,25 @@ const GammaOutputs = ["baseColor", "emissive", "diffuse", "specGloss"];
 
 // WebGPU guarantees four storage textures per compute stage by default.
 const MaxStorageTextures = 4;
+
+/**
+ * A texture over a baked render target. Unlike a plain Texture over an internal texture, which clones empty,
+ * its clones share the baked GPU data, that is only freed once the last clone is disposed.
+ * @internal
+ */
+export class NeuralBakedTexture extends Texture {
+    constructor(internalTexture: InternalTexture, sceneOrEngine: Scene) {
+        super(null, sceneOrEngine, { internalTexture, invertY: false, noMipmap: false });
+    }
+
+    public override clone(): Texture {
+        return SerializationHelper.Clone(() => {
+            const internalTexture = this._texture!;
+            internalTexture.incrementReferences();
+            return new NeuralBakedTexture(internalTexture, this.getScene()!);
+        }, this);
+    }
+}
 
 /**
  * Returns the engine's own WebGL 2 context. Querying the canvas again can return
@@ -145,7 +167,7 @@ export async function BakeNeuralTextureAsync(
                     }
                 );
                 renderTargets.push(target);
-                return new Texture(null, scene, { internalTexture: target.texture!, invertY: false, noMipmap: false });
+                return new NeuralBakedTexture(target.texture!, scene);
             });
             texture._parentContainer = container;
             texture.name = `Neural ${slot} (baked)`;
@@ -156,6 +178,8 @@ export async function BakeNeuralTextureAsync(
         timing?.("bakeWeightsUploadAndTargetCreation", phaseStart);
         phaseStart = timing ? performance.now() : 0;
         if (engine.isWebGPU) {
+            // ComputeShader creates its compute context on construction, so the engine extension must be registered first.
+            RegisterEnginesWebGPUExtensionsEngineComputeShader();
             const decoder = GetNeuralTextureShader(
                 extension,
                 ShaderLanguage.WGSL,

@@ -306,4 +306,20 @@ describe("WebGPUShaderProcessorWGSL", () => {
             expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
         });
     });
+
+    describe("enable f16 hoisting", () => {
+        const vtx = "@vertex\nfn main(input : VertexInputs) -> FragmentInputs {\n  vertexOutputs.position = vec4<f32>(0.0);\n}\n";
+        const body = "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n  fragmentOutputs.color = vec4<f32>(1.0);\n}\n";
+
+        it("hoists a mid-module directive to the front", () => {
+            const { fragmentCode } = processor.finalizeShaders(vtx, "fn helper() {}\nenable f16;\n" + body);
+            expect(fragmentCode.match(/enable f16;/g)).toHaveLength(1);
+            expect(fragmentCode).toContain("enable f16;\nstruct FragmentInputs");
+        });
+
+        it("ignores directives in comments", () => {
+            const { fragmentCode } = processor.finalizeShaders(vtx, "/*\nenable f16;\n*/\n// enable f16;\n" + body);
+            expect(fragmentCode).not.toContain("enable f16;\nstruct FragmentInputs");
+        });
+    });
 });

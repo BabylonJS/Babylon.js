@@ -10,8 +10,18 @@ See documentation links:
 
 ### Experimental neural material textures
 
-`BABYLON_materials_neural_texture` (`babylon-ntc-v1` and `babylon-ntc-v2`) is enabled by
+`BABYLON_materials_neural_texture` (`babylon-ntc-v1`, `babylon-ntc-v2` and `babylon-ntc-v4`) is enabled by
 default. An unknown `codec` logs a warning and the material keeps its core fallback textures.
+When neural decoding is unavailable on the engine (no GPU bake and no allowed CPU fallback, or no shader
+support in shader mode), an optional extension logs a warning and keeps the core textures; an extension listed
+in `extensionsRequired` fails the load.
+
+`babylon-ntc-v4` stores per-group latent atlases (texture order follows the `latentTextures` array) and a
+packed half/float MLP. Load-time decoding bakes mipmapped textures with WebGL 2 or WebGPU render passes;
+`bakeMips: "neural"` decodes every mip from the matching latent level, otherwise mips are generated. The
+runtime path (`decodeInShader: true`) accepts `runtimeFilter` (`bilinear` default, `nearest`, `trilinear`,
+`stochastic`), `lodBias`, `runtimeWeights` (`texture` default or `uniform`) and `runtimePrecision` (`f32`
+default, or `f16` where supported). The CPU fallback decodes the base level only.
 The text below describes the shared pipeline for the original v1 layout. Its two RGBA8-pair latent grids and float32 24→32→32→9 network are
 baked into ordinary mipmapped base-color (sRGB), normal (linear, reconstructed
 Z), and occlusion/roughness/metallic (linear RGB) textures at load time. WebGL 2
@@ -51,7 +61,7 @@ await ImportMeshAsync("model.glb", scene, {
 Both GLSL (WebGL 2) and WGSL (WebGPU) are supported. Only `replacedSlots` are substituted; glTF factors, normal
 scale, occlusion strength, alpha mode, and other textures remain intact.
 Explicit shader mode never calls the GPU baker or CPU decoder, even when CPU fallback
-is allowed. Unsupported engines fail rather than silently baking. Latents and
+is allowed. Unsupported engines fail (required extension) or keep the core textures (optional extension) rather than silently baking. Latents and
 losslessly padded float32 weights are uploaded; only tiny core-slot placeholders
 may be created to retain PBR defines and encoded-sRGB handling.
 Untransformed `TEXCOORD_0` and `PBRMaterial` are currently required; other

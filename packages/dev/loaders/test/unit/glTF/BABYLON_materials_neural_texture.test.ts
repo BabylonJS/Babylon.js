@@ -49,7 +49,7 @@ function PayloadV2(): IBabylonMaterialsNeuralTexture {
         codec: "babylon-ntc-v2",
         weights: { bufferView: 0, componentType: 5126, count: 1856 + 33 * 13 },
         network: { inputs: 24, hidden: [32, 32], outputs: 13, activation: "relu" },
-        outputs: { diffuse: [0, 1, 2], specular: [3, 4, 5], glossiness: [6], normal: [7, 8], occlusion: [9], emissive: [10, 11, 12] },
+        outputs: { diffuse: [0, 3], specular: [3, 3], glossiness: [6, 1], normal: [7, 2], occlusion: [9, 1], emissive: [10, 3] },
         replacedSlots: [
             "KHR_materials_pbrSpecularGlossiness.diffuseTexture",
             "KHR_materials_pbrSpecularGlossiness.specularGlossinessTexture",
@@ -95,11 +95,11 @@ describe("BABYLON_materials_neural_texture", () => {
                     extensionOptions: { BABYLON_materials_neural_texture: { decodeInShader: true, allowCPUFallback: true } },
                     onTextureLoadedObservable: new Observable<BaseTexture>(),
                 },
-                gltf: { bufferViews: [{ index: 0 }] },
+                gltf: { bufferViews: [{ index: 0 }], extensionsRequired: ["BABYLON_materials_neural_texture"] },
                 isExtensionUsed: () => true,
                 loadTextureInfoAsync: vi.fn(async (_context: string, info: { index: number }) => latents[info.index]),
                 loadBufferViewAsync: async () => new Uint8Array(2153 * 4),
-                loadMaterialPropertiesAsync: async () => {},
+                loadMaterialPropertiesAsync: vi.fn(async () => {}),
                 loadMaterialAlphaProperties: vi.fn(),
             } as unknown as GLTFLoader;
             const source = { index: 0, extensions: { BABYLON_materials_neural_texture: payload } };
@@ -107,13 +107,19 @@ describe("BABYLON_materials_neural_texture", () => {
             const initialTextures = scene.textures.slice();
             await expect(new NeuralExtension(loader).loadMaterialPropertiesAsync("/materials/0", source, material)).rejects.toThrow("Shader decoding requires");
             expect(loader.loadTextureInfoAsync).not.toHaveBeenCalled();
+            // An optional extension falls back to the core material instead.
+            delete (loader.gltf as { extensionsRequired?: string[] }).extensionsRequired;
+            await new NeuralExtension(loader).loadMaterialPropertiesAsync("/materials/0", source, material);
+            expect(loader.loadMaterialPropertiesAsync).toHaveBeenCalled();
+            expect(loader.loadTextureInfoAsync).not.toHaveBeenCalled();
             Object.defineProperty(engine, "supportsUniformBuffers", { configurable: true, get: () => true });
             await new NeuralExtension(loader).loadMaterialPropertiesAsync("/materials/0", source, material);
             expect(material.pluginManager!.getPlugin("BABYLON_materials_neural_texture")).toBeTruthy();
             expect(bake).not.toHaveBeenCalled();
             expect(decode).not.toHaveBeenCalled();
             expect(latents.every((latent) => !latent.readPixels.mock.calls.length)).toBe(true);
-            expect(scene.textures).toEqual(initialTextures);
+            const added = scene.textures.filter((texture) => !initialTextures.includes(texture));
+            expect(added.every((texture) => texture.getSize().width === 1 && texture.getSize().height === 1)).toBe(true);
         } finally {
             bake.mockRestore();
             decode.mockRestore();
@@ -168,6 +174,9 @@ describe("BABYLON_materials_neural_texture", () => {
             }
             const strict = new NeuralExtension(loader);
             expect(strict.allowCPUFallback).toBe(false);
+            // An optional extension keeps the core textures.
+            await strict.loadMaterialPropertiesAsync("/materials/0", source, material);
+            (loader.gltf as { extensionsRequired?: string[] }).extensionsRequired = ["BABYLON_materials_neural_texture"];
             await expect(strict.loadMaterialPropertiesAsync("/materials/0", source, material)).rejects.toThrow("GPU baking is unavailable");
             expect(latents.every((latent) => !latent.readPixels.mock.calls.length)).toBe(true);
             for (const texture of loaded) {
@@ -337,23 +346,33 @@ describe("BABYLON_materials_neural_texture", () => {
         }
     });
 
-    it("validates babylon-ntc-v2 payloads, accepts index lists and [start,count] ranges, and rejects bad ones", () => {
+    it("resolves babylon-ntc-v2 [start,count] outputs by codec and rejects bad ones", () => {
         const extension = PayloadV2();
-        expect(() => ValidateNeuralTexture("v2", extension)).not.toThrow();
-        const ranged = PayloadV2();
-        ranged.outputs = { diffuse: [0, 3], specular: [3, 3], glossiness: [6], normal: [7, 2], occlusion: [9], emissive: [10, 3] };
-        expect(ResolveNeuralTexture("v2", ranged).outputs).toEqual(extension.outputs);
+        expect(ResolveNeuralTexture("v2", extension).outputs).toEqual({
+            diffuse: [0, 1, 2],
+            specular: [3, 4, 5],
+            glossiness: [6],
+            normal: [7, 8],
+            occlusion: [9],
+            emissive: [10, 11, 12],
+        });
+        const normalAt = PayloadV2();
+        normalAt.outputs.normal = [4, 2];
+        expect(ResolveNeuralTexture("v2", normalAt).outputs.normal).toEqual([4, 5]);
+        const indexList = PayloadV2();
+        indexList.outputs.diffuse = [0, 1, 2];
+        expect(() => ValidateNeuralTexture("v2", indexList)).toThrow("outputs.diffuse");
         const badCount = PayloadV2();
         badCount.weights.count = 2153;
         expect(() => ValidateNeuralTexture("v2", badCount)).toThrow("weights.count");
         const outOfRange = PayloadV2();
-        outOfRange.outputs.emissive = [11, 12, 13];
+        outOfRange.outputs.emissive = [11, 3];
         expect(() => ValidateNeuralTexture("v2", outOfRange)).toThrow("outputs.emissive");
         const missing = PayloadV2();
         delete missing.outputs.glossiness;
         expect(() => ValidateNeuralTexture("v2", missing)).toThrow("without its outputs");
         const wrongComponents = PayloadV2();
-        wrongComponents.outputs.normal = [7, 8, 9];
+        wrongComponents.outputs.normal = [7, 3];
         expect(() => ValidateNeuralTexture("v2", wrongComponents)).toThrow("outputs.normal");
         expect(() => ValidateNeuralTexture("v1", { ...Payload(), replacedSlots: ["emissiveTexture"] })).toThrow("Unsupported");
     });
@@ -389,7 +408,7 @@ describe("BABYLON_materials_neural_texture", () => {
 
     it("generates decoders for the optional groups only when the payload provides them", () => {
         for (const language of [ShaderLanguage.GLSL, ShaderLanguage.WGSL]) {
-            const v2 = GetNeuralTextureShader(PayloadV2(), language, "uv");
+            const v2 = GetNeuralTextureShader(ResolveNeuralTexture("v2", PayloadV2()), language, "uv");
             for (const name of ["neuralEmissive", "neuralDiffuse", "neuralSpecGloss", "neuralBaseColor", "neuralNormal", "neuralORM"]) {
                 expect(v2.main).toContain(name);
             }
@@ -405,7 +424,7 @@ describe("BABYLON_materials_neural_texture", () => {
         const scene = new Scene(engine);
         try {
             const material = new PBRMaterial("neural", scene);
-            const plugin = new NeuralTextureMaterialPlugin(material, PayloadV2(), [], new Float32Array(1856 + 33 * 13));
+            const plugin = new NeuralTextureMaterialPlugin(material, ResolveNeuralTexture("v2", PayloadV2()), [], new Float32Array(1856 + 33 * 13));
             for (const language of [ShaderLanguage.GLSL, ShaderLanguage.WGSL]) {
                 const code = plugin.getCustomCode("fragment", language)!;
                 expect(code.CUSTOM_FRAGMENT_DEFINITIONS).toContain("sampleNeural(uv).specGloss");

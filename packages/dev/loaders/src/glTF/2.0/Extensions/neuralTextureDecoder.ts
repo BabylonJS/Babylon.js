@@ -41,14 +41,6 @@ const OutputComponents: Array<[keyof NeuralTextureOutputs, number[]]> = [
     ["glossiness", [1]],
 ];
 
-// Tells a [startChannel, componentCount] pair apart from an explicit channel list.
-function IsRange(channels: number[], components: number[]): boolean {
-    if (channels.length !== 2 || !components.includes(channels[1])) {
-        return false;
-    }
-    // Only normal has two components, so [start, 2] is ambiguous with the index list [x, 2]; contiguous lists never start at 1 there.
-    return !components.includes(2) || channels[0] !== 1;
-}
 /**
  * Validates a babylon-ntc-v1 or babylon-ntc-v2 payload.
  * @param context the glTF context, for error messages
@@ -159,7 +151,8 @@ function ResolveV2(context: string, extension: IBabylonMaterialsNeuralTexture): 
     return { ...extension, outputs: ResolveGroupOutputs(extension, count, invalid) };
 }
 
-// Checks the outputs and replacedSlots of babylon-ntc-v2 and v4, and expresses every group as explicit channel indices into the `count` logical channels.
+// Checks the outputs and replacedSlots of babylon-ntc-v2 and v4, whose groups are [startChannel, componentCount] pairs,
+// and expresses every group as explicit channel indices into the `count` logical channels.
 function ResolveGroupOutputs(extension: IBabylonMaterialsNeuralTexture, count: number, invalid: (reason: string) => Error): NeuralTextureOutputs {
     if (
         !extension.outputs ||
@@ -174,13 +167,10 @@ function ResolveGroupOutputs(extension: IBabylonMaterialsNeuralTexture, count: n
         if (channels === undefined) {
             continue;
         }
-        if (!Array.isArray(channels) || !channels.every((value) => Number.isInteger(value) && value >= 0)) {
+        if (!Array.isArray(channels) || channels.length !== 2 || !channels.every((value) => Number.isInteger(value) && value >= 0)) {
             throw invalid(`outputs.${name}`);
         }
-        let indices = channels;
-        if (IsRange(channels, components)) {
-            indices = Array.from({ length: channels[1] }, (_, i) => channels[0] + i);
-        }
+        const indices = Array.from({ length: channels[1] }, (_, i) => channels[0] + i);
         if (!components.includes(indices.length) || !indices.every((value) => value < count)) {
             throw invalid(`outputs.${name}`);
         }

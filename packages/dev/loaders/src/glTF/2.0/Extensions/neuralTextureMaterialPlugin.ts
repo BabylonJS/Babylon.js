@@ -16,6 +16,22 @@ function HashString(text: string): number {
     return hash >>> 1;
 }
 
+/**
+ * Material plugins that are not serialized are not recreated by Material.clone: recreate the neural decoder on
+ * the clones, sharing the decoding resources, so that they keep the appearance of the source material.
+ * @param material the material of the plugin
+ * @param create creates the plugin on a clone
+ * @internal
+ */
+export function PreserveNeuralPluginOnClone(material: PBRMaterial, create: (clone: PBRMaterial) => void): void {
+    const clone = material.clone;
+    material.clone = function (this: PBRMaterial, ...args: Parameters<PBRMaterial["clone"]>) {
+        const result = clone.apply(this, args);
+        create(result);
+        return result;
+    };
+}
+
 /** @internal */
 export class NeuralTextureMaterialPlugin extends MaterialPluginBase {
     private _packedWeights: Float32Array;
@@ -37,6 +53,7 @@ export class NeuralTextureMaterialPlugin extends MaterialPluginBase {
         this._layoutKey = HashString(JSON.stringify([extension.network.outputs, extension.outputs, extension.replacedSlots]));
         this._pluginManager._addPlugin(this);
         this._enable(true);
+        PreserveNeuralPluginOnClone(material, (clone) => new NeuralTextureMaterialPlugin(clone, extension, latents, weights));
     }
 
     public override isCompatible(): boolean {
@@ -145,10 +162,13 @@ NeuralTexel sampleNeural(vec2 uv) {
     if (all(equal(uv, neuralCachedUV))) { return neuralCachedTexel; }
     return decodeNeural(uv);
 }`,
+            // The replaced samples exist only with a UV set: without one, the material has no texture to redirect.
             CUSTOM_FRAGMENT_MAIN_BEGIN: `
+#ifdef MAINUV1
 ${shader.mainBegin ?? ""}
 neuralCachedUV = ${wgsl ? "fragmentInputs.vMainUV1" : "vMainUV1"};
-neuralCachedTexel = decodeNeural(neuralCachedUV);`,
+neuralCachedTexel = decodeNeural(neuralCachedUV);
+#endif`,
         };
         // The specular/glossiness workflow takes precedence over metallic/roughness for the shared samplers.
         const redirected = new Set<string>();
@@ -164,12 +184,15 @@ neuralCachedTexel = decodeNeural(neuralCachedUV);`,
             if (extension.replacedSlots.includes(slot) && !redirected.has(sampler)) {
                 redirected.add(sampler);
                 const sample = `sampleNeural${sampler}`;
+                // An alpha-tested albedo is kept for the depth and shadow passes: when the hardware decodes it
+                // from sRGB, GAMMAALBEDO is off and the encoded neural color must be linearized here.
+                const linearize = sampler === "albedo" ? `\n#ifndef GAMMAALBEDO\ncolor = ${wgsl ? "vec4f" : "vec4"}(toLinearSpace(color.rgb), color.a);\n#endif\n` : "";
                 if (wgsl) {
-                    code.CUSTOM_FRAGMENT_DEFINITIONS += `\nfn ${sample}(uv: vec2f) -> vec4f { return sampleNeural(uv).${field}; }\n`;
+                    code.CUSTOM_FRAGMENT_DEFINITIONS += `\nfn ${sample}(uv: vec2f) -> vec4f {\nvar color = sampleNeural(uv).${field};${linearize}\nreturn color;\n}\n`;
                 } else {
                     // Bump/parallax functions precede CUSTOM_FRAGMENT_DEFINITIONS.
                     code[declarationsPoint] += `\nvec4 ${sample}(vec2 uv);\n`;
-                    code.CUSTOM_FRAGMENT_DEFINITIONS += `\nvec4 ${sample}(vec2 uv) { return sampleNeural(uv).${field}; }\n`;
+                    code.CUSTOM_FRAGMENT_DEFINITIONS += `\nvec4 ${sample}(vec2 uv) {\nvec4 color = sampleNeural(uv).${field};${linearize}\nreturn color;\n}\n`;
                 }
                 // MaterialPluginBase runs this after includes, only for this PBR material.
                 // Replace just the call prefix: nested UV expressions, offsets, swizzles,

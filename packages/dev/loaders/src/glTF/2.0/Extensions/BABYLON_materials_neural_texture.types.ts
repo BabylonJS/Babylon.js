@@ -14,8 +14,8 @@ export type NeuralTextureSlot =
 export type NeuralTextureCodec = "babylon-ntc-v1" | "babylon-ntc-v2" | "babylon-ntc-v4";
 
 /**
- * Network output channels for each material property group. A group is either the explicit list of output
- * indices (always the form of babylon-ntc-v1) or, for babylon-ntc-v2 and babylon-ntc-v4, a [startChannel, componentCount] pair.
+ * Network output channels for each material property group. The form depends on the codec: babylon-ntc-v1 lists the
+ * output indices of each group, babylon-ntc-v2 and babylon-ntc-v4 always give a [startChannel, componentCount] pair.
  */
 export type NeuralTextureOutputs = Partial<Record<"baseColor" | "normal" | "occlusion" | "roughness" | "metallic" | "emissive" | "diffuse" | "specular" | "glossiness", number[]>>;
 
