@@ -120,8 +120,10 @@ export class ClusteredLightContainer extends Light {
 
     private _camera: Nullable<Camera> = null;
 
-    // The lights sorted by depth
+    // All the lights in the container (the enabled ones are copied to _activeLights)
     private readonly _sortedLights: (PointLight | SpotLight)[] = [];
+    // The enabled lights sorted by depth, refilled on every light data update
+    private readonly _activeLights: (PointLight | SpotLight)[] = [];
 
     private _lightDataBuffer: Float32Array;
     private _lightDataTexture: RawTexture;
@@ -422,14 +424,23 @@ export class ClusteredLightContainer extends Light {
         }
         this._lightDataRenderId = renderId;
 
-        // Resort lights based on distance from camera
+        // Resort the enabled lights based on distance from camera. Disabled lights are left out of the
+        // light data and the slice ranges, and their rows get a negative range so the light proxy
+        // collapses them and they cover no tile. The proxy still draws one instance per light, so the
+        // draw does not change when a light is enabled or disabled (a recorded WebGPU snapshot replays it).
         const view = camera.getViewMatrix();
+        const activeLights = this._activeLights;
+        activeLights.length = 0;
         for (const light of this._sortedLights) {
+            if (!light.isEnabled()) {
+                continue;
+            }
             const position = light.computeTransformedInformation() ? light.transformedPosition : light.position;
             const viewPosition = Vector3.TransformCoordinatesToRef(position, view, TmpVectors.Vector3[0]);
             light._currentViewDepth = this._scene.useRightHandedSystem ? -viewPosition.z : viewPosition.z;
+            activeLights.push(light);
         }
-        this._sortedLights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
+        activeLights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
 
         // DOOM 2016 subdivision scheme, copied from: https://www.aortiz.me/2018/12/21/CG.html
         const logFarNear = Math.log(camera.maxZ / camera.minZ);
@@ -443,8 +454,8 @@ export class ClusteredLightContainer extends Light {
         const buf = this._lightDataBuffer;
         const offset = this._scene.floatingOriginOffset;
 
-        for (let i = 0; i < this._sortedLights.length; i += 1) {
-            const light = this._sortedLights[i];
+        for (let i = 0; i < activeLights.length; i += 1) {
+            const light = activeLights[i];
             const off = i * 20;
             const computed = light.computeTransformedInformation();
             const scaledIntensity = light.getScaledIntensity();
@@ -511,6 +522,12 @@ export class ClusteredLightContainer extends Light {
                 // Update max index
                 this._sliceRanges[j * 2 + 1] = i;
             }
+        }
+
+        // Rows of the disabled lights: no color, and a negative range tells the light proxy to skip them
+        buf.fill(0, activeLights.length * 20, this._sortedLights.length * 20);
+        for (let i = activeLights.length; i < this._sortedLights.length; i += 1) {
+            buf[i * 20 + 16] = -1;
         }
 
         const engine = this.getEngine();

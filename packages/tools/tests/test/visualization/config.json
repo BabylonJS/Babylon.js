@@ -6116,6 +6116,21 @@
             "dependsOn": ["Materials", "Meshes", "Shadows", "Textures"]
         },
         {
+            "title": "WebGPU snapshot rendering with clustered lights enabled after the recording",
+            "playgroundId": "#C31BQF#0",
+            "referenceImage": "webgpu-snapshot-clustered-lights-enabled.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Lights", "Materials", "Meshes", "PBR"]
+        },
+        {
+            "title": "WebGPU snapshot rendering with a clustered light disabled after the recording",
+            "playgroundId": "#C31BQF#0",
+            "referenceImage": "webgpu-snapshot-clustered-light-disabled.png",
+            "replace": "const recordWithRedLightOn = false;, const recordWithRedLightOn = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Lights", "Materials", "Meshes", "PBR"]
+        },
+        {
             "title": "SubMesh indirect draw buffer - GPU-written arguments per pass",
             "playgroundId": "#1GU3CM#2",
             "referenceImage": "submesh-indirect-draw-buffer.png",

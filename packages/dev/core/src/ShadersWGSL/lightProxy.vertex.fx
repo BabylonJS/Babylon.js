@@ -16,6 +16,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
     let light = getClusteredLight(lightDataTexture, vertexInputs.instanceIndex);
     let range = light.vLightFalloff.x;
 
+    // Disabled lights have a negative range: collapse the proxy so it does not add the light to any tile
+    if (range < 0.0) {
+        vertexOutputs.position = vec4f(0, 0, 0, 1);
+        vertexOutputs.vMask = 0u;
+        return vertexOutputs;
+    }
+
     let viewPosition = scene.view * vec4f(light.vLightData.xyz, 1);
     let viewPositionSq = viewPosition * viewPosition;
 
