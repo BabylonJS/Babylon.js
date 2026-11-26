@@ -5,6 +5,7 @@ import { VertexBuffer } from "../Buffers/buffer.pure";
 import { Constants } from "../Engines/constants";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { Observable } from "../Misc/observable";
 import { type Scene } from "../scene";
 
@@ -134,13 +135,30 @@ export class PostProcessManager {
         doNotBindFrambuffer = false,
         numPostsProcesses = postProcesses.length
     ): void {
+        this._directRender(postProcesses, targetTexture, null, faceIndex, undefined, forceFullscreenViewport, lodLevel, doNotBindFrambuffer, numPostsProcesses);
+    }
+
+    /** @internal */
+    public _directRender(
+        postProcesses: PostProcess[],
+        targetTexture: Nullable<RenderTargetWrapper>,
+        output: Nullable<RenderTargetTexture> | undefined,
+        faceIndex = 0,
+        layer?: number,
+        forceFullscreenViewport = false,
+        lodLevel = 0,
+        doNotBindFrambuffer = false,
+        numPostsProcesses = postProcesses.length
+    ): void {
         const engine = this._scene.getEngine();
 
         for (let index = 0; index < numPostsProcesses; index++) {
             if (index < postProcesses.length - 1) {
                 postProcesses[index + 1].activate(this._scene.activeCamera || this._scene, targetTexture?.texture);
             } else {
-                if (targetTexture) {
+                if (output) {
+                    output._bindFrameBuffer(faceIndex, layer, forceFullscreenViewport);
+                } else if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
                 } else if (!doNotBindFrambuffer) {
                     engine.restoreDefaultFramebuffer();
@@ -177,6 +195,7 @@ export class PostProcessManager {
      * @param faceIndex The index of the face to bind the target texture to.
      * @param postProcesses The array of post processes to render.
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
+     * @param layer Explicit output slice when rendering an array or volume texture.
      * @internal
      */
     public _finalizeFrame(
@@ -184,7 +203,8 @@ export class PostProcessManager {
         targetTexture?: RenderTargetWrapper,
         faceIndex?: number,
         postProcesses?: Array<PostProcess>,
-        forceFullscreenViewport = false
+        forceFullscreenViewport = false,
+        layer?: number
     ): void {
         const camera = this._scene.activeCamera;
 
@@ -208,11 +228,11 @@ export class PostProcessManager {
             } else {
                 if (targetTexture) {
                     const output = camera.outputRenderTarget;
-                    if (output?.renderTarget === targetTexture && faceIndex === undefined) {
+                    if (output?.renderTarget === targetTexture && faceIndex === undefined && layer === undefined) {
                         // The camera target owns the layer selection (e.g. one eye of a projection layer).
                         output._bindFrameBuffer(undefined, undefined, forceFullscreenViewport);
                     } else {
-                        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
+                        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, 0, layer);
                     }
                     pp._outputTexture = targetTexture;
                 } else {

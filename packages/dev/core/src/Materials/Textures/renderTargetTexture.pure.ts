@@ -715,9 +715,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
 
             if (this._postProcessManager) {
-                this._postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, this._currentFaceIndex, this._postProcesses, this.ignoreCameraViewport);
+                this._postProcessManager._finalizeFrame(
+                    false,
+                    this._renderTarget ?? undefined,
+                    this._currentFaceIndex,
+                    this._postProcesses,
+                    this.ignoreCameraViewport,
+                    this._currentLayer
+                );
             } else if (this._currentUseCameraPostProcess) {
-                this._scene!.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, this._currentFaceIndex);
+                this._scene!.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, this._currentFaceIndex, undefined, false, this._currentLayer);
             }
 
             if (!this._disableEngineStages) {

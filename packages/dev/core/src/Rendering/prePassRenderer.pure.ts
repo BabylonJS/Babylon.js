@@ -538,7 +538,13 @@ export class PrePassRenderer {
         } else if (this._postProcessesSourceForThisPass.length) {
             this._scene.postProcessManager._prepareFrame();
         } else {
-            this._engine.restoreDefaultFramebuffer();
+            const camera = this._scene.activeCamera;
+            const output = camera?._multiviewTexture ?? camera?.outputRenderTarget;
+            if (output) {
+                output._bindFrameBuffer();
+            } else {
+                this._engine.restoreDefaultFramebuffer();
+            }
         }
     }
 
@@ -560,9 +566,13 @@ export class PrePassRenderer {
         return true;
     }
 
-    private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
+    private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number, layer?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
-        const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
+        const camera = this._scene.activeCamera;
+        const destination = prePassRenderTarget.renderTargetTexture ?? camera?._multiviewTexture ?? camera?.outputRenderTarget;
+        const outputTexture = firstPP ? firstPP.inputTexture : (destination?.renderTarget ?? null);
+        // A downstream post-process usually owns a flat intermediate, not a slice of the scene output.
+        const output = destination?.renderTarget === outputTexture ? destination : null;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -579,7 +589,7 @@ export class PrePassRenderer {
         // Activates and renders the chain
         if (postProcessChain.length) {
             this._scene.postProcessManager._prepareFrame(this._currentTarget.renderTarget?.texture, postProcessChain);
-            this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
+            this._scene.postProcessManager._directRender(postProcessChain, outputTexture, output, output || outputTexture?.isCube ? faceIndex : undefined, layer);
         }
     }
 
@@ -589,7 +599,7 @@ export class PrePassRenderer {
     public _afterDraw(faceIndex?: number, layer?: number) {
         if (this._enabled && this._currentTarget.enabled) {
             this._prepareFrame(this._currentTarget, faceIndex, layer);
-            this._renderPostProcesses(this._currentTarget, faceIndex);
+            this._renderPostProcesses(this._currentTarget, faceIndex, layer);
         }
     }
 
