@@ -33,12 +33,20 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         wrapper.defines = "#define INSTANCES\n#define THIN_INSTANCES";
         wrapper._wasPreviouslyReady = true;
         context.fastBundle = {} as GPURenderBundle;
+        context._fastBundleWithoutColorWrite = {} as GPURenderBundle;
         context.setBuffer("Scene", new WebGPUDataBuffer());
         context.useInstancing = true;
         vi.spyOn(wrapper, "dispose");
         vi.spyOn(context, "reset");
         vi.spyOn(context, "dispose");
-        return { wrapper, context, bundle: context.fastBundle, buffers: context.buffers, indirectBuffer: context.indirectDrawBuffer };
+        return {
+            wrapper,
+            context,
+            bundle: context.fastBundle,
+            depthBundle: context._fastBundleWithoutColorWrite,
+            buffers: context.buffers,
+            indirectBuffer: context.indirectDrawBuffer,
+        };
     }
 
     function cacheDraws(target: Mesh) {
@@ -48,6 +56,7 @@ describe("Geometry WebGPU draw cache invalidation", () => {
     function expectInvalidated(draws: ReturnType<typeof cacheDraws>) {
         for (const { wrapper, context, buffers, indirectBuffer } of draws) {
             expect(context.fastBundle).toBeUndefined();
+            expect(context._fastBundleWithoutColorWrite).toBeUndefined();
             expect(wrapper.dispose).not.toHaveBeenCalled();
             expect(context.reset).not.toHaveBeenCalled();
             expect(context.dispose).not.toHaveBeenCalled();
@@ -59,8 +68,9 @@ describe("Geometry WebGPU draw cache invalidation", () => {
     }
 
     function expectPreserved(draws: ReturnType<typeof cacheDraws>) {
-        for (const { wrapper, context, bundle } of draws) {
+        for (const { wrapper, context, bundle, depthBundle } of draws) {
             expect(context.fastBundle).toBe(bundle);
+            expect(context._fastBundleWithoutColorWrite).toBe(depthBundle);
             expect(wrapper.dispose).not.toHaveBeenCalled();
             expect(context.reset).not.toHaveBeenCalled();
             expect(context.dispose).not.toHaveBeenCalled();
@@ -178,7 +188,9 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         expectInvalidated(draws);
     });
 
-    it("recreates custom instance attribute buffers across passes when storage grows, but reuses in-place updates", () => {
+    it("only replaces the pass buffer that outgrows its capacity", () => {
+        vi.spyOn(engine, "createDynamicVertexBuffer").mockImplementation((data) => new WebGPUDataBuffer(undefined, (data as Float32Array).byteLength));
+        const update = vi.spyOn(engine, "updateDynamicVertexBuffer");
         const source = CreateBox("attribute-source", {}, scene);
         source.registerInstancedBuffer("tint", 4);
         engine.currentRenderPassId = 7;
@@ -200,7 +212,10 @@ describe("Geometry WebGPU draw cache invalidation", () => {
 
         engine.currentRenderPassId = 7;
         source._processInstancedBuffers(null, true);
-        expect(buffers[7].tint).toBeInstanceOf(VertexBuffer);
+        expect(buffers[7].tint).toBe(otherBuffer);
+        expect(update).toHaveBeenLastCalledWith(otherBuffer?.getBuffer(), expect.any(Float32Array), 0, 4 * Float32Array.BYTES_PER_ELEMENT);
+
+        source._processInstancedBuffers(instances, true);
         expect(buffers[7].tint).not.toBe(otherBuffer);
     });
 

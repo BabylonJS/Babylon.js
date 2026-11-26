@@ -4275,18 +4275,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (
             !this.compatibilityMode &&
-            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) ||
-                this._currentMaterialContext.isDirty ||
-                this._currentMaterialContext.forceBindGroupCreation ||
-                this._currentDrawContext._fastBundleColorWrite !== this._colorWriteLocal)
+            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)
         ) {
-            this._currentDrawContext.fastBundle = undefined;
+            this._currentDrawContext._invalidateFastBundles();
         }
 
-        const useFastPath = !this.compatibilityMode && this._currentDrawContext.fastBundle;
+        const fastBundle = this.compatibilityMode ? undefined : this._colorWriteLocal ? this._currentDrawContext.fastBundle : this._currentDrawContext._fastBundleWithoutColorWrite;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
-        if (useFastPath || this._snapshotRendering.record) {
+        if (fastBundle || this._snapshotRendering.record) {
             this._applyRenderPassChanges(bundleList);
             if (!this._snapshotRendering.record) {
                 if (this.asynchronousPipelineCreation && this._drawsMayWait && this._lastPipelineWaitFrameId >= this.frameId - 1) {
@@ -4301,7 +4298,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 if (this._currentDrawContext.indirectDrawBuffer && !this._currentDrawContext._externalIndirectDrawBuffer) {
                     this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
                 }
-                bundleList.addBundle(this._currentDrawContext.fastBundle);
+                bundleList.addBundle(fastBundle);
                 this._reportDrawCall();
                 return;
             }
@@ -4438,9 +4435,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         if (nonCompatMode) {
-            this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
-            this._currentDrawContext._fastBundleColorWrite = this._colorWriteLocal;
-            bundleList.addBundle(this._currentDrawContext.fastBundle);
+            const bundle = (renderPass2 as GPURenderBundleEncoder).finish();
+            if (this._colorWriteLocal) {
+                this._currentDrawContext.fastBundle = bundle;
+            } else {
+                this._currentDrawContext._fastBundleWithoutColorWrite = bundle;
+            }
+            bundleList.addBundle(bundle);
         }
 
         this._reportDrawCall();

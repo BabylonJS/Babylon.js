@@ -45,8 +45,14 @@ export class WebGPUDrawContext implements IDrawContext {
      * Bundle used in fast mode (when compatibilityMode==false)
      */
     public fastBundle?: GPURenderBundle;
-    /** Whether color writes were enabled when the fast bundle was recorded. @internal */
-    public _fastBundleColorWrite = true;
+    /** Fast bundle recorded with color writes disabled. @internal */
+    public _fastBundleWithoutColorWrite?: GPURenderBundle;
+
+    /** Drops both color-write variants of the fast bundle. @internal */
+    public _invalidateFastBundles(): void {
+        this.fastBundle = undefined;
+        this._fastBundleWithoutColorWrite = undefined;
+    }
 
     /**
      * Cache of the bind groups. Will be reused for the next draw if isDirty==false (and materialContext.isDirty==false)
@@ -196,7 +202,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this._externalIndirectDrawBuffer = buffer;
         this._externalIndirectDrawByteOffset = offset;
         this._isDirty = true;
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
     }
 
     public reset(): void {
@@ -204,7 +210,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this.buffers = {};
         this._isDirty = true;
         this._materialContextUpdateId = 0;
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
         this._recordedDraw = undefined;
         this.bindGroups = undefined;
         this._vertexPullingEnabled = false;
@@ -212,7 +218,7 @@ export class WebGPUDrawContext implements IDrawContext {
 
     /** Invalidates cached vertex bindings without releasing draw resources. @internal */
     public _invalidateVertexBuffers(): void {
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
         // Refresh storage-buffer bindings on the next vertex-pulling draw.
         this._vertexPullingEnabled = false;
     }
@@ -311,7 +317,7 @@ export class WebGPUDrawContext implements IDrawContext {
             this.indirectDrawBuffer = undefined;
             this._indirectDrawData = undefined;
         }
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
         this._recordedDraw = undefined;
         this.bindGroups = undefined;
         this.buffers = undefined as any;

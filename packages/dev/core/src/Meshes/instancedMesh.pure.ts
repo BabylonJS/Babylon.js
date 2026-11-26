@@ -779,15 +779,7 @@ export function RegisterInstancedMesh(): void {
             if (this._userInstancedBuffersStorage.data[kind].length != size) {
                 this._userInstancedBuffersStorage.data[kind] = new Float32Array(size);
                 this._userInstancedBuffersStorage.sizes[kind] = size;
-                if (usePerPassStorage) {
-                    // Every pass uploads the shared CPU array, so all of its buffers must grow.
-                    const renderPasses = this._userInstancedBuffersStorage.renderPasses!;
-                    for (const passId in renderPasses) {
-                        const vertexBuffers = renderPasses[passId];
-                        vertexBuffers[kind]?.dispose();
-                        delete vertexBuffers[kind];
-                    }
-                } else if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
+                if (!usePerPassStorage && this._userInstancedBuffersStorage.vertexBuffers[kind]) {
                     this._userInstancedBuffersStorage.vertexBuffers[kind].dispose();
                     this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
                 }
@@ -828,12 +820,16 @@ export function RegisterInstancedMesh(): void {
             }
 
             // Update vertex buffer (per-pass in WebGPU, shared in WebGL)
-            if (usePerPassStorage) {
-                if (!perPassVertexBuffers![kind]) {
-                    perPassVertexBuffers![kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+            if (perPassVertexBuffers) {
+                const vertexBuffer = perPassVertexBuffers[kind];
+                const buffer = vertexBuffer?.getBuffer();
+                if (!vertexBuffer || !buffer || buffer.capacity < offset * Float32Array.BYTES_PER_ELEMENT) {
+                    // Another pass may already have recorded a snapshot using its own buffer.
+                    vertexBuffer?.dispose();
+                    perPassVertexBuffers[kind] = new VertexBuffer(this.getEngine(), data, kind, true, false, stride, true);
                     bindingsChanged = true;
                 } else {
-                    perPassVertexBuffers![kind]!.updateDirectly(data, 0);
+                    vertexBuffer.getWrapperBuffer().updateDirectly(data, 0, offset / stride);
                 }
             } else {
                 if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
