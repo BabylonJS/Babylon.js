@@ -66,7 +66,7 @@ void main() {
             #if HAS_DEPTH_TEXTURE
                 // If there's no depth i.e., missing patch of the planet, but it should be a ground pixel,
                 // then make the pixel opaque so that it does not show the background through the planet.
-                gl_FragColor.a = depth >= 1. ? 1. : gl_FragColor.a;
+                gl_FragColor.a = isAtOrBeyondFarPlane(depth) ? 1. : gl_FragColor.a;
             #endif
 
         }
@@ -89,14 +89,18 @@ void main() {
         }
 
         #if HAS_DEPTH_TEXTURE
-            float distanceFromCamera =
-                reconstructDistanceFromCamera(
-                    depth,
-                    rayDirection,
-                    cameraForward,
-                    cameraNearPlane);
-            float distanceToSurface = distanceFromCamera / 1000.;
+            bool isBackground = isAtOrBeyondFarPlane(depth);
+            float distanceToSurface = 0.;
+            if (!isBackground) {
+                distanceToSurface =
+                    reconstructDistanceFromCamera(
+                        depth,
+                        rayDirection,
+                        cameraForward,
+                        cameraNearPlane) / 1000.;
+            }
         #else
+            bool isBackground = false;
             float distanceToSurface = 0.;
         #endif
 
@@ -119,7 +123,7 @@ void main() {
 
         gl_FragColor = vec4(radiance, transparency);
 
-        if (distanceToSurface > 0.) {
+        if (isBackground || distanceToSurface > 0.) {
 
             gl_FragColor =
                 applyAerialPerspectiveRadianceBias(
@@ -129,7 +133,7 @@ void main() {
             #if HAS_DEPTH_TEXTURE
                 // If there's no depth i.e., missing patch of the planet, but it should be a ground pixel,
                 // then make the pixel opaque so that it does not show background through the planet.
-                gl_FragColor.a = depth >= 1. ? 1. : gl_FragColor.a;
+                gl_FragColor.a = isAtOrBeyondFarPlane(depth) ? 1. : gl_FragColor.a;
             #endif
 
         }

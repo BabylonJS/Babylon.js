@@ -44,16 +44,18 @@ uniform float specularPower;
 
 varying vec2 vUV;
 
-vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
-    vec4 ndc;
-    
-    ndc.xy = texCoord * 2.0 - 1.0;
+float computeNdcDepth(float depth) {
 #ifdef FLUIDRENDERING_RHS
-    ndc.z = -projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    float viewZ = -depth;
 #else
-    ndc.z = projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    float viewZ = depth;
 #endif
-    ndc.w = 1.0;
+    vec2 clipZW = projectionMatrix[2].zw * viewZ + projectionMatrix[3].zw;
+    return clipZW.x / clipZW.y;
+}
+
+vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
+    vec4 ndc = vec4(texCoord * 2.0 - 1.0, computeNdcDepth(depth), 1.0);
 
     vec4 eyePos = invProjectionMatrix * ndc;
     eyePos.xyz /= eyePos.w;
@@ -91,8 +93,15 @@ void main(void) {
     float thickness = texture2D(thicknessSampler, texCoord).x;
 #else
     float bgDepth = texture2D(bgDepthSampler, texCoord).x;
-    float depthNonLinear = projectionMatrix[2].z + projectionMatrix[3].z / depth;
-    depthNonLinear = depthNonLinear * 0.5 + 0.5;
+    float depthNonLinear = computeNdcDepth(depth);
+    #ifndef IS_NDC_HALF_ZRANGE
+        depthNonLinear = depthNonLinear * 0.5 + 0.5;
+    #endif
+    #ifdef USE_REVERSE_DEPTHBUFFER
+        bool occluded = bgDepth >= depthNonLinear;
+    #else
+        bool occluded = bgDepth <= depthNonLinear;
+    #endif
 #endif
 
     vec4 backColor = texture2D(textureSampler, texCoord);
@@ -100,7 +109,7 @@ void main(void) {
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     if (depth >= cameraFar || depth <= 0. || thickness <= minimumThickness) {
 #else
-    if (depth >= cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
+    if (depth >= cameraFar || depth <= 0. || occluded) {
 #endif
     #ifdef FLUIDRENDERING_COMPOSITE_MODE
         glFragColor.rgb = backColor.rgb * backColor.a;

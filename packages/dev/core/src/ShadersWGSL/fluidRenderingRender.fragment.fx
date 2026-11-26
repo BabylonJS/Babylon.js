@@ -51,14 +51,18 @@ uniform specularPower: f32;
 
 varying vUV: vec2f;
 
-fn computeViewPosFromUVDepth(texCoord: vec2f, depth: f32) -> vec3f {
-    var ndc: vec4f = vec4f(texCoord * 2.0 - 1.0, 0.0, 1.0);
+fn computeNdcDepth(depth: f32) -> f32 {
 #ifdef FLUIDRENDERING_RHS
-    ndc.z = -uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
+    let viewZ = -depth;
 #else
-    ndc.z = uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
+    let viewZ = depth;
 #endif
-    ndc.w = 1.0;
+    let clipZW = uniforms.projectionMatrix[2].zw * viewZ + uniforms.projectionMatrix[3].zw;
+    return clipZW.x / clipZW.y;
+}
+
+fn computeViewPosFromUVDepth(texCoord: vec2f, depth: f32) -> vec3f {
+    let ndc = vec4f(texCoord * 2.0 - 1.0, computeNdcDepth(depth), 1.0);
 
     var eyePos: vec4f = uniforms.invProjectionMatrix * ndc;
     
@@ -97,8 +101,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #else
     var thickness: f32 = uniforms.thickness;
     var bgDepth: f32 = textureSample(bgDepthSampler, bgDepthSamplerSampler, texCoord).x;
-    var depthNonLinear: f32 = uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
-    depthNonLinear = depthNonLinear * 0.5 + 0.5;
+    let depthNonLinear = computeNdcDepth(depth);
+    #ifdef USE_REVERSE_DEPTHBUFFER
+        let occluded = bgDepth >= depthNonLinear;
+    #else
+        let occluded = bgDepth <= depthNonLinear;
+    #endif
 #endif
 
     var backColor: vec4f = textureSample(textureSampler, textureSamplerSampler, texCoord);
@@ -106,7 +114,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     if (depth >= uniforms.cameraFar || depth <= 0. || thickness <= uniforms.minimumThickness) {
 #else
-    if (depth >= uniforms.cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
+    if (depth >= uniforms.cameraFar || depth <= 0. || occluded) {
 #endif
     #ifdef FLUIDRENDERING_COMPOSITE_MODE
         fragmentOutputs.color = vec4f(backColor.rgb * backColor.a, backColor.a);

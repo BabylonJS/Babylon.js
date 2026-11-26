@@ -3115,6 +3115,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
+     * @param halfZRange whether the projection uses [0, 1] NDC depth (defaults to the last created engine's range)
      * @returns result input
      */
     public static UnprojectFloatsToRef<T extends Vector3>(
@@ -3126,7 +3127,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         world: DeepImmutable<Matrix>,
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>,
-        result: T
+        result: T,
+        halfZRange?: boolean
     ): T {
         const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(view, matrix);
@@ -3136,7 +3138,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         const screenSource = MathTmp.Vector3[0];
         screenSource.x = (sourceX / viewportWidth) * 2 - 1;
         screenSource.y = -((sourceY / viewportHeight) * 2 - 1);
-        if (EngineStore.LastCreatedEngine?.isNDCHalfZRange) {
+        if (halfZRange ?? EngineStore.LastCreatedEngine?.isNDCHalfZRange) {
             screenSource.z = sourceZ;
         } else {
             screenSource.z = 2 * sourceZ - 1.0;
@@ -5265,31 +5267,44 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAnglesToRef<T extends Vector3>(result: T): T {
+        return this._toEulerAnglesToRef(result, false);
+    }
+
+    /**
+     * @internal
+     * Same as toEulerAnglesToRef. With legacyPoles, every pitch whose sine is within 1e-7 of +-1 is treated as
+     * exactly +-90 degrees (roll forced to 0), which callers that keep only some of the axes rely on to avoid a
+     * 180 degree flip when the rotation crosses the vertical.
+     */
+    public _toEulerAnglesToRef<T extends Vector3>(result: T, legacyPoles: boolean): T {
         const qz = this._z;
         const qx = this._x;
         const qy = this._y;
         const qw = this._w;
 
         const zAxisY = qy * qz - qx * qw;
-        const limit = 0.4999999;
+        const sqw = qw * qw;
+        const sqz = qz * qz;
+        const sqx = qx * qx;
+        const sqy = qy * qy;
+        // sin(z) * cos(x) and cos(z) * cos(x), scaled by the squared length: their length is cos(x), so x comes from
+        // atan2, which keeps its precision close to +-90 degrees, unlike asin(-2 * zAxisY)
+        const zSin = 2.0 * (qx * qy + qz * qw);
+        const zCos = -sqz - sqx + sqy + sqw;
+        const cosX = Math.sqrt(zSin * zSin + zCos * zCos);
+        // The pole tests are relative to the squared length so that they do not depend on the quaternion scale,
+        // and a zero quaternion keeps returning a zero rotation
+        const lengthSquared = sqx + sqy + sqz + sqw;
+        const isPole = legacyPoles ? Math.abs(zAxisY) > 0.4999999 * lengthSquared : cosX < 1e-8 * lengthSquared;
 
-        if (zAxisY < -limit) {
+        if (isPole) {
             result._y = 2 * Math.atan2(qy, qw);
-            result._x = Math.PI / 2;
-            result._z = 0;
-            result._isDirty = true;
-        } else if (zAxisY > limit) {
-            result._y = 2 * Math.atan2(qy, qw);
-            result._x = -Math.PI / 2;
+            result._x = zAxisY < 0 ? Math.PI / 2 : -Math.PI / 2;
             result._z = 0;
             result._isDirty = true;
         } else {
-            const sqw = qw * qw;
-            const sqz = qz * qz;
-            const sqx = qx * qx;
-            const sqy = qy * qy;
-            result._z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
-            result._x = Math.asin(-2.0 * zAxisY);
+            result._z = Math.atan2(zSin, zCos);
+            result._x = Math.atan2(-2.0 * zAxisY, cosX);
             result._y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
             result._isDirty = true;
         }

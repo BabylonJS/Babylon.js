@@ -2482,6 +2482,53 @@ describe("Babylon Vector tests", () => {
         });
     });
 
+    describe("Quaternion", () => {
+        describe("toEulerAngles", () => {
+            it("round-trips rotations close to a 90 degree pitch", () => {
+                for (const pitch of [1.5, 1.57, 1.5707, -1.5707, Math.PI / 2 - 2e-8, -Math.PI / 2 + 2e-8]) {
+                    const q = Quaternion.FromEulerAngles(pitch, 0.4, 0.7);
+                    const euler = q.toEulerAngles();
+                    const back = Quaternion.FromEulerVector(euler);
+                    expect(Math.abs(Quaternion.Dot(q, back))).toBeCloseTo(1, 12);
+                    expect(euler.x).toBeCloseTo(pitch, 10);
+                }
+            });
+
+            it("keeps the gimbal lock result at exactly 90 degrees", () => {
+                const euler = Quaternion.FromEulerAngles(Math.PI / 2, 0.4, 0).toEulerAngles();
+                expect(euler.x).toBe(Math.PI / 2);
+                expect(euler.y).toBeCloseTo(0.4, 10);
+                expect(euler.z).toBe(0);
+            });
+
+            it("keeps the gimbal lock result at exactly -90 degrees with a roll", () => {
+                const q = Quaternion.FromEulerAngles(-Math.PI / 2, 0.4, 0.3);
+                const euler = q.toEulerAngles();
+                expect(euler.x).toBe(-Math.PI / 2);
+                expect(euler.z).toBe(0);
+                expect(Math.abs(Quaternion.Dot(q, Quaternion.FromEulerVector(euler)))).toBeCloseTo(1, 12);
+            });
+
+            it("returns a zero rotation for the zero quaternion and small multiples of the identity", () => {
+                for (const q of [Quaternion.Zero(), new Quaternion(0, 0, 0, 1e-6)]) {
+                    const euler = q.toEulerAngles();
+                    expect(euler.x).toBeCloseTo(0, 12);
+                    expect(euler.y).toBeCloseTo(0, 12);
+                    expect(euler.z).toBeCloseTo(0, 12);
+                }
+            });
+
+            it("does not depend on the quaternion length", () => {
+                const q = Quaternion.FromEulerAngles(1.5707, 0.4, 0.7);
+                const euler = q.toEulerAngles();
+                const scaled = q.scale(1e-3).toEulerAngles();
+                expect(scaled.x).toBeCloseTo(euler.x, 10);
+                expect(scaled.y).toBeCloseTo(euler.y, 10);
+                expect(scaled.z).toBeCloseTo(euler.z, 10);
+            });
+        });
+    });
+
     describe("Matrix", () => {
         describe("LookDirectionLHToRef / LookDirectionRHToRef", () => {
             it.each([false, true])("preserves the legacy orientation for Matrix and Quaternion (RH=%s)", (isRightHanded) => {

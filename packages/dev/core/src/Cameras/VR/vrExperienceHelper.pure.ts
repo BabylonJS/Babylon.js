@@ -1243,7 +1243,7 @@ export class VRExperienceHelper {
                 const position = this.currentVRCamera.position;
 
                 // Get matrix with only the y rotation of the device rotation
-                rotation.toEulerAnglesToRef(this._workingVector);
+                rotation._toEulerAnglesToRef(this._workingVector, true);
                 this._workingVector.z = 0;
                 this._workingVector.x = 0;
                 Quaternion.RotationYawPitchRollToRef(this._workingVector.y, this._workingVector.x, this._workingVector.z, this._workingQuaternion);

@@ -9,7 +9,7 @@ import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Camera } from "core/Cameras/camera";
-import { beforeEach, afterEach, describe, it, expect } from "vitest";
+import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 describe("WebXRCamera", () => {
     let engine: NullEngine;
@@ -156,7 +156,22 @@ describe("WebXRCamera", () => {
         });
     });
 
-    describe("projection depth-range (WebGPU half-Z) handling", () => {
+    describe("XR projection depth range", () => {
+        let renderState: { depthNear: number };
+        const updateRenderState = vi.fn<XRSession["updateRenderState"]>();
+
+        beforeEach(() => {
+            Object.defineProperty(engine, "isNDCHalfZRange", { value: true });
+            renderState = { depthNear: 0.1 };
+            updateRenderState.mockClear();
+            sessionManager.session = { renderState, updateRenderState } as unknown as XRSession;
+        });
+
+        afterEach(() => {
+            // Restore the NullEngine capability before disposal, which would otherwise access a WebGL context.
+            Object.defineProperty(engine, "isNDCHalfZRange", { value: false });
+        });
+
         // Builds a synthetic right-handed XR projection matrix (as an XR binding would provide it) in the requested
         // NDC depth convention. halfZRange === false => WebGL/OpenGL [-1, 1]; true => WebGPU/D3D [0, 1].
         function buildXRProjection(halfZRange: boolean, near = 0.1, far = 1000): Float32Array {
@@ -179,12 +194,10 @@ describe("WebXRCamera", () => {
                     },
                 ],
             };
-            sessionManager.currentFrame = { getViewerPose: () => pose } as any;
-            // There is no real XR session in unit tests, so seed the near/far cache to skip the updateRenderState path.
-            (xrCamera as any)._cache.minZ = xrCamera.minZ;
-            (xrCamera as any)._cache.maxZ = xrCamera.maxZ;
-            (xrCamera as any)._updateFromXRSession();
-            return (xrCamera.rigCameras[0] as any)._projectionMatrix as Matrix;
+            const frame = { getViewerPose: () => pose } as unknown as XRFrame;
+            sessionManager.currentFrame = frame;
+            sessionManager.onXRFrameObservable.notifyObservers(frame);
+            return xrCamera.rigCameras[0].getProjectionMatrix();
         }
 
         // NDC z of the right-handed view-space point (0, 0, z) after the perspective divide.
@@ -192,9 +205,8 @@ describe("WebXRCamera", () => {
             return Vector3.TransformCoordinatesFromFloatsToRef(0, 0, z, matrix, new Vector3()).z;
         }
 
-        it("converts a [-1, 1] XR projection to [0, 1] on a half-Z (WebGPU) engine", () => {
+        it("converts a [-1, 1] XR projection to [0, 1] on a half-Z engine", () => {
             scene.useRightHandedSystem = true; // isolate the depth-range conversion from the LH hand-toggle
-            (engine as any).isNDCHalfZRange = true;
 
             const result = driveViewUpdate(buildXRProjection(false, 0.1, 1000));
 
@@ -202,9 +214,24 @@ describe("WebXRCamera", () => {
             expect(ndcZ(result, -1000)).toBeCloseTo(1, 4); // far plane -> 1
         });
 
+        it("uses the frame's active near plane while a camera minZ update is pending", () => {
+            scene.useRightHandedSystem = true;
+            const activeNear = renderState.depthNear;
+            xrCamera.minZ = 1;
+
+            const current = driveViewUpdate(buildXRProjection(false, activeNear));
+
+            expect(updateRenderState).toHaveBeenCalledWith(expect.objectContaining({ depthNear: xrCamera.minZ }));
+            expect(ndcZ(current, -activeNear)).toBeCloseTo(0, 4);
+
+            renderState.depthNear = xrCamera.minZ;
+            const next = driveViewUpdate(buildXRProjection(false, renderState.depthNear));
+
+            expect(ndcZ(next, -renderState.depthNear)).toBeCloseTo(0, 4);
+        });
+
         it("leaves an already [0, 1] XR projection unchanged on a half-Z engine (no double conversion)", () => {
             scene.useRightHandedSystem = true;
-            (engine as any).isNDCHalfZRange = true;
 
             const raw = buildXRProjection(true, 0.1, 1000);
             const result = driveViewUpdate(raw);
@@ -220,13 +247,12 @@ describe("WebXRCamera", () => {
         });
 
         it("never touches the projection on a non-half-Z (WebGL2) engine - byte identical", () => {
-            // NullEngine defaults isNDCHalfZRange to false; assert explicitly for clarity.
-            (engine as any).isNDCHalfZRange = false;
+            Object.defineProperty(engine, "isNDCHalfZRange", { value: false });
 
             const raw = buildXRProjection(false, 0.1, 1000); // WebGL [-1, 1] convention
             const result = driveViewUpdate(raw); // default LH scene => hand-toggle applies
 
-            // Expected = verbatim load + hand-toggle, with NO range conversion (the WebGPU block is skipped).
+            // The projection only needs the handedness toggle.
             const expected = Matrix.FromArray(raw);
             expected.toggleProjectionMatrixHandInPlace();
             for (let k = 0; k < 16; k++) {
@@ -236,7 +262,6 @@ describe("WebXRCamera", () => {
 
         it("converts an asymmetric (off-center) [-1, 1] XR projection - real XR eye frusta", () => {
             scene.useRightHandedSystem = true;
-            (engine as any).isNDCHalfZRange = true;
 
             // Start from a symmetric [-1, 1] projection and introduce off-center x/y projection-plane offsets
             // (m[8], m[9]) to mimic a real, asymmetric XR eye frustum. These do not affect the depth mapping.
@@ -255,8 +280,7 @@ describe("WebXRCamera", () => {
 
         it("guards depthNear <= 0: defaults to converting without producing NaN", () => {
             scene.useRightHandedSystem = true;
-            (engine as any).isNDCHalfZRange = true;
-            xrCamera.minZ = 0; // near-plane probe would divide by zero -> guard path
+            renderState.depthNear = 0;
 
             const raw = buildXRProjection(false, 0.1, 1000);
             const result = driveViewUpdate(raw);

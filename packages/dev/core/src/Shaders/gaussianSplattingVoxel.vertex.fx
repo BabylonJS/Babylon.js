@@ -43,6 +43,9 @@ void main(void) {
 
     gl_Position = viewMatrix * invWorldScale * worldPos;
     vNormalizedPosition = gl_Position.xyz * 0.5 + 0.5;
+#ifdef IS_NDC_HALF_ZRANGE
+    gl_Position.z = gl_Position.z * 0.5 + gl_Position.w * 0.5;
+#endif
 
     vec4 viewCenterPos = viewMatrix * invWorldScale * splatWorld * vec4(splat.center.xyz, 1.0);
     vNormalizedCenterPosition = viewCenterPos.xyz * 0.5 + 0.5;

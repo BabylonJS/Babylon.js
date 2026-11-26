@@ -1119,10 +1119,11 @@ export class Camera extends Node {
 
         this.getTransformationMatrix();
 
+        const halfZRange = this.getEngine().isNDCHalfZRange;
         if (!this._frustumPlanes) {
-            this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
+            this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix, halfZRange);
         } else {
-            Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+            Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes, halfZRange);
         }
 
         this._refreshFrustumPlanes = false;

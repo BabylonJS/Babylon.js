@@ -657,7 +657,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                 controllerData.teleportationState.forward = true;
                                 controllerData.teleportationState.initialHit = false;
                                 this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
-                                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion._toEulerAnglesToRef(new Vector3(), true).y;
                                 controllerData.teleportationState.currentRotation = 0;
                                 const timeToSelect = this._options.timeToTeleport || 3000;
                                 setAndStartTimer({
@@ -710,7 +710,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     controllerData.teleportationState.backwards = true;
                                     // teleport backwards ONCE
                                     this._tmpQuaternion.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion);
-                                    this._tmpQuaternion.toEulerAnglesToRef(this._tmpVector);
+                                    this._tmpQuaternion._toEulerAnglesToRef(this._tmpVector, true);
                                     // get only the y rotation
                                     this._tmpVector.x = 0;
                                     this._tmpVector.z = 0;
@@ -741,7 +741,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             if (axesData.y < -0.7 && !this._currentTeleportationControllerId && !controllerData.teleportationState.rotating && this.teleportationEnabled) {
                                 controllerData.teleportationState.forward = true;
                                 this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
-                                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion._toEulerAnglesToRef(new Vector3(), true).y;
                             }
                             if (axesData.x) {
                                 if (!controllerData.teleportationState.forward) {
@@ -802,7 +802,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
                 controllerData.teleportationState.forward = true;
                 controllerData.teleportationState.initialHit = false;
-                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion._toEulerAnglesToRef(new Vector3(), true).y;
                 controllerData.teleportationState.currentRotation = 0;
                 const timeToSelect = this._options.timeToTeleport || 3000;
                 setAndStartTimer({

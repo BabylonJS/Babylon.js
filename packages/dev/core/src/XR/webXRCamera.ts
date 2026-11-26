@@ -183,7 +183,7 @@ export class WebXRCamera extends FreeCamera {
         mat.decompose(undefined, this.rotationQuaternion, this.position);
         // set the ground level
         this.position.y = 0;
-        Quaternion.FromEulerAnglesToRef(0, this.rotationQuaternion.toEulerAngles().y, 0, this.rotationQuaternion);
+        Quaternion.FromEulerAnglesToRef(0, this.rotationQuaternion._toEulerAnglesToRef(new Vector3(), true).y, 0, this.rotationQuaternion);
         this._firstFrame = true;
         if (resetToBaseReferenceSpace) {
             this._xrSessionManager.resetReferenceSpace();
@@ -210,7 +210,7 @@ export class WebXRCamera extends FreeCamera {
         tmpVector.y = 0;
         tmpVector.normalize();
         const yRotation = Math.atan2(tmpVector.x, tmpVector.z) + (this._scene.useRightHandedSystem ? Math.PI : 0);
-        this.rotationQuaternion.toEulerAnglesToRef(tmpVector);
+        this.rotationQuaternion._toEulerAnglesToRef(tmpVector, true);
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
     }
 
@@ -329,26 +329,19 @@ export class WebXRCamera extends FreeCamera {
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
-            // WebGPU uses a [0, 1] clip-space depth range (engine.isNDCHalfZRange === true) whereas WebGL/OpenGL uses
-            // [-1, 1]. The rig cameras freeze their projection (see _updateNumberOfRigCameras) and take the XR binding's
-            // projection matrix verbatim, bypassing the engine's range-aware projection builders. If the binding hands
-            // back a [-1, 1]-convention matrix while the engine clips at [0, 1], every fragment with NDC z in [-1, 0)
-            // is clipped and all geometry disappears. On a half-Z engine we therefore detect the convention the binding
-            // actually used and convert a [-1, 1] matrix to [0, 1]. Detection is empirical (coefficient inspection is
-            // provably ambiguous): project the view-space near-plane point through the raw matrix, before the hand
-            // toggle. WebXR view space is right-handed (-Z forward), so the near point is (0, 0, -near); a [-1, 1] matrix
-            // maps it to NDC z ~= -1, a [0, 1] matrix to ~= 0. Assumes a non-reverse-Z projection (near -> 0 or -1),
-            // which UA-provided XR matrices are. WebGL2 (isNDCHalfZRange === false) never enters this block, so its path
-            // is byte-identical.
+            // XR rig cameras use the runtime's projection matrix instead of the engine's projection builder.
+            // When the engine clips at [0, 1], probe the runtime's matrix at the near plane before changing handedness.
+            // WebXR view space is right-handed (-Z forward), so a [-1, 1] projection maps (0, 0, -near) to NDC z ~= -1,
+            // while a [0, 1] projection maps it to ~= 0. Both mappings assume the runtime's standard depth ordering.
             if (this._scene.getEngine().isNDCHalfZRange) {
-                const near = this.minZ;
+                // updateRenderState applies camera minZ changes starting on the next XR frame.
+                const near = this._xrSessionManager.session.renderState.depthNear;
                 let needsHalfZConversion: boolean;
                 if (near > 0) {
                     const ndc = Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -near, currentRig._projectionMatrix, TmpVectors.Vector3[0]);
                     needsHalfZConversion = ndc.z < -0.5;
                 } else {
-                    // depthNear must be > 0 per the WebXR spec; if it is not, the near-plane probe would divide by zero,
-                    // so default to converting (matches the [-1, 1] range current XRGPUBinding implementations return).
+                    // Without a positive near distance, assume the runtime supplied a full-range projection.
                     needsHalfZConversion = true;
                 }
                 if (needsHalfZConversion) {

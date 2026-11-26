@@ -16,7 +16,10 @@ void main(void) {
 
 #ifdef USE_EXTINCTION
     float depth = texelFetch(depthSampler, ivec2(gl_FragCoord.xy), 0).r;
-    vec4 ndc = vec4((gl_FragCoord.xy / outputTextureSize) * 2. - 1., depth * 2. - 1., 1.0);
+#ifndef IS_NDC_HALF_ZRANGE
+    depth = depth * 2. - 1.;
+#endif
+    vec4 ndc = vec4((gl_FragCoord.xy / outputTextureSize) * 2. - 1., depth, 1.0);
 
     vec4 viewPos = invProjection * ndc;
     viewPos = viewPos / viewPos.w;
