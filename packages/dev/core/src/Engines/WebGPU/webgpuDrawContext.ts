@@ -45,13 +45,19 @@ export class WebGPUDrawContext implements IDrawContext {
      * Bundle used in fast mode (when compatibilityMode==false)
      */
     public fastBundle?: GPURenderBundle;
+    /** Pipeline recorded in the color-writing fast bundle. @internal */
+    public _fastBundlePipeline?: GPURenderPipeline;
     /** Fast bundle recorded with color writes disabled. @internal */
     public _fastBundleWithoutColorWrite?: GPURenderBundle;
+    /** Pipeline recorded in the depth-only fast bundle. @internal */
+    public _fastBundleWithoutColorWritePipeline?: GPURenderPipeline;
 
     /** Drops both color-write variants of the fast bundle. @internal */
     public _invalidateFastBundles(): void {
         this.fastBundle = undefined;
+        this._fastBundlePipeline = undefined;
         this._fastBundleWithoutColorWrite = undefined;
+        this._fastBundleWithoutColorWritePipeline = undefined;
     }
 
     /**

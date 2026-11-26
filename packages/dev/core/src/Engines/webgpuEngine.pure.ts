@@ -4280,29 +4280,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._currentDrawContext._invalidateFastBundles();
         }
 
-        const fastBundle = this.compatibilityMode ? undefined : this._colorWriteLocal ? this._currentDrawContext.fastBundle : this._currentDrawContext._fastBundleWithoutColorWrite;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
-        if (fastBundle || this._snapshotRendering.record) {
+        if (this._snapshotRendering.record) {
             this._applyRenderPassChanges(bundleList);
-            if (!this._snapshotRendering.record) {
-                if (this.asynchronousPipelineCreation && this._drawsMayWait && this._lastPipelineWaitFrameId >= this.frameId - 1) {
-                    const waitOwner = this._pipelineWaitOwner;
-                    if (waitOwner && waitOwner._pipelinePendingFrameId >= this.frameId - 1) {
-                        // the bundle of this draw exists, but its mesh waits for the pipeline of another pass
-                        return;
-                    }
-                }
-                this._counters.numBundleReuseNonCompatMode++;
-                // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
-                if (this._currentDrawContext.indirectDrawBuffer && !this._currentDrawContext._externalIndirectDrawBuffer) {
-                    this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
-                }
-                bundleList.addBundle(fastBundle);
-                this._reportDrawCall();
-                return;
-            }
-
             renderPass2 = bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount); // for snapshot recording mode
             bundleList.numDrawCalls++;
         }
@@ -4330,6 +4311,25 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
         }
 
+        const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
+        if (nonCompatMode) {
+            // Pipeline state can change without dirtying the draw or material bindings.
+            const drawContext = this._currentDrawContext;
+            const bundlePipeline = this._colorWriteLocal ? drawContext._fastBundlePipeline : drawContext._fastBundleWithoutColorWritePipeline;
+            const fastBundle = this._colorWriteLocal ? drawContext.fastBundle : drawContext._fastBundleWithoutColorWrite;
+            if (fastBundle && bundlePipeline === pipeline) {
+                this._applyRenderPassChanges(bundleList);
+                this._counters.numBundleReuseNonCompatMode++;
+                // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
+                if (drawContext.indirectDrawBuffer && !drawContext._externalIndirectDrawBuffer) {
+                    drawContext.setIndirectData(count, instancesCount || 1, start);
+                }
+                bundleList.addBundle(fastBundle);
+                this._reportDrawCall();
+                return;
+            }
+        }
+
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
 
@@ -4353,7 +4353,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
         // the application's buffer of GPU-written arguments (SubMesh.setIndirectDrawBuffer) goes first, in every mode, at its offset, and
         // the CPU never writes into it
         const externalIndirectDrawBuffer = this._currentDrawContext._externalIndirectDrawBuffer;
@@ -4438,8 +4437,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             const bundle = (renderPass2 as GPURenderBundleEncoder).finish();
             if (this._colorWriteLocal) {
                 this._currentDrawContext.fastBundle = bundle;
+                this._currentDrawContext._fastBundlePipeline = pipeline;
             } else {
                 this._currentDrawContext._fastBundleWithoutColorWrite = bundle;
+                this._currentDrawContext._fastBundleWithoutColorWritePipeline = pipeline;
             }
             bundleList.addBundle(bundle);
         }

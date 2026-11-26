@@ -61,7 +61,7 @@ function createEngine() {
         _cacheRenderPipeline: {
             indexBuffer,
             setWriteMask: vi.fn(),
-            getRenderPipeline: () => pipeline,
+            getRenderPipeline: vi.fn(() => pipeline),
             vertexBuffers: [{ effectiveBuffer: indexBuffer, _validOffsetRange: false, byteOffset: 8 }],
             colorFormats: ["bgra8unorm"],
         },
@@ -138,6 +138,37 @@ describe("WebGPU draw submission", () => {
 
         expect(bundleEncoder.finish).toHaveBeenCalledTimes(4);
         expect(state._bundleList.addBundle.mock.calls).toEqual([...originals, ...replacements].map((bundle) => [bundle]));
+    });
+
+    it("re-records both bundle variants when the depth comparison changes without dirty bindings", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const depthOnly = { id: 1 };
+        const withColor = { id: 2 };
+        const updatedDepthOnly = { id: 3 };
+        const updatedWithColor = { id: 4 };
+        engine.compatibilityMode = false;
+        bundleEncoder.finish.mockReturnValueOnce(depthOnly).mockReturnValueOnce(withColor).mockReturnValueOnce(updatedDepthOnly).mockReturnValueOnce(updatedWithColor);
+
+        const drawPair = () => {
+            engine.setColorWrite(false);
+            engine.drawElementsType(0, 0, 3);
+            engine.setColorWrite(true);
+            engine.drawElementsType(0, 0, 3);
+        };
+        const lessEqual = [{ label: "depth/less-equal" }, { label: "color/less-equal" }];
+        const never = [{ label: "depth/never" }, { label: "color/never" }];
+        state._cacheRenderPipeline.getRenderPipeline.mockImplementation(() => lessEqual[engine.getColorWrite() ? 1 : 0]);
+        drawPair();
+        drawPair();
+
+        state._cacheRenderPipeline.getRenderPipeline.mockImplementation(() => never[engine.getColorWrite() ? 1 : 0]);
+        drawPair();
+        drawPair();
+
+        expect(bundleEncoder.setPipeline.mock.calls).toEqual([...lessEqual, ...never].map((pipeline) => [pipeline]));
+        expect(state._bundleList.addBundle.mock.calls).toEqual(
+            [depthOnly, withColor, depthOnly, withColor, updatedDepthOnly, updatedWithColor, updatedDepthOnly, updatedWithColor].map((bundle) => [bundle])
+        );
     });
 
     it("accepts the legacy provider type and submits its draws directly", () => {
