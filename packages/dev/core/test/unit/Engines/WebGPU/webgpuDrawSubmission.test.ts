@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
+import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 import { type IWebGPURenderPassCommandRecorderProvider } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
 import { WebGPURenderPassCommandOpcode, WebGPURenderPassCommandStreamProtocolVersion } from "core/Engines/WebGPU/webgpuRenderPassCommandStream";
 import { Logger } from "core/Misc/logger";
@@ -27,6 +28,7 @@ function createEngine() {
     const bindGroups = [{}];
     const state = {
         _compatibilityMode: true,
+        _colorWriteLocal: true,
         _renderPassCommandRecorderProvider: null,
         _renderPassCommandBatching: null,
         _snapshotRendering: { record: false, play: false },
@@ -40,6 +42,8 @@ function createEngine() {
             setIndirectData: vi.fn(),
             isDirty: () => false,
             fastBundle: undefined as object | undefined,
+            _fastBundleWithoutColorWrite: undefined as object | undefined,
+            _invalidateFastBundles: WebGPUDrawContext.prototype._invalidateFastBundles,
             indirectDrawBuffer: null as object | null,
             _enableIndirectDrawInCompatMode: false,
         },
@@ -56,7 +60,8 @@ function createEngine() {
         _currentIndexBuffer: indexBuffer,
         _cacheRenderPipeline: {
             indexBuffer,
-            getRenderPipeline: () => pipeline,
+            setWriteMask: vi.fn(),
+            getRenderPipeline: vi.fn(() => pipeline),
             vertexBuffers: [{ effectiveBuffer: indexBuffer, _validOffsetRange: false, byteOffset: 8 }],
             colorFormats: ["bgra8unorm"],
         },
@@ -96,6 +101,165 @@ function createProvider(): IWebGPURenderPassCommandRecorderProvider {
 }
 
 describe("WebGPU draw submission", () => {
+    it("reuses separate depth-only and color bundles across alternating draws", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const depthOnly = { mask: 0 };
+        const withColor = { mask: 0xf };
+        engine.compatibilityMode = false;
+        bundleEncoder.finish.mockReturnValueOnce(depthOnly).mockReturnValueOnce(withColor);
+
+        for (const colorWrite of [false, true, false, true]) {
+            engine.setColorWrite(colorWrite);
+            engine.drawElementsType(0, 0, 3);
+        }
+
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(2);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([[depthOnly], [withColor], [depthOnly], [withColor]]);
+    });
+
+    it("discards both bundle variants when material bindings change", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        engine.compatibilityMode = false;
+        const originals = [{ id: 1 }, { id: 2 }];
+        const replacements = [{ id: 3 }, { id: 4 }];
+        for (const bundle of [...originals, ...replacements]) {
+            bundleEncoder.finish.mockReturnValueOnce(bundle);
+        }
+        for (const colorWrite of [false, true]) {
+            engine.setColorWrite(colorWrite);
+            engine.drawElementsType(0, 0, 3);
+        }
+        state._currentMaterialContext.isDirty = true;
+        engine.setColorWrite(false);
+        engine.drawElementsType(0, 0, 3);
+        state._currentMaterialContext.isDirty = false;
+        engine.setColorWrite(true);
+        engine.drawElementsType(0, 0, 3);
+
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(4);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([...originals, ...replacements].map((bundle) => [bundle]));
+    });
+
+    it("submits fresh bundles without caching draws that force bind group creation", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const cached = { id: 1 };
+        const external = [{ id: 2 }, { id: 3 }];
+        const replacement = { id: 4 };
+        for (const bundle of [cached, ...external, replacement]) {
+            bundleEncoder.finish.mockReturnValueOnce(bundle);
+        }
+        engine.compatibilityMode = false;
+        engine.drawElementsType(0, 0, 3);
+
+        state._currentMaterialContext.forceBindGroupCreation = true;
+        for (const colorWrite of [true, false]) {
+            engine.setColorWrite(colorWrite);
+            engine.drawElementsType(0, 0, 3);
+            expect(state._currentDrawContext).toHaveProperty("_fastBundleDraw", undefined);
+            expect(state._currentDrawContext.fastBundle).toBeUndefined();
+            expect(state._currentDrawContext._fastBundleWithoutColorWrite).toBeUndefined();
+        }
+
+        state._currentMaterialContext.forceBindGroupCreation = false;
+        engine.setColorWrite(true);
+        engine.drawElementsType(0, 0, 3);
+        engine.drawElementsType(0, 0, 3);
+
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(4);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([cached, ...external, replacement, replacement].map((bundle) => [bundle]));
+    });
+
+    it("re-records both bundle variants when the depth comparison changes without dirty bindings", () => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const depthOnly = { id: 1 };
+        const withColor = { id: 2 };
+        const updatedDepthOnly = { id: 3 };
+        const updatedWithColor = { id: 4 };
+        engine.compatibilityMode = false;
+        bundleEncoder.finish.mockReturnValueOnce(depthOnly).mockReturnValueOnce(withColor).mockReturnValueOnce(updatedDepthOnly).mockReturnValueOnce(updatedWithColor);
+
+        const drawPair = () => {
+            engine.setColorWrite(false);
+            engine.drawElementsType(0, 0, 3);
+            engine.setColorWrite(true);
+            engine.drawElementsType(0, 0, 3);
+        };
+        const lessEqual = [{ label: "depth/less-equal" }, { label: "color/less-equal" }];
+        const never = [{ label: "depth/never" }, { label: "color/never" }];
+        state._cacheRenderPipeline.getRenderPipeline.mockImplementation(() => lessEqual[engine.getColorWrite() ? 1 : 0]);
+        drawPair();
+        drawPair();
+
+        state._cacheRenderPipeline.getRenderPipeline.mockImplementation(() => never[engine.getColorWrite() ? 1 : 0]);
+        drawPair();
+        drawPair();
+
+        expect(bundleEncoder.setPipeline.mock.calls).toEqual([...lessEqual, ...never].map((pipeline) => [pipeline]));
+        expect(state._bundleList.addBundle.mock.calls).toEqual(
+            [depthOnly, withColor, depthOnly, withColor, updatedDepthOnly, updatedWithColor, updatedDepthOnly, updatedWithColor].map((bundle) => [bundle])
+        );
+    });
+
+    it.each([true, false])("reuses alternating winding pipelines when color writes are %s until bindings change", (colorWrite) => {
+        const { engine, state, bundleEncoder } = createEngine();
+        const pipelines = [{ winding: "cw" }, { winding: "ccw" }];
+        const original = [{ id: 1 }, { id: 2 }];
+        const replacement = [{ id: 3 }, { id: 4 }];
+        for (const bundle of [...original, ...replacement]) {
+            bundleEncoder.finish.mockReturnValueOnce(bundle);
+        }
+        engine.compatibilityMode = false;
+        engine.setColorWrite(colorWrite);
+
+        const drawPair = () => {
+            for (const pipeline of pipelines) {
+                state._cacheRenderPipeline.getRenderPipeline.mockReturnValue(pipeline);
+                engine.drawElementsType(0, 0, 3);
+                state._currentMaterialContext.isDirty = false;
+            }
+        };
+        drawPair();
+        drawPair();
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(2);
+        expect(state._bundleList.addBundle.mock.calls).toEqual([...original, ...original].map((bundle) => [bundle]));
+
+        state._currentMaterialContext.isDirty = true;
+        drawPair();
+        drawPair();
+        expect(bundleEncoder.finish).toHaveBeenCalledTimes(4);
+        expect(state._bundleList.addBundle.mock.calls.slice(4)).toEqual([...replacement, ...replacement].map((bundle) => [bundle]));
+    });
+
+    it.each(["index buffer", "vertex buffer", "draw range"])("does not reuse a previous pipeline's bundle with a different %s", (change) => {
+        const { engine, state, bundleEncoder, pipeline } = createEngine();
+        const first = { id: 1 };
+        const reversed = { id: 2 };
+        const replacement = { id: 3 };
+        bundleEncoder.finish.mockReturnValueOnce(first).mockReturnValueOnce(reversed).mockReturnValueOnce(replacement);
+        engine.compatibilityMode = false;
+
+        engine.drawElementsType(0, 0, 3);
+        state._cacheRenderPipeline.getRenderPipeline.mockReturnValue({ winding: "reversed" });
+        engine.drawElementsType(0, 0, 3);
+        state._cacheRenderPipeline.getRenderPipeline.mockReturnValue(pipeline);
+
+        const newBuffer = { underlyingResource: { label: "new geometry" }, is32Bits: true };
+        if (change === "index buffer") {
+            state._currentIndexBuffer = newBuffer;
+            Object.assign(engine, { _currentIndexBuffer: newBuffer });
+        } else if (change === "vertex buffer") {
+            state._cacheRenderPipeline.vertexBuffers[0].effectiveBuffer = newBuffer;
+        }
+        const start = change === "draw range" ? 3 : 0;
+        engine.drawElementsType(0, start, 3);
+        engine.drawElementsType(0, start, 3);
+
+        expect(state._bundleList.addBundle.mock.calls).toEqual([[first], [reversed], [replacement], [replacement]]);
+        expect(bundleEncoder.drawIndexed).toHaveBeenLastCalledWith(3, 1, start, 0, 0);
+        expect(bundleEncoder.setIndexBuffer).toHaveBeenLastCalledWith(state._currentIndexBuffer.underlyingResource, "uint32", 0);
+        expect(bundleEncoder.setVertexBuffer).toHaveBeenLastCalledWith(0, state._cacheRenderPipeline.vertexBuffers[0].effectiveBuffer.underlyingResource, 8);
+    });
+
     it("accepts the legacy provider type and submits its draws directly", () => {
         const { engine, renderPass } = createEngine();
         const provider = {

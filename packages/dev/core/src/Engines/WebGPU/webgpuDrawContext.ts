@@ -45,6 +45,41 @@ export class WebGPUDrawContext implements IDrawContext {
      * Bundle used in fast mode (when compatibilityMode==false)
      */
     public fastBundle?: GPURenderBundle;
+    /** Pipeline recorded in the color-writing fast bundle. @internal */
+    public _fastBundlePipeline?: GPURenderPipeline;
+    /** Fast bundle recorded with color writes disabled. @internal */
+    public _fastBundleWithoutColorWrite?: GPURenderBundle;
+    /** Pipeline recorded in the depth-only fast bundle. @internal */
+    public _fastBundleWithoutColorWritePipeline?: GPURenderPipeline;
+
+    /** Previous color-writing fast bundle, for draws that alternate pipelines. @internal */
+    public _previousFastBundle?: GPURenderBundle;
+    /** Pipeline recorded in the previous color-writing fast bundle. @internal */
+    public _previousFastBundlePipeline?: GPURenderPipeline;
+    /** Previous fast bundle recorded with color writes disabled. @internal */
+    public _previousFastBundleWithoutColorWrite?: GPURenderBundle;
+    /** Pipeline recorded in the previous depth-only fast bundle. @internal */
+    public _previousFastBundleWithoutColorWritePipeline?: GPURenderPipeline;
+
+    /** Geometry and draw command shared by all cached pipeline variants. @internal */
+    public _fastBundleDraw?: Pick<
+        IWebGPURecordedDraw,
+        "indexBuffer" | "indexFormat" | "vertexBuffers" | "vertexOffsets" | "indirectBuffer" | "indirectByteOffset" | "indexed" | "count" | "instances" | "start"
+    >;
+
+    /** Drops all fast bundles and their pipeline references. @internal */
+    public _invalidateFastBundles(): void {
+        this.fastBundle = undefined;
+        this._fastBundlePipeline = undefined;
+        this._fastBundleWithoutColorWrite = undefined;
+        this._fastBundleWithoutColorWritePipeline = undefined;
+        this._previousFastBundle = undefined;
+        this._previousFastBundlePipeline = undefined;
+        this._previousFastBundleWithoutColorWrite = undefined;
+        this._previousFastBundleWithoutColorWritePipeline = undefined;
+        this._fastBundleDraw = undefined;
+    }
+
     /**
      * Cache of the bind groups. Will be reused for the next draw if isDirty==false (and materialContext.isDirty==false)
      */
@@ -193,7 +228,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this._externalIndirectDrawBuffer = buffer;
         this._externalIndirectDrawByteOffset = offset;
         this._isDirty = true;
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
     }
 
     public reset(): void {
@@ -201,7 +236,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this.buffers = {};
         this._isDirty = true;
         this._materialContextUpdateId = 0;
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
         this._recordedDraw = undefined;
         this.bindGroups = undefined;
         this._vertexPullingEnabled = false;
@@ -209,7 +244,7 @@ export class WebGPUDrawContext implements IDrawContext {
 
     /** Invalidates cached vertex bindings without releasing draw resources. @internal */
     public _invalidateVertexBuffers(): void {
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
         // Refresh storage-buffer bindings on the next vertex-pulling draw.
         this._vertexPullingEnabled = false;
     }
@@ -308,7 +343,7 @@ export class WebGPUDrawContext implements IDrawContext {
             this.indirectDrawBuffer = undefined;
             this._indirectDrawData = undefined;
         }
-        this.fastBundle = undefined;
+        this._invalidateFastBundles();
         this._recordedDraw = undefined;
         this.bindGroups = undefined;
         this.buffers = undefined as any;

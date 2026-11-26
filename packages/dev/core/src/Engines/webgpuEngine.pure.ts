@@ -4350,36 +4350,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             return;
         }
 
+        const forceBindGroupCreation = !this.compatibilityMode && this._currentMaterialContext.forceBindGroupCreation;
         if (
             !this.compatibilityMode &&
-            (this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty || this._currentMaterialContext.forceBindGroupCreation)
+            (forceBindGroupCreation || this._currentDrawContext.isDirty(this._currentMaterialContext.updateId) || this._currentMaterialContext.isDirty)
         ) {
-            this._currentDrawContext.fastBundle = undefined;
+            this._currentDrawContext._invalidateFastBundles();
         }
 
-        const useFastPath = !this.compatibilityMode && this._currentDrawContext.fastBundle;
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder = renderPass;
 
-        if (useFastPath || this._snapshotRendering.record) {
+        if (this._snapshotRendering.record) {
             this._applyRenderPassChanges(bundleList);
-            if (!this._snapshotRendering.record) {
-                if (this.asynchronousPipelineCreation && this._drawsMayWait && this._lastPipelineWaitFrameId >= this.frameId - 1) {
-                    const waitOwner = this._pipelineWaitOwner;
-                    if (waitOwner && waitOwner._pipelinePendingFrameId >= this.frameId - 1) {
-                        // the bundle of this draw exists, but its mesh waits for the pipeline of another pass
-                        return;
-                    }
-                }
-                this._counters.numBundleReuseNonCompatMode++;
-                // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
-                if (this._currentDrawContext.indirectDrawBuffer && !this._currentDrawContext._externalIndirectDrawBuffer) {
-                    this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
-                }
-                bundleList.addBundle(this._currentDrawContext.fastBundle);
-                this._reportDrawCall();
-                return;
-            }
-
             renderPass2 = bundleList.getBundleEncoder(this._cacheRenderPipeline.colorFormats, this._depthTextureFormat, this.currentSampleCount); // for snapshot recording mode
             bundleList.numDrawCalls++;
         }
@@ -4407,8 +4389,52 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
         }
 
-        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
+        const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
+        const cacheFastBundle = nonCompatMode && !forceBindGroupCreation;
+        const drawContext = this._currentDrawContext;
         const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+        const indexed = drawKind === WebGPURenderPassDrawKind.INDEXED;
+        const instances = instancesCount || 1;
+        const indexBuffer = this._currentIndexBuffer;
+        const indexFormat = indexBuffer?.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+        // The application's arguments take priority and are written only by the GPU.
+        const externalIndirectDrawBuffer = drawContext._externalIndirectDrawBuffer;
+        const indirectDrawBuffer = externalIndirectDrawBuffer
+            ? (externalIndirectDrawBuffer.underlyingResource as GPUBuffer)
+            : nonCompatMode || drawContext._enableIndirectDrawInCompatMode
+              ? (drawContext.indirectDrawBuffer ?? null)
+              : null;
+        const indirectDrawByteOffset = externalIndirectDrawBuffer ? drawContext._externalIndirectDrawByteOffset : 0;
+
+        if (cacheFastBundle) {
+            this._validateFastBundleDraw(indexBuffer?.underlyingResource ?? null, indexFormat, indirectDrawBuffer, indirectDrawByteOffset, indexed, count, instances, start);
+            // Pipeline state can change without dirtying the draw or material bindings.
+            let fastBundle: GPURenderBundle | undefined;
+            if (this._colorWriteLocal) {
+                if (drawContext._fastBundlePipeline === pipeline) {
+                    fastBundle = drawContext.fastBundle;
+                } else if (drawContext.fastBundle && drawContext._previousFastBundlePipeline === pipeline) {
+                    fastBundle = drawContext._previousFastBundle;
+                }
+            } else if (drawContext._fastBundleWithoutColorWritePipeline === pipeline) {
+                fastBundle = drawContext._fastBundleWithoutColorWrite;
+            } else if (drawContext._fastBundleWithoutColorWrite && drawContext._previousFastBundleWithoutColorWritePipeline === pipeline) {
+                fastBundle = drawContext._previousFastBundleWithoutColorWrite;
+            }
+            if (fastBundle) {
+                this._applyRenderPassChanges(bundleList);
+                this._counters.numBundleReuseNonCompatMode++;
+                // the arguments of a bound application buffer are written on the GPU: the CPU does not touch them
+                if (indirectDrawBuffer && !externalIndirectDrawBuffer) {
+                    drawContext.setIndirectData(count, instances, start);
+                }
+                bundleList.addBundle(fastBundle);
+                this._reportDrawCall();
+                return;
+            }
+        }
+
+        const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, drawContext, this._currentMaterialContext);
 
         // only a draw announced by _keepInheritedState is recorded
         if (this._recordedDrawContext) {
@@ -4430,21 +4456,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
-        // the application's buffer of GPU-written arguments (SubMesh.setIndirectDrawBuffer) goes first, in every mode, at its offset, and
-        // the CPU never writes into it
-        const externalIndirectDrawBuffer = this._currentDrawContext._externalIndirectDrawBuffer;
-        const indirectDrawBuffer = externalIndirectDrawBuffer
-            ? (externalIndirectDrawBuffer.underlyingResource as GPUBuffer)
-            : (nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer
-              ? this._currentDrawContext.indirectDrawBuffer
-              : null;
-
         if (indirectDrawBuffer && !externalIndirectDrawBuffer) {
-            this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
+            drawContext.setIndirectData(count, instances, start);
         }
-
-        const indirectDrawByteOffset = externalIndirectDrawBuffer ? this._currentDrawContext._externalIndirectDrawByteOffset : 0;
 
         const commandBatching = this._renderPassCommandRecorderProvider && this._renderPassCommandBatching;
         if (commandBatching && this.compatibilityMode && !this._snapshotRendering.record) {
@@ -4479,12 +4493,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         renderPass2.setPipeline(pipeline);
 
-        if (this._currentIndexBuffer) {
-            renderPass2.setIndexBuffer(
-                this._currentIndexBuffer.underlyingResource,
-                this._currentIndexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16,
-                0
-            );
+        if (indexBuffer) {
+            renderPass2.setIndexBuffer(indexBuffer.underlyingResource, indexFormat, 0);
         }
 
         for (let index = 0; index < vertexBuffers.length; index++) {
@@ -4500,23 +4510,104 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         if (indirectDrawBuffer) {
-            if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
+            if (indexed) {
                 renderPass2.drawIndexedIndirect(indirectDrawBuffer, indirectDrawByteOffset);
             } else {
                 renderPass2.drawIndirect(indirectDrawBuffer, indirectDrawByteOffset);
             }
-        } else if (drawKind === WebGPURenderPassDrawKind.INDEXED) {
-            renderPass2.drawIndexed(count, instancesCount || 1, start, 0, 0);
+        } else if (indexed) {
+            renderPass2.drawIndexed(count, instances, start, 0, 0);
         } else {
-            renderPass2.draw(count, instancesCount || 1, start, 0);
+            renderPass2.draw(count, instances, start, 0);
         }
 
         if (nonCompatMode) {
-            this._currentDrawContext.fastBundle = (renderPass2 as GPURenderBundleEncoder).finish();
-            bundleList.addBundle(this._currentDrawContext.fastBundle);
+            const bundle = (renderPass2 as GPURenderBundleEncoder).finish();
+            if (cacheFastBundle) {
+                if (this._colorWriteLocal) {
+                    drawContext._previousFastBundle = drawContext.fastBundle;
+                    drawContext._previousFastBundlePipeline = drawContext._fastBundlePipeline;
+                    drawContext.fastBundle = bundle;
+                    drawContext._fastBundlePipeline = pipeline;
+                } else {
+                    drawContext._previousFastBundleWithoutColorWrite = drawContext._fastBundleWithoutColorWrite;
+                    drawContext._previousFastBundleWithoutColorWritePipeline = drawContext._fastBundleWithoutColorWritePipeline;
+                    drawContext._fastBundleWithoutColorWrite = bundle;
+                    drawContext._fastBundleWithoutColorWritePipeline = pipeline;
+                }
+            }
+            bundleList.addBundle(bundle);
         }
 
         this._reportDrawCall();
+    }
+
+    private _validateFastBundleDraw(
+        indexBuffer: Nullable<GPUBuffer>,
+        indexFormat: GPUIndexFormat,
+        indirectBuffer: Nullable<GPUBuffer>,
+        indirectByteOffset: number,
+        indexed: boolean,
+        count: number,
+        instances: number,
+        start: number
+    ): void {
+        const context = this._currentDrawContext;
+        const draw = context._fastBundleDraw;
+        const vertexBuffers = this._cacheRenderPipeline.vertexBuffers;
+        if (
+            draw &&
+            draw.indexBuffer === indexBuffer &&
+            draw.indexFormat === indexFormat &&
+            draw.indirectBuffer === indirectBuffer &&
+            draw.indirectByteOffset === indirectByteOffset &&
+            draw.indexed === indexed &&
+            (indirectBuffer || (draw.count === count && draw.instances === instances && draw.start === start)) &&
+            draw.vertexBuffers.length === vertexBuffers.length
+        ) {
+            let i = 0;
+            for (; i < vertexBuffers.length; i++) {
+                const vertexBuffer = vertexBuffers[i];
+                if (
+                    draw.vertexBuffers[i] !== (vertexBuffer.effectiveBuffer?.underlyingResource ?? null) ||
+                    draw.vertexOffsets[i] !== (vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset)
+                ) {
+                    break;
+                }
+            }
+            if (i === vertexBuffers.length) {
+                return;
+            }
+        }
+
+        // Different meshes can share a draw context. Preserve pipeline variants only for the same draw.
+        context._invalidateFastBundles();
+        const next = (context._fastBundleDraw = draw ?? {
+            indexBuffer,
+            indexFormat,
+            indirectBuffer,
+            indirectByteOffset,
+            indexed,
+            count,
+            instances,
+            start,
+            vertexBuffers: [],
+            vertexOffsets: [],
+        });
+        next.indexBuffer = indexBuffer;
+        next.indexFormat = indexFormat;
+        next.indirectBuffer = indirectBuffer;
+        next.indirectByteOffset = indirectByteOffset;
+        next.indexed = indexed;
+        next.count = count;
+        next.instances = instances;
+        next.start = start;
+        next.vertexBuffers.length = next.vertexOffsets.length = vertexBuffers.length;
+        for (let i = 0; i < vertexBuffers.length; i++) {
+            const vertexBuffer = vertexBuffers[i];
+            next.vertexBuffers[i] = vertexBuffer.effectiveBuffer?.underlyingResource ?? null;
+            next.vertexOffsets[i] = vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset;
+        }
     }
 
     private _keepRecordedDraw(

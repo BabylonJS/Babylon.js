@@ -17,6 +17,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { ShadowDepthWrapper } from "core/Materials/shadowDepthWrapper";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import "core/Buffers/buffer.align";
+import "core/Meshes/instancedMesh";
 import "core/Meshes/thinInstanceMesh";
 
 describe("Geometry WebGPU draw cache invalidation", () => {
@@ -32,12 +33,20 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         wrapper.defines = "#define INSTANCES\n#define THIN_INSTANCES";
         wrapper._wasPreviouslyReady = true;
         context.fastBundle = {} as GPURenderBundle;
+        context._fastBundleWithoutColorWrite = {} as GPURenderBundle;
         context.setBuffer("Scene", new WebGPUDataBuffer());
         context.useInstancing = true;
         vi.spyOn(wrapper, "dispose");
         vi.spyOn(context, "reset");
         vi.spyOn(context, "dispose");
-        return { wrapper, context, bundle: context.fastBundle, buffers: context.buffers, indirectBuffer: context.indirectDrawBuffer };
+        return {
+            wrapper,
+            context,
+            bundle: context.fastBundle,
+            depthBundle: context._fastBundleWithoutColorWrite,
+            buffers: context.buffers,
+            indirectBuffer: context.indirectDrawBuffer,
+        };
     }
 
     function cacheDraws(target: Mesh) {
@@ -47,6 +56,7 @@ describe("Geometry WebGPU draw cache invalidation", () => {
     function expectInvalidated(draws: ReturnType<typeof cacheDraws>) {
         for (const { wrapper, context, buffers, indirectBuffer } of draws) {
             expect(context.fastBundle).toBeUndefined();
+            expect(context._fastBundleWithoutColorWrite).toBeUndefined();
             expect(wrapper.dispose).not.toHaveBeenCalled();
             expect(context.reset).not.toHaveBeenCalled();
             expect(context.dispose).not.toHaveBeenCalled();
@@ -58,8 +68,9 @@ describe("Geometry WebGPU draw cache invalidation", () => {
     }
 
     function expectPreserved(draws: ReturnType<typeof cacheDraws>) {
-        for (const { wrapper, context, bundle } of draws) {
+        for (const { wrapper, context, bundle, depthBundle } of draws) {
             expect(context.fastBundle).toBe(bundle);
+            expect(context._fastBundleWithoutColorWrite).toBe(depthBundle);
             expect(wrapper.dispose).not.toHaveBeenCalled();
             expect(context.reset).not.toHaveBeenCalled();
             expect(context.dispose).not.toHaveBeenCalled();
@@ -142,6 +153,70 @@ describe("Geometry WebGPU draw cache invalidation", () => {
         mesh.setVerticesBuffer(new VertexBuffer(engine, new Float32Array([1]), "custom", false, false, 1, true));
 
         expectInvalidated(draws);
+    });
+
+    it("invalidates the original submesh draw bindings after baking replaces vertex buffers", () => {
+        const subMesh = mesh.subMeshes[0];
+        const oldPositions = mesh.getVertexBuffer(VertexBuffer.PositionKind);
+        const draws = cacheDraws(mesh);
+
+        mesh.bakeTransformIntoVertices(Matrix.Translation(1, 0, 0));
+
+        expect(mesh.subMeshes[0]).toBe(subMesh);
+        expect(mesh.getVertexBuffer(VertexBuffer.PositionKind)).not.toBe(oldPositions);
+        expectInvalidated(draws);
+    });
+
+    it("invalidates cached draws when the instance matrix buffer grows, but not when updating it in place", () => {
+        const source = CreateBox("matrix-source", {}, scene);
+        const subMesh = source.subMeshes[0];
+        const batch = source._getInstancesRenderList(subMesh._id);
+        const storage = batch.parent;
+        const initialSize = storage.instancesBufferSize;
+        storage.instancesData = new Float32Array(initialSize / 4);
+        source._updateInstancedBuffers(subMesh, batch, initialSize, engine);
+        const original = storage.instancesBuffer;
+        const draws = cacheDraws(source);
+
+        source._updateInstancedBuffers(subMesh, batch, initialSize, engine);
+        expectPreserved(draws);
+
+        storage.instancesBufferSize *= 2;
+        storage.instancesData = new Float32Array(storage.instancesBufferSize / 4);
+        source._updateInstancedBuffers(subMesh, batch, initialSize, engine);
+        expect(storage.instancesBuffer).not.toBe(original);
+        expectInvalidated(draws);
+    });
+
+    it("only replaces the pass buffer that outgrows its capacity", () => {
+        vi.spyOn(engine, "createDynamicVertexBuffer").mockImplementation((data) => new WebGPUDataBuffer(undefined, (data as Float32Array).byteLength));
+        const update = vi.spyOn(engine, "updateDynamicVertexBuffer");
+        const source = CreateBox("attribute-source", {}, scene);
+        source.registerInstancedBuffer("tint", 4);
+        engine.currentRenderPassId = 7;
+        source._processInstancedBuffers(null, true);
+        engine.currentRenderPassId = 0;
+        source._processInstancedBuffers(null, true);
+        const buffers = source._userInstancedBuffersStorage.renderPasses!;
+        const mainBuffer = buffers[0].tint;
+        const otherBuffer = buffers[7].tint;
+        const draws = cacheDraws(source);
+
+        source._processInstancedBuffers(null, true);
+        expectPreserved(draws);
+
+        const instances = Array.from({ length: 32 }, (_, i) => source.createInstance(`instance-${i}`));
+        source._processInstancedBuffers(instances, true);
+        expect(buffers[0].tint).not.toBe(mainBuffer);
+        expectInvalidated(draws);
+
+        engine.currentRenderPassId = 7;
+        source._processInstancedBuffers(null, true);
+        expect(buffers[7].tint).toBe(otherBuffer);
+        expect(update).toHaveBeenLastCalledWith(otherBuffer?.getBuffer(), expect.any(Float32Array), 0, 4 * Float32Array.BYTES_PER_ELEMENT);
+
+        source._processInstancedBuffers(instances, true);
+        expect(buffers[7].tint).not.toBe(otherBuffer);
     });
 
     it("invalidates a draw-wrapper override without replacing it", () => {
