@@ -2427,6 +2427,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (shaderLanguage === ShaderLanguage.GLSL && !this._glslangAndTintAreFullyLoaded) {
             await this.prepareGlslangAndTintAsync();
+
+            if (webGpuContext.isDisposed) {
+                // the effect was released while the shader translators were loading: building its resources now would leak them
+                return;
+            }
         }
 
         if (this.dbgShowShaderCode) {
@@ -2543,10 +2548,20 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public _releaseEffect(effect: Effect): void {
         if (this._compiledEffects[effect._key]) {
             delete this._compiledEffects[effect._key];
-
-            this._deletePipelineContext(effect.getPipelineContext() as WebGPUPipelineContext);
+        }
+        if (this._releasingEffects) {
+            // releaseEffects() only flushes the cache: the effects it releases can still be in use (materials keep rendering with them,
+            // the clear quad and recorded snapshot bundles reference their uniform buffers), so their resources must stay alive
+            return;
+        }
+        const pipelineContext = effect.getPipelineContext();
+        if (pipelineContext) {
+            this._deletePipelineContext(pipelineContext);
         }
     }
+
+    // true while releaseEffects() notifies the effects it releases (see _releaseEffect)
+    private _releasingEffects = false;
 
     /**
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
@@ -2554,18 +2569,26 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public releaseEffects() {
         for (const name in this._compiledEffects) {
             const webGPUPipelineContext = this._compiledEffects[name].getPipelineContext() as WebGPUPipelineContext;
-            this._deletePipelineContext(webGPUPipelineContext);
+            if (webGPUPipelineContext) {
+                resetCachedPipeline(webGPUPipelineContext);
+            }
         }
 
         this._compiledEffects = {};
 
-        this.onReleaseEffectsObservable.notifyObservers(this);
+        this._releasingEffects = true;
+        try {
+            this.onReleaseEffectsObservable.notifyObservers(this);
+        } finally {
+            this._releasingEffects = false;
+        }
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const webgpuPipelineContext = pipelineContext as WebGPUPipelineContext;
         if (webgpuPipelineContext) {
             resetCachedPipeline(webgpuPipelineContext);
+            webgpuPipelineContext.dispose();
         }
     }
 

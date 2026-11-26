@@ -156,9 +156,19 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * Release all associated resources.
      **/
     public dispose() {
+        this._isDisposed = true;
         if (this.uniformBuffer) {
             this.uniformBuffer.dispose();
         }
+    }
+
+    private _isDisposed = false;
+
+    /**
+     * Gets whether the pipeline context has been disposed
+     */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
     }
 
     /**
