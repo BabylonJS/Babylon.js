@@ -276,6 +276,10 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     public override resolveMSAATextures(): void {
+        if (!this._MSAAFramebuffer) {
+            return;
+        }
+
         const engine = this._engine as ThinEngine;
         const currentFramebuffer = engine._currentFramebuffer;
 
@@ -283,7 +287,11 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         super.resolveMSAATextures();
 
-        engine._bindUnboundFramebuffer(currentFramebuffer);
+        // The resolve rebinds READ_FRAMEBUFFER and DRAW_FRAMEBUFFER without going through the engine cache,
+        // so restore both bindings unconditionally, including when the saved binding is the default framebuffer (null)
+        const gl = this._context;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, currentFramebuffer);
+        engine._currentFramebuffer = currentFramebuffer;
     }
 
     public override dispose(disposeOnlyFramebuffers = this._disposeOnlyFramebuffers): void {
