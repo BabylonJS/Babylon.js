@@ -1003,6 +1003,7 @@ export class ShaderMaterial extends PushMaterial {
                     defines: join,
                     fallbacks: fallbacks,
                     onCompiled: this.onCompiled,
+                    requester: drawWrapper,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
                     shaderLanguage: this._options.shaderLanguage,

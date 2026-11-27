@@ -372,6 +372,7 @@ export class GridMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: null,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         shaderLanguage: this._shaderLanguage,
                         extraInitializationsAsync: GridMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),

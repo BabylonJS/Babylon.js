@@ -457,6 +457,7 @@ export class FluentButtonMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,

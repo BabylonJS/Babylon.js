@@ -2425,7 +2425,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
+        const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null, drawWrapper);
 
         let forceWasNotReadyPreviously = false;
 
@@ -2872,7 +2872,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         onCompiled: Nullable<(effect: Effect) => void> = null,
         onError: Nullable<(effect: Effect, errors: string) => void> = null,
         useInstances: Nullable<boolean> = null,
-        useClipPlane: Nullable<boolean> = null
+        useClipPlane: Nullable<boolean> = null,
+        requester?: IEffectCreationOptions["requester"]
     ): Nullable<Effect> {
         this._prepareDefines(mesh, renderingMesh, defines, useInstances, useClipPlane);
 
@@ -3111,6 +3112,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 fallbacks: fallbacks,
                 onCompiled: onCompiled,
                 onError: onError,
+                requester,
                 indexParameters,
                 processFinalCode: csnrOptions.processFinalCode,
                 processCodeAfterIncludes: this._eventInfo.customCode,

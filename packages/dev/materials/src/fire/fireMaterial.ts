@@ -232,6 +232,7 @@ export class FireMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: null,
                         maxSimultaneousLights: 4,

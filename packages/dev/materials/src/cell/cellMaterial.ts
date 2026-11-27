@@ -268,6 +268,7 @@ export class CellMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 },
                         shaderLanguage: this._shaderLanguage,

@@ -1791,6 +1791,7 @@ export class NodeMaterial extends NodeMaterialBase {
                     defines: join,
                     fallbacks: result.fallbacks,
                     onCompiled: this.onCompiled,
+                    requester: drawWrapper,
                     onError: this.onError,
                     multiTarget: defines.PREPASS,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },

@@ -566,6 +566,7 @@ export class WaterMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,

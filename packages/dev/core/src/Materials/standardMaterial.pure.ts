@@ -1275,6 +1275,7 @@ export class StandardMaterial extends StandardMaterialBase {
                     defines: join,
                     fallbacks: fallbacks,
                     onCompiled: this.onCompiled,
+                    requester: drawWrapper,
                     onError: this.onError,
                     indexParameters,
                     processFinalCode: csnrOptions.processFinalCode,

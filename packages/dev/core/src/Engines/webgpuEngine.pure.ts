@@ -2242,15 +2242,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
-            const compiledEffect = this._compiledEffects[name];
-            // Take the reference first: a callback (also one called while checking the readiness) can release the other references
-            compiledEffect._refCount++;
-            // Like the Effect constructor, take the callbacks from the creation options when they are given
-            compiledEffect._notifyCacheHit(
-                isOptions ? (<IEffectCreationOptions>attributesNamesOrOptions).onCompiled : onCompiled,
-                isOptions ? (<IEffectCreationOptions>attributesNamesOrOptions).onError : onError
-            );
-            return compiledEffect;
+            // The effect takes the reference of the caller and calls its callbacks with the result of the compilation
+            return this._compiledEffects[name]._getFromCache(isOptions ? <IEffectCreationOptions>attributesNamesOrOptions : null, onCompiled, onError);
         }
         const effect = new Effect(
             baseName,
