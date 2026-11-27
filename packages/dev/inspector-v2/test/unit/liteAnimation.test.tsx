@@ -566,17 +566,21 @@ describe("Babylon Lite animation properties", () => {
 });
 
 describe("Lite animation import boundaries", () => {
-    it("does not load native animation implementations or the curve editor", () => {
+    it("does not load native animation implementations or the native curve editor", () => {
         const inspectorRoot = resolve(import.meta.dirname, "../../src");
         const paths = [
             "lite/animationUtils.ts",
+            "lite/components/curveEditor/curveEditor.tsx",
+            "lite/components/curveEditor/curveEditorSource.ts",
             "lite/components/properties/animationProperties.tsx",
+            "lite/components/curveEditor/curveEditorButton.tsx",
             "lite/services/panes/properties/animationPropertiesService.tsx",
             "lite/services/panes/scene/animationGroupExplorerService.tsx",
         ];
         for (const path of paths) {
             const source = readFileSync(resolve(inspectorRoot, path), "utf8");
-            expect(source).not.toMatch(/core\/Animations|curveEditor|@babylonjs\/lite\/(?:lib|src|dist)\//);
+            expect(source).not.toMatch(/core\/Animations|@babylonjs\/lite\/(?:lib|src|dist)\//);
+            expect(source).not.toMatch(/components\/curveEditor\/(?:curveEditor|curveEditorButton|curveEditorContext|curveEditorSource)(?:\.tsx?)?["']|curveEditor\/sideBar/);
             expect(source).not.toMatch(/\._(?:ctrl|startTime|stopped|animationManager|gltfMixer|propertyMixer)/);
         }
         const entry = readFileSync(resolve(inspectorRoot, "lite/inspector.tsx"), "utf8");

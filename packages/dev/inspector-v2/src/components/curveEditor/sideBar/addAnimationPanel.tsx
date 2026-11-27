@@ -10,7 +10,9 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
+import { useBabylonCurveEditor } from "../curveEditorContext";
+import { CreateBabylonCurveEditorAnimations } from "../curveEditorSource";
 
 const useStyles = makeStyles({
     root: {
@@ -65,11 +67,14 @@ type AddAnimationPanelProps = {
 
 /**
  * Panel for adding new animations
+ * @param props - The panel props
  * @returns The add animation panel component
  */
-export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ onClose }) => {
+export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = (props) => {
+    const { onClose } = props;
     const styles = useStyles();
-    const { state, actions, observables } = useCurveEditor();
+    const { actions, observables } = useCurveEditor();
+    const { state: nativeState } = useBabylonCurveEditor();
 
     const [name, setName] = useState("");
     const [mode, setMode] = useState<(typeof MODES)[number]>("List");
@@ -82,12 +87,12 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
     const properties = useMemo(() => {
         const result: string[] = [];
 
-        if (!state.target) {
+        if (!nativeState.target) {
             return result;
         }
 
-        let target = state.target as object | null;
-        const source = state.target as unknown as Record<string, unknown>;
+        let target = nativeState.target as object | null;
+        const source = nativeState.target as unknown as Record<string, unknown>;
 
         while (target !== null) {
             const descriptors = Object.getOwnPropertyDescriptors(target);
@@ -134,7 +139,7 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
         }
 
         return result;
-    }, [state.target]);
+    }, [nativeState.target]);
 
     // Set initial selected property when properties change
     useEffect(() => {
@@ -145,11 +150,11 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
 
     // Infer type from selected property value
     const inferredType = useMemo((): (typeof ANIMATION_TYPES)[number] => {
-        if (mode === "Custom" || !state.target || !selectedProperty) {
+        if (mode === "Custom" || !nativeState.target || !selectedProperty) {
             return animationType;
         }
 
-        const source = state.target as unknown as Record<string, unknown>;
+        const source = nativeState.target as unknown as Record<string, unknown>;
         const value = source[selectedProperty];
 
         if (value === null || value === undefined) {
@@ -169,7 +174,7 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
         }
 
         return "Float";
-    }, [mode, state.target, selectedProperty, animationType]);
+    }, [mode, nativeState.target, selectedProperty, animationType]);
 
     const isCustomMode = mode === "Custom" || properties.length === 0;
     const currentProperty = isCustomMode ? customProperty : selectedProperty;
@@ -177,21 +182,21 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
 
     // Get FPS from existing animations or default to 60
     const fps = useMemo(() => {
-        if (state.animations && state.animations.length) {
-            const anim = state.useTargetAnimations ? (state.animations[0] as TargetedAnimation).animation : (state.animations[0] as Animation);
+        if (nativeState.animations && nativeState.animations.length) {
+            const anim = nativeState.useTargetAnimations ? (nativeState.animations[0] as TargetedAnimation).animation : (nativeState.animations[0] as Animation);
             return anim.framePerSecond;
         }
         return 60;
-    }, [state.animations, state.useTargetAnimations]);
+    }, [nativeState.animations, nativeState.useTargetAnimations]);
 
     // Get min/max frame from existing animations
     const { minFrame, maxFrame } = useMemo(() => {
         let min = 0;
         let max = 100;
 
-        if (state.animations) {
-            for (const anim of state.animations) {
-                const innerAnim = state.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
+        if (nativeState.animations) {
+            for (const anim of nativeState.animations) {
+                const innerAnim = nativeState.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
                 const keys = innerAnim.getKeys();
                 if (keys.length) {
                     min = Math.min(min, keys[0].frame);
@@ -201,7 +206,7 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
         }
 
         return { minFrame: min, maxFrame: max };
-    }, [state.animations, state.useTargetAnimations]);
+    }, [nativeState.animations, nativeState.useTargetAnimations]);
 
     // Validation for the create button
     const isValid = name.trim() !== "" && currentProperty.trim() !== "";
@@ -301,23 +306,23 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
         animation.setKeys(keys);
 
         // Add to target animations
-        if (state.target) {
-            if (!state.target.animations || state.target.animations.length === 0) {
-                state.target.animations = [animation];
+        if (nativeState.target) {
+            if (!nativeState.target.animations || nativeState.target.animations.length === 0) {
+                nativeState.target.animations = [animation];
             } else {
-                state.target.animations = [...state.target.animations, animation];
+                nativeState.target.animations = [...nativeState.target.animations, animation];
             }
         }
 
         // Auto-select the newly created animation
-        actions.setActiveAnimations([animation]);
+        actions.setActiveCurveAnimations(CreateBabylonCurveEditorAnimations([animation]));
         actions.resetAllActiveChannels();
 
         // Close panel, then notify so listeners (e.g. AnimationList) can react
         onClose();
         observables.onAnimationsLoaded.notifyObservers();
         observables.onActiveAnimationChanged.notifyObservers({});
-    }, [name, currentProperty, currentType, loopMode, fps, minFrame, maxFrame, state.target, actions, observables, onClose]);
+    }, [name, currentProperty, currentType, loopMode, fps, minFrame, maxFrame, nativeState.target, actions, observables, onClose]);
 
     return (
         <div className={styles.root}>

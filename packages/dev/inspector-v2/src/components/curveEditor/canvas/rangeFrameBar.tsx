@@ -1,8 +1,8 @@
-import { type FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type FunctionComponent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 const useStyles = makeStyles({
@@ -49,15 +49,27 @@ const OFFSET_X = 10;
 
 /**
  * Range frame bar showing frame tick marks and keyframe indicators
+ * @param props - Range frame bar dimensions.
  * @returns The range frame bar component
  */
-export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) => {
+export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = (props) => {
+    const { width } = props;
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
     const svgRef = useRef<SVGSVGElement>(null);
     const [viewWidth, setViewWidth] = useState(width);
     const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
     const pointerIsDown = useRef(false);
+    const [keyVersion, invalidateKeys] = useReducer((version: number) => version + 1, 0);
+
+    useEffect(() => {
+        const changed = observables.onActiveKeyDataChanged.add(invalidateKeys);
+        const animationsChanged = observables.onActiveAnimationChanged.add(invalidateKeys);
+        return () => {
+            observables.onActiveKeyDataChanged.remove(changed);
+            observables.onActiveAnimationChanged.remove(animationsChanged);
+        };
+    }, [observables]);
 
     // Re-render when range updates
     // useCallback stabilizes the accessor to prevent infinite re-render loops
@@ -97,7 +109,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const pointerToFrame = useCallback(
         (offsetX: number) => {
             const { fromKey, toKey } = state;
-            return Math.round(Math.max(fromKey, Math.min(toKey, (offsetX / viewWidth) * (toKey - fromKey) + fromKey)));
+            return Math.max(fromKey, Math.min(toKey, Math.round((offsetX / viewWidth) * (toKey - fromKey) + fromKey)));
         },
         [state.fromKey, state.toKey, viewWidth]
     );
@@ -128,7 +140,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
 
     // Compute frame ticks
     const frameTicks = useMemo(() => {
-        if (state.activeAnimations.length === 0) {
+        if (state.activeCurveAnimations.length === 0) {
             return [];
         }
 
@@ -155,7 +167,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
         }
 
         return steps;
-    }, [state.fromKey, state.toKey, state.activeAnimations.length, viewWidth]);
+    }, [state.fromKey, state.toKey, state.activeCurveAnimations.length, viewWidth]);
 
     // Frame to X position
     const frameToX = useCallback(
@@ -174,7 +186,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const renderKeyframes = useMemo(() => {
         const lines: JSX.Element[] = [];
 
-        for (const animation of state.activeAnimations) {
+        for (const animation of state.activeCurveAnimations) {
             const keys = animation.getKeys();
             for (let i = 0; i < keys.length; i++) {
                 const x = frameToX(keys[i].frame);
@@ -183,7 +195,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
         }
 
         return lines;
-    }, [state.activeAnimations, frameToX, styles.keyframeLine]);
+    }, [state.activeCurveAnimations, frameToX, styles.keyframeLine, keyVersion]);
 
     // Render active frame marker - uses displayFrame for smooth updates during playback
     const renderActiveFrame = useMemo(() => {

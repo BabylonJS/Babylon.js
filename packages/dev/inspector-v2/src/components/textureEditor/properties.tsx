@@ -2,7 +2,7 @@ import { type FunctionComponent, useCallback, useEffect, useRef, useState } from
 
 import { type ISize } from "core/index";
 import { type IPixelData } from "./canvasManager";
-import { type ITextureEditorSource } from "./textureEditorSource";
+import { type ITextureEditorSource } from "./textureEditorModel";
 
 import { Input, Label, makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip } from "@fluentui/react-components";
 import { ArrowResetRegular, ArrowUploadRegular, ChevronDownRegular, ChevronUpRegular, ResizeRegular, SaveRegular } from "@fluentui/react-icons";

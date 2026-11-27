@@ -4,7 +4,7 @@ import { type Animation } from "core/Animations/animation";
 import { makeStyles, tokens, Input, Label, Dropdown, Option } from "@fluentui/react-components";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { useCurveEditor } from "../curveEditorContext";
+import { useCurveEditor } from "../normalizedCurveEditorContext";
 
 const useStyles = makeStyles({
     root: {

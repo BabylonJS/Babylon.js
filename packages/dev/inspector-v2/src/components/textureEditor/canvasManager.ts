@@ -3,7 +3,7 @@
 import { type ISize, type IWheelEvent, type Mesh, type Nullable, type PointerInfo } from "core/index";
 import { type Channel } from "./channels";
 import { type IMetadata } from "./textureEditor";
-import { type ITextureEditorSource } from "./textureEditorSource";
+import { type ITextureEditorSource } from "./textureEditorModel";
 
 import { Camera } from "core/Cameras/camera";
 import { FreeCamera } from "core/Cameras/freeCamera";

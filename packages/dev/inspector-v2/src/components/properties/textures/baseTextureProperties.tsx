@@ -3,7 +3,7 @@ import { type ComponentType, type FunctionComponent, useRef, useState } from "re
 import { type BaseTexture } from "core/index";
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { type TextureEditorProps } from "../../textureEditor/textureEditor";
-import { BabylonTextureEditorSource } from "../../textureEditor/babylonTextureEditorSource";
+import { BabylonTextureEditorSource } from "../../textureEditor/textureEditorSource";
 import { type TexturePreviewImperativeRef, TexturePreview } from "./texturePreview";
 
 import { EditRegular } from "@fluentui/react-icons";

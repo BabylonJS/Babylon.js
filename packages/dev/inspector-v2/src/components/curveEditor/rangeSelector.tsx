@@ -2,7 +2,7 @@ import { type FunctionComponent, useCallback, useEffect, useRef, useState } from
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
-import { useCurveEditor } from "./curveEditorContext";
+import { useCurveEditor } from "./normalizedCurveEditorContext";
 
 const useStyles = makeStyles({
     root: {

@@ -9,7 +9,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TextureCanvasManager as InspectorCanvasManager } from "../../src/components/textureEditor/canvasManager";
-import { BabylonTextureEditorSource } from "../../src/components/textureEditor/babylonTextureEditorSource";
+import { BabylonTextureEditorSource } from "../../src/components/textureEditor/textureEditorSource";
 import { StatusBar } from "../../src/components/textureEditor/status";
 import { TextureCanvasManager as LegacyCanvasManager } from "../../../inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
 import { BottomBar } from "../../../inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar";
