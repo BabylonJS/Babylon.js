@@ -4,6 +4,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { Vector3 } from "core/Maths/math.vector";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type PushMaterial } from "core/Materials/pushMaterial";
@@ -30,6 +31,27 @@ describe("Babylon Material", function () {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
+    });
+
+    it.each([
+        { materialName: "StandardMaterial", createMaterial: (scene: Scene) => new StandardMaterial("material", scene) },
+        { materialName: "PBRMaterial", createMaterial: (scene: Scene) => new PBRMaterial("material", scene) },
+        { materialName: "OpenPBRMaterial", createMaterial: (scene: Scene) => new OpenPBRMaterial("material", scene) },
+        { materialName: "BackgroundMaterial", createMaterial: (scene: Scene) => new BackgroundMaterial("material", scene) },
+    ])("clones $materialName with a nonserializing plugin", ({ createMaterial }) => {
+        const scene = new Scene(subject);
+        try {
+            const material = createMaterial(scene);
+            const plugin = new MaterialPluginBase(material, "transient", 500);
+            plugin.doNotSerialize = true;
+            const copy = vi.spyOn(plugin, "copyTo");
+            const clone = material.clone("clone");
+            expect(clone).not.toBe(material);
+            expect(clone.pluginManager?.getPlugin(plugin.name)).toBeFalsy();
+            expect(copy).not.toHaveBeenCalled();
+        } finally {
+            scene.dispose();
+        }
     });
 
     describe("#FrozenMaterialLightBinding", () => {

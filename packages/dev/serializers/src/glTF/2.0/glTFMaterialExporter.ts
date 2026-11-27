@@ -911,8 +911,9 @@ export class GLTFMaterialExporter {
     ): Promise<void> {
         SetAlphaMode(glTFMaterial, babylonPBRMaterial);
 
-        if (!metallicRoughness.baseColor.equalsWithEpsilon(White, Epsilon) || !Scalar.WithinEpsilon(babylonPBRMaterial.alpha, 1, Epsilon)) {
-            glTFPbrMetallicRoughness.baseColorFactor = [metallicRoughness.baseColor.r, metallicRoughness.baseColor.g, metallicRoughness.baseColor.b, babylonPBRMaterial.alpha];
+        const alpha = babylonPBRMaterial instanceof OpenPBRMaterial ? babylonPBRMaterial.geometryOpacity : babylonPBRMaterial.alpha;
+        if (!metallicRoughness.baseColor.equalsWithEpsilon(White, Epsilon) || !Scalar.WithinEpsilon(alpha, 1, Epsilon)) {
+            glTFPbrMetallicRoughness.baseColorFactor = [metallicRoughness.baseColor.r, metallicRoughness.baseColor.g, metallicRoughness.baseColor.b, alpha];
         }
 
         if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {
