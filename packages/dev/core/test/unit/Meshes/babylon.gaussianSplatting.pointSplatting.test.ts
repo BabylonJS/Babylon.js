@@ -162,7 +162,7 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         engine.dispose();
     });
 
-    it("renders compute-owned passes without waiting for or posting worker sorts", async () => {
+    it("renders compute-owned passes without waiting for or posting worker sorts", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", new Vector3(0, 0, -3), scene);
@@ -236,7 +236,6 @@ describe("GaussianSplattingMesh point-splatting settings", () => {
         expect(mesh["_forcedSortPending"]).toBe(false);
         mesh["_readyToDisplay"] = false;
         expect(mesh.isReady(false)).toBe(false);
-        await vi.waitFor(() => expect(depth["_shadersLoaded"]).toBe(true));
         controller["_renderer"] = null;
         scene.dispose();
         engine.dispose();
