@@ -1089,7 +1089,7 @@ export class Curve3 {
      * @param first (Vector3) the first point the arc must pass through.
      * @param second (Vector3) the second point the arc must pass through.
      * @param third (Vector3) the third point the arc must pass through.
-     * @param steps (number) the larger the number of steps the more detailed the arc.
+     * @param steps (number) the larger the number of steps the more detailed the arc. For a full circle, use a positive count: an integer gives that many equal segments, and zero gives only the first point.
      * @param closed (boolean) optional with default false, when true forms the chord from the first and third point
      * @param fullCircle Circle (boolean) optional with default false, when true forms the complete circle through the three points
      * @returns the created Curve3
@@ -1123,11 +1123,21 @@ export class Curve3 {
         const xAxis = radiusVec.normalize();
         const yAxis = Vector3.Cross(zAxis, xAxis).normalize();
         if (fullCircle) {
-            const dStep = (2 * Math.PI) / steps;
-            for (let theta = 0; theta <= 2 * Math.PI; theta += dStep) {
-                arc.push(center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta)))));
+            // Seed with an exact clone of first so the opening point matches the input exactly
+            // rather than the trig reconstruction, which can differ by one ULP.
+            arc.push(first.clone());
+            // Any positive count closes the path, so counts below one still give two samples and a tangent frame.
+            if (steps > 0) {
+                const dStep = (2 * Math.PI) / steps;
+                // Count the steps instead of adding dStep up to 2 * PI: depending on rounding, the sum
+                // reached 2 * PI or not, so the circle sometimes ended with a duplicate of its first point.
+                // Start from index 1; first.clone() already covers the theta=0 position.
+                for (let i = 1; i < steps; i++) {
+                    const theta = i * dStep;
+                    arc.push(center.add(xAxis.scale(radius * Math.cos(theta)).add(yAxis.scale(radius * Math.sin(theta)))));
+                }
+                arc.push(first.clone());
             }
-            arc.push(first);
         } else {
             const dStep = 1 / steps;
             let theta = 0;
