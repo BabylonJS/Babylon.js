@@ -470,6 +470,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                     samplers: samplers,
                     defines: join,
                     onCompiled: this.onCompiled,
+                    requester: drawWrapper,
                     onError: this.onError,
                     indexParameters: { SCENE_MRT_COUNT: defines.SCENE_MRT_COUNT },
                     processCodeAfterIncludes: this._eventInfo.customCode,

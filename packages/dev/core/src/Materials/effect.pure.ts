@@ -18,6 +18,7 @@ import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type ThinTexture } from "../Materials/Textures/thinTexture";
 import { type IPipelineGenerationOptions, _ProcessShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 import { _RetryWithInterval } from "core/Misc/timingTools";
+import { type DrawWrapper } from "./drawWrapper";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -139,7 +140,17 @@ export interface IEffectCreationOptions {
      * If set to true the shader will not be compiles asynchronously, even if the engine allows it.
      */
     disableParallelShaderCompilation?: boolean;
+
+    /**
+     * The draw wrapper of the material (or of the material and submesh) that requests the effect. When the effect is in the engine cache,
+     * the lookups with the same requester are retries of one request (like a material that looks the effect up again in every frame until
+     * it is compiled): the request gets the result of a compilation once, and is cancelled when the draw wrapper or its material is disposed.
+     */
+    requester?: DrawWrapper;
 }
+
+// The callbacks of a request of a caller that got an effect from the engine cache (see Effect._getFromCache)
+type CacheHitCallbacks = [Nullable<(effect: Effect) => void> | undefined, Nullable<(effect: Effect, errors: string) => void> | undefined];
 
 /**
  * Effect containing vertex and fragment shader that can be executed on an object.
@@ -250,6 +261,12 @@ export class Effect implements IDisposable {
     private _isReady = false;
     private _compilationError = "";
     private _allFallbacksProcessed = false;
+    // The requester that created the effect, whose callbacks are the callbacks of the effect (see _getFromCache)
+    private _requester?: DrawWrapper;
+    // The waiting requests of the callers that got the effect from the engine cache while it was compiling, by requester (see _getFromCache)
+    private _cacheHits?: Map<object, CacheHitCallbacks>;
+    // The requesters already given the result of the current compilation
+    private _calledCacheHits?: Nullable<WeakSet<object>>;
     private _attributesNames: string[];
     private _attributes: number[];
     private _attributeLocationByName: { [name: string]: number };
@@ -358,6 +375,7 @@ export class Effect implements IDisposable {
             this.defines = options.defines;
             this.onError = options.onError;
             this.onCompiled = options.onCompiled;
+            this._requester = options.requester;
             this._fallbacks = options.fallbacks;
             this._indexParameters = options.indexParameters;
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
@@ -667,6 +685,113 @@ export class Effect implements IDisposable {
         }
     }
 
+    /**
+     * Gets this effect for a caller that found it in the engine cache, and calls the callbacks of the caller with the result of the
+     * compilation: right away if the compilation (fallbacks included) is complete, else when it completes.
+     * The lookups with the same requester are retries of one request (like a material that looks the effect up again in every frame until
+     * it is compiled), which gets the result of a compilation once. Each lookup without requester is a request of its own. The effect calls
+     * the callbacks of its creator itself, so the lookups of its creator are not requests.
+     * Like for any synchronous callback, if reading the callbacks from the options or a callback called right away throws, the lookup is
+     * undone (the reference of the caller is given back and a retry calls the callback again) and the exception is thrown to the caller.
+     * The callbacks of the waiting requests are called by the compilation once its result is set (see _notifyCacheHitWaiters).
+     * @param options defines the creation options of the caller, if the caller gave options
+     * @param onCompiled defines the function to call when the effect is compiled, if the caller did not give options
+     * @param onError defines the function to call if the compilation fails, if the caller did not give options
+     * @returns this effect
+     * @internal
+     */
+    public _getFromCache(
+        options: Nullable<IEffectCreationOptions>,
+        onCompiled?: Nullable<(effect: Effect) => void>,
+        onError?: Nullable<(effect: Effect, errors: string) => void>
+    ): Effect {
+        // Taken first: a callback (also one called while checking the readiness) can release the other references
+        this._refCount++;
+        let requester: DrawWrapper | undefined;
+        try {
+            if (options) {
+                // Like the constructor, the callbacks come from the options when the caller gave options
+                ({ onCompiled, onError, requester } = options);
+            }
+            if ((onCompiled || onError) && (!requester || requester !== this._requester)) {
+                if (requester) {
+                    // The handle of the request: a requester waits for one effect at a time, and changes it to cancel the request (see DrawWrapper._pendingEffect)
+                    requester._pendingEffect = this;
+                }
+                // isReady() can complete a parallel compilation (WebGL): it returns false if a callback of the effect then throws, but the result is set
+                const compiled = this.isReady() || this._isReady;
+                if (compiled || (this._allFallbacksProcessed && this._compilationError)) {
+                    if (this._markCacheHitAsCalled(requester)) {
+                        if (compiled) {
+                            onCompiled?.(this);
+                        } else {
+                            onError?.(this, this._compilationError);
+                        }
+                    }
+                } else {
+                    const callbacks: CacheHitCallbacks = [onCompiled, onError];
+                    (this._cacheHits ??= new Map()).set(requester ?? callbacks, callbacks);
+                }
+            }
+        } catch (e) {
+            // The lookup is undone: a retry calls the callback again, and the reference of the caller is released like an owner releases it (the
+            // callback can have released the other references). In persistent mode, where dispose() does not count the references, the
+            // reference is given back without disposing the effect
+            if (requester) {
+                this._calledCacheHits?.delete(requester);
+            }
+            if (Effect.PersistentMode) {
+                this._refCount--;
+            } else {
+                this.dispose();
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    private _notifyCacheHitWaiters(compiled: boolean) {
+        const requests = this._cacheHits;
+        if (!requests) {
+            return;
+        }
+        for (const [requester, callbacks] of requests) {
+            requests.delete(requester);
+            const [onCompiled, onError] = callbacks;
+            // A request is cancelled when its requester no longer waits for this effect (like a disposed material), also by a callback called before
+            if ((requester === callbacks || (<DrawWrapper>requester)._pendingEffect === this) && this._markCacheHitAsCalled(requester)) {
+                try {
+                    if (compiled) {
+                        onCompiled?.(this);
+                    } else {
+                        onError?.(this, this._compilationError);
+                    }
+                } catch (e) {
+                    // Reported on its own: it must not stop the other requests, nor be taken for an error of the compilation running the callback.
+                    // Neither must the report, which can throw (like a hook of the logger): the thrown value is given as is, not formatted
+                    try {
+                        Logger.Error(["A callback of a caller of the cached effect failed:", e]);
+                    } catch {
+                        // Nothing else can report it
+                    }
+                }
+            }
+        }
+    }
+
+    private _markCacheHitAsCalled(requester: object | undefined): boolean {
+        // Each lookup without requester is a request of its own
+        if (!requester) {
+            return true;
+        }
+        const called = (this._calledCacheHits ??= new WeakSet());
+        if (called.has(requester)) {
+            return false;
+        }
+        called.add(requester);
+        return true;
+    }
+
     private _checkIsReady(previousPipelineContext: Nullable<IPipelineContext>) {
         _RetryWithInterval(
             () => {
@@ -821,6 +946,8 @@ export class Effect implements IDisposable {
 
         this._compilationError = "";
         this._isReady = true;
+        // Not through onCompileObservable, which its users can clear, nor after the callbacks of the effect, which can throw
+        this._notifyCacheHitWaiters(true);
         if (this.onCompiled) {
             this.onCompiled(this);
         }
@@ -845,6 +972,9 @@ export class Effect implements IDisposable {
         const previousPipelineContext = this._pipelineContext;
 
         this._isReady = false;
+        // A new compilation starts (a context restoration compiles the effect again): the previous result no longer describes the effect
+        this._allFallbacksProcessed = false;
+        this._calledCacheHits = null;
 
         try {
             const overrides = !!(this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride);
@@ -960,6 +1090,8 @@ export class Effect implements IDisposable {
         Logger.Error("Error: " + this._compilationError);
 
         const notifyErrors = () => {
+            // Not through onErrorObservable, which its users can clear, nor after the callbacks of the effect, which can throw
+            this._notifyCacheHitWaiters(false);
             if (this.onError) {
                 this.onError(this, this._compilationError);
             }
@@ -1574,6 +1706,9 @@ export class Effect implements IDisposable {
             this._engine.onReleaseEffectsObservable.remove(this._onReleaseEffectsObserver);
             this._onReleaseEffectsObserver = null;
         }
+
+        // A compilation still running after the disposal must not call the callers that got the effect from the engine cache
+        this._cacheHits?.clear();
 
         if (this._pipelineContext) {
             resetCachedPipeline(this._pipelineContext);

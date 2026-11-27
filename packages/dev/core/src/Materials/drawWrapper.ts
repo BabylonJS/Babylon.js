@@ -47,6 +47,14 @@ export class DrawWrapper {
      */
     public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
 
+    /**
+     * @internal
+     * The effect the material (or material and submesh) of the wrapper last requested from the engine cache with callbacks: the handle of
+     * the request, whose callbacks are not called by the compilation of the effect once this changes (like when the wrapper or its material
+     * is disposed, also while the material uses shader hot swapping and the wrapper holds the previous effect). See Effect._getFromCache
+     */
+    public _pendingEffect?: Nullable<Effect>;
+
     /** @internal What the draw last recorded by a snapshot was rendered with: the draw is encoded again while they did not change */
     public _recordedMaterial: Nullable<object> = null;
     /** @internal */
@@ -170,6 +178,9 @@ export class DrawWrapper {
      * If dispose() is not called during a scene or engine dispose, we want to delay the dispose of the underlying effect. Mostly to give a chance to user code to reuse the effect in some way.
      */
     public dispose(immediate = false): void {
+        // The material of the wrapper no longer waits for the effect it requested from the engine cache (also when it uses shader hot swapping
+        // and the wrapper still holds the previous effect)
+        this._pendingEffect = null;
         if (this.effect) {
             const effect = this.effect;
             if (immediate) {

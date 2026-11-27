@@ -2121,12 +2121,8 @@ export class ThinEngine extends AbstractEngine {
 
         const name = vertex + "+" + fragment + "@" + fullDefines;
         if (this._compiledEffects[name]) {
-            const compiledEffect = this._compiledEffects[name];
-            if (onCompiled && compiledEffect.isReady()) {
-                onCompiled(compiledEffect);
-            }
-            compiledEffect._refCount++;
-            return compiledEffect;
+            // The effect takes the reference of the caller and calls its callbacks with the result of the compilation
+            return this._compiledEffects[name]._getFromCache(isOptions ? <IEffectCreationOptions>attributesNamesOrOptions : null, onCompiled, onError);
         }
         if (this._gl) {
             getStateObject(this._gl);

@@ -364,6 +364,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         extraInitializationsAsync: async () => {

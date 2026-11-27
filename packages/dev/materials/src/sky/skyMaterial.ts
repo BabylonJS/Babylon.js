@@ -343,6 +343,7 @@ export class SkyMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         shaderLanguage: this._shaderLanguage,
                         extraInitializationsAsync: SkyMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),

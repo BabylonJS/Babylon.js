@@ -824,6 +824,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                     defines: join,
                     fallbacks: fallbacks,
                     onCompiled: this.onCompiled,
+                    requester: drawWrapper,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                     shaderLanguage: this._shaderLanguage,

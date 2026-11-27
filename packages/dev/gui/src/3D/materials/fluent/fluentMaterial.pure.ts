@@ -226,6 +226,7 @@ export class FluentMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: null,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,

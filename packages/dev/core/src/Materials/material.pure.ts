@@ -2249,6 +2249,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         this._uniformBuffer.dispose();
 
+        // The material no longer waits for an effect it got from the engine cache while it was compiling (the draw wrappers of the
+        // submeshes cancel their request when they are disposed, see DrawWrapper.dispose)
+        this._drawWrapper._pendingEffect = null;
+
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
         if (this._drawWrapper.effect) {
             if (!this._storeEffectOnSubMeshes) {

@@ -257,6 +257,7 @@ export class SimpleMaterial extends PushMaterial {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
+                        requester: drawWrapper,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 },
                         shaderLanguage: this._shaderLanguage,
