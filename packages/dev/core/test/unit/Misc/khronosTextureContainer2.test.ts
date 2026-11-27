@@ -106,6 +106,23 @@ describe("KhronosTextureContainer2", () => {
         engine.dispose();
     });
 
+    it("keeps the size of the first level after uploading every level of an uncompressed texture", async () => {
+        const levels = decodedData();
+        (KhronosTextureContainer2 as any)._DecoderModulePromise = Promise.resolve({ decode: async () => levels });
+        const engine = new NullEngine();
+        const uploadSizes: string[] = [];
+        vi.spyOn(engine, "_uploadDataToTextureDirectly").mockImplementation((texture, _data, _faceIndex, lod) => {
+            uploadSizes.push(`${lod}: ${texture.width}x${texture.height}`);
+        });
+
+        const texture = await upload(engine, ktx2File(), true);
+
+        expect(uploadSizes).toEqual(["0: 4x4", "1: 2x2"]);
+        expect(texture.width).toBe(4);
+        expect(texture.height).toBe(4);
+        engine.dispose();
+    });
+
     it("keeps the levels a decoder returns on the main thread", async () => {
         const levels = decodedData();
         (KhronosTextureContainer2 as any)._DecoderModulePromise = Promise.resolve({ decode: async () => levels });

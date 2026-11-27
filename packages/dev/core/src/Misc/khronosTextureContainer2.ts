@@ -515,6 +515,10 @@ export class KhronosTextureContainer2 {
             }
         }
 
+        // the uncompressed uploads above leave the size of the last level, the texture has the size of the first one
+        internalTexture.width = data.mipmaps[0].width;
+        internalTexture.height = data.mipmaps[0].height;
+
         internalTexture._extension = ".ktx2";
         internalTexture.isReady = true;
 
