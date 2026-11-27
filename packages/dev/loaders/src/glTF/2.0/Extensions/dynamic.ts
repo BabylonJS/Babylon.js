@@ -6,6 +6,12 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
  * Registers the built-in glTF 2.0 extension async factories, which dynamically imports and loads each glTF extension on demand (e.g. only when a glTF model uses the extension).
  */
 export function registerBuiltInGLTFExtensions() {
+    unregisterGLTFExtension("BABYLON_materials_neural_texture");
+    registerGLTFExtension("BABYLON_materials_neural_texture", true, async (loader) => {
+        const { BABYLON_materials_neural_texture } = await import("./BABYLON_materials_neural_texture.pure");
+        return new BABYLON_materials_neural_texture(loader);
+    });
+
     unregisterGLTFExtension("EXT_lights_image_based");
     registerGLTFExtension("EXT_lights_image_based", true, async (loader) => {
         const { EXT_lights_image_based } = await import("./EXT_lights_image_based.pure");

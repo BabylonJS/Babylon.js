@@ -6162,6 +6162,41 @@
             "dependsOn": ["Compute", "Meshes", "Shadows"]
         },
         {
+            "title": "glTF Neural Texture Aerobatic Plane",
+            "playgroundId": "#CEWIFF#0",
+            "referenceImage": "gltf-neural-texture-aerobatic-plane.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["glTF", "Loaders", "PBR", "Textures"]
+        },
+        {
+            "title": "glTF Neural Texture BoomBox",
+            "playgroundId": "#6E9KUH#0",
+            "referenceImage": "gltf-neural-texture-boombox.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["glTF", "Loaders", "PBR", "Textures"]
+        },
+        {
+            "title": "glTF Neural Texture Fish",
+            "playgroundId": "#CE24AZ#0",
+            "referenceImage": "gltf-neural-texture-fish.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["glTF", "Loaders", "PBR", "Textures"]
+        },
+        {
+            "title": "glTF Neural Texture Flight Helmet",
+            "playgroundId": "#Q0E0NE#0",
+            "referenceImage": "gltf-neural-texture-flight-helmet.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["glTF", "Loaders", "PBR", "Textures"]
+        },
+        {
+            "title": "glTF Neural Texture Haunted House",
+            "playgroundId": "#C7LK0I#0",
+            "referenceImage": "gltf-neural-texture-haunted-house.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["glTF", "Loaders", "PBR", "Textures"]
+        },
+        {
             "title": "WebGL2 half-range depth - fluid particle occlusion",
             "playgroundId": "#7U2BZN#0",
             "referenceImage": "webgl2-half-range-depth-fluid.png",
