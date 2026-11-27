@@ -529,6 +529,12 @@ export class PrePassRenderer {
             }
         }
 
+        this._bindFrameBuffer();
+        if (camera) {
+            // Sequential cameras reuse this MRT, even when their final output slices are distinct.
+            this._clearAuxiliaryAttachments();
+            this._scene._clear();
+        }
         this._setupOutputForThisPass(this._currentTarget, camera);
     }
 
@@ -620,16 +626,18 @@ export class PrePassRenderer {
         if (this._enabled && this._currentTarget.enabled) {
             this._bindFrameBuffer();
 
-            // Clearing other attachment with 0 on all other attachments
-            this._engine.bindAttachments(this._clearAttachments);
-            this._engine.clear(this._clearColor, true, false, false);
-            if (this._useSpecificClearForDepthTexture) {
-                this._engine.bindAttachments(this._clearDepthAttachments);
-                this._engine.clear(this._clearDepthColor, true, false, false);
-            }
-            // Regular clear color with the scene clear color of the 1st attachment
-            this._engine.bindAttachments(this._defaultAttachments);
+            this._clearAuxiliaryAttachments();
         }
+    }
+
+    private _clearAuxiliaryAttachments(): void {
+        this._engine.bindAttachments(this._clearAttachments);
+        this._engine.clear(this._clearColor, true, false, false);
+        if (this._useSpecificClearForDepthTexture) {
+            this._engine.bindAttachments(this._clearDepthAttachments);
+            this._engine.clear(this._clearDepthColor, true, false, false);
+        }
+        this._engine.bindAttachments(this._defaultAttachments);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -797,7 +805,6 @@ export class PrePassRenderer {
             firstPP = firstCameraPP;
         }
 
-        this._bindFrameBuffer();
         this._linkInternalTexture(prePassRenderTarget, firstPP);
     }
 

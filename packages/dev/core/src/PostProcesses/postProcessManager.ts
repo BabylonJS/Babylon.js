@@ -158,7 +158,7 @@ export class PostProcessManager {
                 postProcesses[index + 1].activate(this._scene.activeCamera || this._scene, targetTexture?.texture);
             } else {
                 if (presentToCamera) {
-                    this._scene._bindFrameBuffer(this._scene.activeCamera);
+                    this._scene._bindFrameBuffer(this._scene.activeCamera, postProcesses[index].isReady());
                 } else if (output) {
                     output._bindFrameBuffer(faceIndex, layer, forceFullscreenViewport);
                 } else if (targetTexture) {
@@ -236,7 +236,7 @@ export class PostProcessManager {
                     if (output?.renderTarget === targetTexture && faceIndex === undefined && layer === undefined) {
                         // The camera target owns the layer selection (e.g. one eye of a projection layer).
                         if (presentToCamera && !doNotPresent && output.getViewCount() === 1) {
-                            this._scene._bindFrameBuffer(camera);
+                            this._scene._bindFrameBuffer(camera, pp.isReady());
                         } else {
                             output._bindFrameBuffer(undefined, undefined, forceFullscreenViewport);
                         }

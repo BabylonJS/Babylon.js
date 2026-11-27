@@ -32,7 +32,7 @@ describe("PostProcessManager camera output", () => {
         };
         const manager = new PostProcessManager(scene as unknown as Scene);
         Object.assign(scene, { postProcessManager: manager });
-        const pp = { apply: () => null } as unknown as PostProcess;
+        const pp = { apply: () => null, isReady: () => false } as unknown as PostProcess;
         const render = (output?: RenderTargetWrapper, face?: number, fullscreen = false, layer?: number) => manager._finalizeFrame(false, output, face, [pp], fullscreen, layer);
         return { engine, scene, left, right, target, pp, render, manager };
     }
@@ -162,6 +162,7 @@ describe("PostProcessManager camera output", () => {
             const events: string[] = [];
             const chain = {
                 activate: vi.fn(),
+                isReady: () => true,
                 apply: () => {
                     events.push("main");
                     return null;
@@ -205,9 +206,26 @@ describe("PostProcessManager camera output", () => {
         }
     });
 
+    it.each([false, true])("defers the presentation clear until the terminal pass is ready (camera chain=%s)", (cameraChain) => {
+        const { scene, left, target, manager } = setup();
+        const bind = vi.spyOn(scene, "_bindFrameBuffer");
+        const pass = { apply: () => null, isReady: vi.fn().mockReturnValueOnce(false).mockReturnValueOnce(true) } as unknown as PostProcess;
+        for (let frame = 0; frame < 2; ++frame) {
+            if (cameraChain) {
+                manager._finalizeFrame(false, target, undefined, [pass], false, undefined, true);
+            } else {
+                manager._directRender([pass], target, left, true);
+            }
+        }
+        expect(bind.mock.calls).toEqual([
+            [scene.activeCamera, false],
+            [scene.activeCamera, true],
+        ]);
+    });
+
     it.each([false, true])("falls back to canvas for missing or multiview targets (composition=%s)", (compose) => {
         const { engine, scene, right, target } = setup();
-        const chain = { activate: vi.fn(), apply: () => null };
+        const chain = { activate: vi.fn(), apply: () => null, isReady: () => false };
         const prepass: PrePassRenderer = Object.assign(Object.create(PrePassRenderer.prototype), {
             _scene: scene,
             _engine: engine,
