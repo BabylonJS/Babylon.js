@@ -5118,7 +5118,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _useCurrentFrameBuffer = false;
 
-    private _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
+    /** @internal */
+    public _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
         if (!this._useCurrentFrameBuffer) {
             if (camera && camera._multiviewTexture) {
                 camera._multiviewTexture._bindFrameBuffer();
@@ -5338,7 +5339,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.postProcessManager && !camera._multiviewTexture) {
             // if the camera has an output render target, render the post process to the render target
             const texture = camera.outputRenderTarget ? camera.outputRenderTarget.renderTarget! : undefined;
-            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
+            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture, undefined, undefined, false, undefined, this.prePass);
         }
 
         // After post process
@@ -5497,9 +5498,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
     }
 
-    private _clear(): void {
+    /** @internal */
+    public _clear(clearColor = this._clearColor): void {
         if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this._clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            this._engine.clear(clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
         }
     }
 
@@ -5843,7 +5845,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
 
             // Clear
-            this._clearFrameBuffer(this.activeCamera);
+            if (!this.prePass) {
+                this._clearFrameBuffer(this.activeCamera);
+            }
 
             // Collects render targets from external components.
             for (const step of this._gatherRenderTargetsStage) {

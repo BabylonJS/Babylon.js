@@ -19,6 +19,12 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer.pure
 import { RegisterPrePassRendererSceneComponent } from "./prePassRendererSceneComponent.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 
+function GetCameraOutput(camera: Nullable<Camera>): Nullable<RenderTargetTexture> {
+    // The composition shader is single-view. A multiview attachment requires a view-aware pass.
+    const output = camera?.outputRenderTarget;
+    return !camera?._multiviewTexture && output?.getViewCount() === 1 && output.renderTarget ? output : null;
+}
+
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -47,6 +53,8 @@ export class PrePassRenderer {
 
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _lastCameraFrame = -1;
+    private _lastCameraOutputId = -1;
 
     /**
      * Number of textures in the multi render target texture where the scene is directly rendered
@@ -529,17 +537,24 @@ export class PrePassRenderer {
             }
         }
 
-        this._setupOutputForThisPass(this._currentTarget, camera);
-    }
-
-    private _prepareFrame(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number, layer?: number) {
-        if (prePassRenderTarget.renderTargetTexture) {
-            prePassRenderTarget.renderTargetTexture._prepareFrame(this._scene, faceIndex, layer, prePassRenderTarget.renderTargetTexture.useCameraPostProcesses);
-        } else if (this._postProcessesSourceForThisPass.length) {
-            this._scene.postProcessManager._prepareFrame();
-        } else {
-            this._engine.restoreDefaultFramebuffer();
+        this._bindFrameBuffer();
+        if (camera) {
+            const output = GetCameraOutput(camera);
+            const frame = this._scene.getFrameId();
+            const outputId = output?.uniqueId ?? -1;
+            // Consecutive overlay cameras accumulate color on one destination. Rig views
+            // can select different slices of the same wrapper and must start independently.
+            const shared = !camera.isRigCamera && !camera._multiviewTexture && frame === this._lastCameraFrame && outputId === this._lastCameraOutputId;
+            if (shared) {
+                this._engine.clear(null, false, true, true);
+            } else {
+                this._clearAuxiliaryAttachments();
+                this._scene._clear(output?.clearColor);
+            }
+            this._lastCameraFrame = camera.isRigCamera || camera._multiviewTexture ? -1 : frame;
+            this._lastCameraOutputId = outputId;
         }
+        this._setupOutputForThisPass(this._currentTarget, camera);
     }
 
     /**
@@ -560,9 +575,11 @@ export class PrePassRenderer {
         return true;
     }
 
-    private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
+    private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number, layer?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
-        const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
+        const camera = this._scene.activeCamera;
+        const cameraOutput = GetCameraOutput(camera);
+        const rtt = prePassRenderTarget.renderTargetTexture;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -576,10 +593,32 @@ export class PrePassRenderer {
             postProcessChain.push(this._currentTarget.imageProcessingPostProcess);
         }
 
-        // Activates and renders the chain
+        if (rtt) {
+            rtt._prepareFrame(this._scene, faceIndex, layer, rtt.useCameraPostProcesses);
+        } else if (firstPP) {
+            this._scene.postProcessManager._prepareFrame();
+        } else if (!postProcessChain.length) {
+            if (cameraOutput) {
+                cameraOutput._bindFrameBuffer();
+            } else {
+                this._engine.restoreDefaultFramebuffer();
+            }
+        }
+
         if (postProcessChain.length) {
+            const destination = rtt ?? cameraOutput;
+            const outputTexture = firstPP ? firstPP.inputTexture : (destination?.renderTarget ?? null);
+            // An intermediate does not inherit the final eye or array slice.
+            const output = outputTexture && destination?.renderTarget === outputTexture ? destination : null;
             this._scene.postProcessManager._prepareFrame(this._currentTarget.renderTarget?.texture, postProcessChain);
-            this._scene.postProcessManager.directRender(postProcessChain, outputTexture, false, faceIndex);
+            this._scene.postProcessManager._directRender(
+                postProcessChain,
+                outputTexture,
+                output,
+                !rtt && !firstPP && !!cameraOutput,
+                output || outputTexture?.isCube ? faceIndex : undefined,
+                layer
+            );
         }
     }
 
@@ -588,8 +627,7 @@ export class PrePassRenderer {
      */
     public _afterDraw(faceIndex?: number, layer?: number) {
         if (this._enabled && this._currentTarget.enabled) {
-            this._prepareFrame(this._currentTarget, faceIndex, layer);
-            this._renderPostProcesses(this._currentTarget, faceIndex);
+            this._renderPostProcesses(this._currentTarget, faceIndex, layer);
         }
     }
 
@@ -605,16 +643,18 @@ export class PrePassRenderer {
         if (this._enabled && this._currentTarget.enabled) {
             this._bindFrameBuffer();
 
-            // Clearing other attachment with 0 on all other attachments
-            this._engine.bindAttachments(this._clearAttachments);
-            this._engine.clear(this._clearColor, true, false, false);
-            if (this._useSpecificClearForDepthTexture) {
-                this._engine.bindAttachments(this._clearDepthAttachments);
-                this._engine.clear(this._clearDepthColor, true, false, false);
-            }
-            // Regular clear color with the scene clear color of the 1st attachment
-            this._engine.bindAttachments(this._defaultAttachments);
+            this._clearAuxiliaryAttachments();
         }
+    }
+
+    private _clearAuxiliaryAttachments(): void {
+        this._engine.bindAttachments(this._clearAttachments);
+        this._engine.clear(this._clearColor, true, false, false);
+        if (this._useSpecificClearForDepthTexture) {
+            this._engine.bindAttachments(this._clearDepthAttachments);
+            this._engine.clear(this._clearDepthColor, true, false, false);
+        }
+        this._engine.bindAttachments(this._defaultAttachments);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -782,7 +822,6 @@ export class PrePassRenderer {
             firstPP = firstCameraPP;
         }
 
-        this._bindFrameBuffer();
         this._linkInternalTexture(prePassRenderTarget, firstPP);
     }
 

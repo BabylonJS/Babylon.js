@@ -201,9 +201,13 @@ export function RegisterEngineMultiview(): void {
         if (!this._multiviewSceneUbo) {
             this._createMultiviewUbo();
         }
+        const output = camera.outputRenderTarget;
         camera.outputRenderTarget = camera._multiviewTexture;
-        this._renderForCamera(camera);
-        camera.outputRenderTarget = null;
+        try {
+            this._renderForCamera(camera);
+        } finally {
+            camera.outputRenderTarget = output;
+        }
 
         // Consume the multiview texture through a shader for each eye
         for (let index = 0; index < camera._rigCameras.length; index++) {
@@ -212,7 +216,7 @@ export function RegisterEngineMultiview(): void {
             engine.setViewport(this._activeCamera.viewport);
             if (this.postProcessManager) {
                 this.postProcessManager._prepareFrame();
-                this.postProcessManager._finalizeFrame(this._activeCamera.isIntermediate);
+                this.postProcessManager._finalizeFrame(this._activeCamera.isIntermediate, this._activeCamera.outputRenderTarget?.renderTarget ?? undefined);
             }
         }
     };
