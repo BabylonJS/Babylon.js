@@ -51,13 +51,13 @@ describe("WebXRWebGPUProjectionLayer", () => {
         let wrapSpy: ReturnType<typeof vi.fn>;
         let updateSpy: ReturnType<typeof vi.fn>;
 
-        function createProvider(subImage: any, sessionMode: "immersive-vr" | "immersive-ar" = "immersive-vr") {
+        function createProvider(subImage: any, sessionMode: "immersive-vr" | "immersive-ar" = "immersive-vr", depthFormat: GPUTextureFormat = "depth24plus-stencil8") {
             const binding: any = {
                 getViewSubImage: vi.fn(() => subImage),
                 getSubImage: vi.fn(() => subImage),
             };
             const layer: any = { textureWidth: 512, textureHeight: 512 };
-            const wrapper = new WebXRWebGPUProjectionLayerWrapper(layer, false, binding, "depth24plus-stencil8");
+            const wrapper = new WebXRWebGPUProjectionLayerWrapper(layer, false, binding, depthFormat);
             const sessionManager = { scene, sessionMode } as unknown as WebXRSessionManager;
             return wrapper.createRenderTargetTextureProvider(sessionManager);
         }
@@ -87,6 +87,33 @@ describe("WebXRWebGPUProjectionLayer", () => {
         afterEach(() => {
             scene.dispose();
             engine.dispose();
+        });
+
+        it.each(["depth24plus-stencil8", "depth24plus"] as const)("sets the render target stencil aspect from the supplied %s attachment", (format) => {
+            const provider = createProvider(createSubImage(512, 512), "immersive-vr", format);
+            const target = provider.getRenderTargetTextureForView({ eye: "left" } as XRView)!.renderTarget!;
+
+            expect(target.depthStencilTexture).toBe(wrappedTextures[1]);
+            expect(target.depthStencilTextureWithStencil).toBe(format === "depth24plus-stencil8");
+        });
+
+        it.each([true, false])("only disposes the shell depth attachment when the sub-image supplies a replacement (%s)", (suppliesDepth) => {
+            const shellDepth = new InternalTexture(engine, InternalTextureSource.Depth, true);
+            const dispose = vi.spyOn(shellDepth, "dispose");
+            const createTarget = engine.createRenderTargetTexture.bind(engine);
+            vi.spyOn(engine, "createRenderTargetTexture").mockImplementation((size, options) => {
+                const target = createTarget(size, options);
+                target.setDepthStencilTexture(shellDepth);
+                return target;
+            });
+            const subImage = createSubImage(512, 512);
+            if (!suppliesDepth) {
+                subImage.depthStencilTexture = null;
+            }
+            const target = createProvider(subImage).getRenderTargetTextureForView({ eye: "left" } as XRView)!.renderTarget!;
+
+            expect(dispose).toHaveBeenCalledTimes(suppliesDepth ? 1 : 0);
+            expect(target.depthStencilTexture).toBe(suppliesDepth ? wrappedTextures[1] : shellDepth);
         });
 
         it("builds a render target sized from the sub-image color texture and wraps color + depth", () => {

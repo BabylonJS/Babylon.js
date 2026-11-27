@@ -101,7 +101,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider<LayerTypeT extends W
         }
 
         if (depthStencilTexture) {
-            renderTargetWrapper._depthStencilTexture = depthStencilTexture;
+            renderTargetWrapper.setDepthStencilTexture(depthStencilTexture);
         }
 
         renderTargetTexture.disableRescaling();
