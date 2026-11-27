@@ -201,12 +201,3 @@ geometry_thickness = uniforms.vGeometryThickness;
     let hiLerp: f32 = mix(specular_roughness, 1.f, (detailRoughness - 0.5f) * 2.f);
     specular_roughness = mix(loLerp, hiLerp, step(detailRoughness, 0.5f));
 #endif
-
-#ifdef USE_GLTF_STYLE_ANISOTROPY
-    // From glTF to OpenPBR
-    let baseAlpha: f32 = specular_roughness * specular_roughness;
-    let roughnessT: f32 = mix(baseAlpha, 1.0f, specular_roughness_anisotropy * specular_roughness_anisotropy);
-    let roughnessB: f32 = baseAlpha;
-    specular_roughness_anisotropy = 1.0f - roughnessB / max(roughnessT, 0.00001f);
-    specular_roughness = sqrt(roughnessT / sqrt(2.0f / (1.0f + (1.0f - specular_roughness_anisotropy) * (1.0f - specular_roughness_anisotropy))));
-#endif

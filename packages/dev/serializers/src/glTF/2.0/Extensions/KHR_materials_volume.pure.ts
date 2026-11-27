@@ -6,7 +6,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Color3 } from "core/Maths/math.color.pure";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
-import { GetOpenPBRVolumeAttenuation } from "../glTFUtilities";
+import { GetOpenPBRVolumeAttenuation, ShouldExportOpenPBRDiffuseTransmission } from "../glTFUtilities";
 
 const NAME = "KHR_materials_volume";
 
@@ -132,7 +132,15 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                     if (thicknessTexture) {
                         this._exporter._materialNeedsUVsSet.add(babylonMaterial);
                     }
-                    const { attenuationColor, attenuationDistance } = GetOpenPBRVolumeAttenuation(babylonMaterial, transmissionVolume, subsurfaceVolume);
+                    const separateDiffuseTransmission = ShouldExportOpenPBRDiffuseTransmission(
+                        babylonMaterial,
+                        this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission")
+                    );
+                    const { attenuationColor, attenuationDistance } = GetOpenPBRVolumeAttenuation(
+                        babylonMaterial,
+                        transmissionVolume || separateDiffuseTransmission,
+                        subsurfaceVolume && !separateDiffuseTransmission
+                    );
                     const volumeInfo: IKHRMaterialsVolume = {
                         thicknessFactor: thicknessFactor,
                         thicknessTexture: thicknessTexture,

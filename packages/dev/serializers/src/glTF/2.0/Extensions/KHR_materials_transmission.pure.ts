@@ -20,6 +20,7 @@ import {
     type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
+import { ShouldExportOpenPBRDiffuseTransmission } from "../glTFUtilities";
 
 const NAME = "KHR_materials_transmission";
 
@@ -91,7 +92,11 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
             }
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
             if (this._isExtensionEnabled(babylonMaterial)) {
-                const subsurfaceWeight = babylonMaterial.subsurfaceWeight;
+                const separateDiffuseTransmission = ShouldExportOpenPBRDiffuseTransmission(
+                    babylonMaterial,
+                    this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission")
+                );
+                const subsurfaceWeight = separateDiffuseTransmission ? 0 : babylonMaterial.subsurfaceWeight;
                 const transmissionWeight = babylonMaterial.transmissionWeight;
                 const subsurfaceChannel = babylonMaterial._useSubsurfaceWeightFromTextureAlpha ? TextureChannel.A : TextureChannel.R;
 
@@ -101,7 +106,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 // the most) and fall back to the subsurface weight factor, logging an error since the exported
                 // material will differ.
                 const transmissionWeightTexture = babylonMaterial.transmissionWeightTexture;
-                let subsurfaceWeightTexture = babylonMaterial.subsurfaceWeightTexture;
+                let subsurfaceWeightTexture = separateDiffuseTransmission ? null : babylonMaterial.subsurfaceWeightTexture;
                 if (subsurfaceWeightTexture && transmissionWeightTexture && subsurfaceWeightTexture.coordinatesIndex !== transmissionWeightTexture.coordinatesIndex) {
                     Logger.Error(
                         `${context}: subsurfaceWeightTexture (UV${subsurfaceWeightTexture.coordinatesIndex}) and transmissionWeightTexture (UV${transmissionWeightTexture.coordinatesIndex}) of material '${babylonMaterial.name}' use different UV sets and cannot be combined into a single KHR_materials_transmission texture. Ignoring subsurfaceWeightTexture.`
@@ -109,8 +114,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     subsurfaceWeightTexture = null;
                 }
 
-                // OpenPBR can have surface transmission in either transmission_weight or subsurface_weight,
-                // and we need to combine them into a single transmission weight for glTF.
+                // Combine slabs only when diffuse transmission is not exported separately.
                 // The final transmission weight is computed as a linear interpolation of the two weights.
                 // lerp(subsurface_weight, 1, transmission_weight)
                 const sOp = CreateTextureWithFactorOperand(subsurfaceWeightTexture, new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, 1.0), subsurfaceChannel);
@@ -159,13 +163,44 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                     );
                 }
 
+                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                // Imported glTF inputs already contain the surface tint unless the non-volume transmission tint was edited independently.
+                if (
+                    (babylonMaterial._gltfTransmissionSurfaceToCoat || separateDiffuseTransmission) &&
+                    (usesVolume ||
+                        (babylonMaterial.transmissionColor.equals(babylonMaterial.baseColor) && babylonMaterial.transmissionColorTexture === babylonMaterial.baseColorTexture))
+                ) {
+                    if (baseColorTexture && babylonMaterial.geometryOpacityTexture && babylonMaterial.baseColorTexture && !babylonMaterial.baseColorTexture.gammaSpace) {
+                        // Opacity packing copies hardware-decoded RGB; glTF still requires sRGB texels.
+                        const packedTexture = baseColorTexture;
+                        const encoded = await MultiplyTexturesAsync(
+                            `base color encoding (${babylonMaterial.name})`,
+                            { texture: packedTexture, dispose: () => packedTexture.dispose() },
+                            CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                            babylonMaterial.getScene(),
+                            TextureColorSpace.SRGB,
+                            undefined,
+                            { samplingMode: packedTexture.samplingMode }
+                        );
+                        baseColorTexture = encoded.texture ?? null;
+                    }
+                    this._baseColorOperands.set(babylonMaterial, {
+                        factor: new Color4(babylonMaterial.baseColor.r, babylonMaterial.baseColor.g, babylonMaterial.baseColor.b, geometryOpacity),
+                        texture: baseColorTexture,
+                        ownsTexture: !!babylonMaterial.geometryOpacityTexture,
+                    });
+                    if (baseColorTexture) {
+                        additionalTextures.push(baseColorTexture);
+                    }
+                    return additionalTextures;
+                }
+
                 // The lerp combines the base color with the transmission weight (and the metalness and
                 // transmission color textures). If any of those use a different UV set from the base color,
                 // the texture processor would have to drop one of them, which can wash out the base color
                 // entirely. In that case, export the base color (with opacity packed) without the lerp.
                 const metalness = babylonMaterial.baseMetalness;
                 const metalnessTexture = babylonMaterial.baseMetalnessTexture;
-                const usesVolume = !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
                 if (baseColorTexture) {
                     const otherTextures = [transWeightResult.texture, metalness > 0 ? metalnessTexture : null, usesVolume ? null : babylonMaterial.transmissionColorTexture];
                     if (otherTextures.some((texture) => texture && texture.coordinatesIndex !== baseColorTexture!.coordinatesIndex)) {
@@ -262,7 +297,10 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
     private _isExtensionEnabled(mat: Material): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat instanceof OpenPBRMaterial && !mat.unlit) {
-            return mat.transmissionWeight > 0 || mat.subsurfaceWeight > 0;
+            return (
+                mat.transmissionWeight > 0 ||
+                (mat.subsurfaceWeight > 0 && !ShouldExportOpenPBRDiffuseTransmission(mat, this._exporter.isExtensionEnabled("KHR_materials_diffuse_transmission")))
+            );
         } else if (mat instanceof PBRMaterial && !mat.unlit) {
             const subs = mat.subSurface;
             return (
