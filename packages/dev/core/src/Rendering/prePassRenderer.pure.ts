@@ -19,6 +19,12 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer.pure
 import { RegisterPrePassRendererSceneComponent } from "./prePassRendererSceneComponent.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 
+function GetCameraOutput(camera: Nullable<Camera>): Nullable<RenderTargetTexture> {
+    // The composition shader is single-view. A multiview attachment requires a view-aware pass.
+    const output = camera?.outputRenderTarget;
+    return !camera?._multiviewTexture && output?.getViewCount() === 1 && output.renderTarget ? output : null;
+}
+
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -47,6 +53,8 @@ export class PrePassRenderer {
 
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _lastCameraFrame = -1;
+    private _lastCameraOutputId = -1;
 
     /**
      * Number of textures in the multi render target texture where the scene is directly rendered
@@ -531,9 +539,20 @@ export class PrePassRenderer {
 
         this._bindFrameBuffer();
         if (camera) {
-            // Sequential cameras reuse this MRT, even when their final output slices are distinct.
-            this._clearAuxiliaryAttachments();
-            this._scene._clear();
+            const output = GetCameraOutput(camera);
+            const frame = this._scene.getFrameId();
+            const outputId = output?.uniqueId ?? -1;
+            // Consecutive overlay cameras accumulate color on one destination. Rig views
+            // can select different slices of the same wrapper and must start independently.
+            const shared = !camera.isRigCamera && !camera._multiviewTexture && frame === this._lastCameraFrame && outputId === this._lastCameraOutputId;
+            if (shared) {
+                this._engine.clear(null, false, true, true);
+            } else {
+                this._clearAuxiliaryAttachments();
+                this._scene._clear(output?.clearColor);
+            }
+            this._lastCameraFrame = camera.isRigCamera || camera._multiviewTexture ? -1 : frame;
+            this._lastCameraOutputId = outputId;
         }
         this._setupOutputForThisPass(this._currentTarget, camera);
     }
@@ -559,9 +578,7 @@ export class PrePassRenderer {
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number, layer?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         const camera = this._scene.activeCamera;
-        // The composition shader is single-view. A multiview attachment requires a view-aware pass.
-        const cameraOutput =
-            !camera?._multiviewTexture && camera?.outputRenderTarget?.getViewCount() === 1 && camera.outputRenderTarget.renderTarget ? camera.outputRenderTarget : null;
+        const cameraOutput = GetCameraOutput(camera);
         const rtt = prePassRenderTarget.renderTargetTexture;
 
         // Build post process chain for this prepass post draw

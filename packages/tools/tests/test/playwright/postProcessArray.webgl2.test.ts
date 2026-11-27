@@ -19,6 +19,7 @@ test("Scene.render isolates camera pre-pass inputs and preserves the last drawab
             const passes = cameras.map((camera) => {
                 const output = new B.RenderTargetTexture(camera.name, { width: 16, height: 8 }, scene, false);
                 camera.outputRenderTarget = output;
+                output.clearColor = new B.Color4(0, 1, 1, 1);
                 output.onClearObservable.add(() => {
                     notifications.push(engine._currentRenderTarget === output.renderTarget ? camera.name : "wrong target");
                     engine.clear(new B.Color4(0, 0, 1, 1), true, true, true);
@@ -28,8 +29,12 @@ test("Scene.render isolates camera pre-pass inputs and preserves the last drawab
                 return pass;
             });
             const prepass = scene.enablePrePassRenderer()!;
+            let drawLeft = true;
             scene.onBeforeDrawPhaseObservable.add(() => {
                 const left = scene.activeCamera === cameras[0];
+                if (left && !drawLeft) {
+                    return;
+                }
                 engine.scissorClear(left ? 0 : 8, 0, 8, 8, left ? new B.Color4(1, 0, 0, 1) : new B.Color4(0, 1, 0, 1));
             });
             for (const pass of passes) {
@@ -55,9 +60,27 @@ test("Scene.render isolates camera pre-pass inputs and preserves the last drawab
             const pair = notifications.splice(0);
             const before = await read();
             // Simulate an asynchronously compiling replacement on the second camera only.
-            passes[1]["_effectWrapper"].isReady = () => false;
+            const effectWrapper = passes[1]["_effectWrapper"];
+            const isReady = effectWrapper.isReady;
+            effectWrapper.isReady = () => false;
             scene.render();
-            return { single, pair, pending: notifications, before, after: await read() };
+            const after = await read();
+            effectWrapper.isReady = isReady;
+            for (const camera of cameras) {
+                camera.outputRenderTarget = null;
+            }
+            const drawCanvas = () => {
+                scene.render();
+                const gl = canvas.getContext("webgl2")!;
+                return [4, 12].map((x) => {
+                    const bytes = new Uint8Array(4);
+                    gl.readPixels(x, 4, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+                    return Array.from(bytes.subarray(0, 3));
+                });
+            };
+            const accumulated = drawCanvas();
+            drawLeft = false;
+            return { single, pair, pending: notifications, before, after, accumulated, nextFrame: drawCanvas() };
         } finally {
             engine.dispose();
         }
@@ -68,14 +91,22 @@ test("Scene.render isolates camera pre-pass inputs and preserves the last drawab
     expect.soft(result.before).toEqual([
         [
             [255, 0, 0],
-            [0, 0, 0],
+            [0, 255, 255],
         ],
         [
-            [0, 0, 0],
+            [0, 255, 255],
             [0, 255, 0],
         ],
     ]);
     expect(result.after).toEqual(result.before);
+    expect.soft(result.accumulated).toEqual([
+        [255, 0, 0],
+        [0, 255, 0],
+    ]);
+    expect(result.nextFrame).toEqual([
+        [0, 0, 0],
+        [0, 255, 0],
+    ]);
 });
 
 for (const useCameraPostProcesses of [false, true]) {

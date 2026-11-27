@@ -5499,9 +5499,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /** @internal */
-    public _clear(): void {
+    public _clear(clearColor = this._clearColor): void {
         if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this._clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            this._engine.clear(clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
         }
     }
 
