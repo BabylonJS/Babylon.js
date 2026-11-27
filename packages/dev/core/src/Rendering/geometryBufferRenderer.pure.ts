@@ -68,6 +68,7 @@ export const Samplers = [
     "albedoSampler",
     "morphTargets",
     "boneSampler",
+    "bakedVertexAnimationTexture",
     "transmissionWeightSampler",
     "subsurfaceWeightSampler",
     "iblShadowSampler",
@@ -109,6 +110,9 @@ export const Uniforms = [
     "morphTargetTextureInfo",
     "morphTargetTextureIndices",
     "boneTextureInfo",
+    "bakedVertexAnimationSettings",
+    "bakedVertexAnimationTextureSizeInverted",
+    "bakedVertexAnimationTime",
     "objectId",
     "meshBlendTag",
 ];
@@ -820,6 +824,7 @@ export class GeometryBufferRenderer {
         const defines = [];
         const attribs = [VertexBuffer.PositionKind];
         const mesh = subMesh.getMesh();
+        const useBakedVertexAnimation = mesh.bakedVertexAnimationManager?.isEnabled;
         const hasNormals = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         if (hasNormals) {
@@ -1053,20 +1058,20 @@ export class GeometryBufferRenderer {
             defines.push("#define POSITION_INDEX " + this._positionIndex);
         }
 
+        // VAT has no previous bone matrices; keep the rigid-body velocity path for these meshes.
+        const useBonesVelocity = (this._enableVelocity || this._enableVelocityLinear) && !useBakedVertexAnimation && this.excludedSkinnedMeshesFromVelocity.indexOf(mesh) === -1;
         if (this._enableVelocity) {
             defines.push("#define VELOCITY");
             defines.push("#define VELOCITY_INDEX " + this._velocityIndex);
-            if (this.excludedSkinnedMeshesFromVelocity.indexOf(mesh) === -1) {
-                defines.push("#define BONES_VELOCITY_ENABLED");
-            }
         }
 
         if (this._enableVelocityLinear) {
             defines.push("#define VELOCITY_LINEAR");
             defines.push("#define VELOCITY_LINEAR_INDEX " + this._velocityLinearIndex);
-            if (this.excludedSkinnedMeshesFromVelocity.indexOf(mesh) === -1) {
-                defines.push("#define BONES_VELOCITY_ENABLED");
-            }
+        }
+
+        if (useBonesVelocity) {
+            defines.push("#define BONES_VELOCITY_ENABLED");
         }
 
         if (this._enableReflectivity) {
@@ -1184,6 +1189,13 @@ export class GeometryBufferRenderer {
             PushAttributesForInstances(attribs, this._enableVelocity || this._enableVelocityLinear);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
+            }
+        }
+
+        if (useBakedVertexAnimation) {
+            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
             }
         }
 
@@ -1727,8 +1739,10 @@ export class GeometryBufferRenderer {
                 // Clip plane
                 BindClipPlane(effect, material, this._scene);
 
-                // Bones
-                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                const bakedVertexAnimationManager = subMesh.getMesh().bakedVertexAnimationManager;
+                if (bakedVertexAnimationManager?.isEnabled) {
+                    bakedVertexAnimationManager.bind(effect, hardwareInstancedRendering);
+                } else if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
                     const skeleton = renderingMesh.skeleton;
 
                     if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureInfo") > -1) {

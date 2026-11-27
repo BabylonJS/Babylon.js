@@ -1,11 +1,80 @@
 import { describe, expect, it, vi } from "vitest";
+import { BakedVertexAnimationManager } from "core/BakedVertexAnimation/bakedVertexAnimationManager";
+import { Bone } from "core/Bones/bone";
+import { Skeleton } from "core/Bones/skeleton";
+import { VertexBuffer } from "core/Buffers/buffer";
 import "core/Engines/Extensions/engine.multiRender";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Constants } from "core/Engines/constants";
+import { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 import { Scene } from "core/scene";
 import "core/Shaders/geometry.fragment";
 import "core/Shaders/geometry.vertex";
+
+describe("GeometryBufferRenderer baked vertex animation", () => {
+    it("selects the VAT shader variant and uses per-instance settings only for instanced draws", async () => {
+        const engine = new NullEngine();
+        engine.getCaps().maxDrawBuffers = 8;
+        engine.getCaps().drawBuffersExtension = true;
+        vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
+        vi.spyOn(engine, "createMultipleRenderTarget").mockImplementation((size, options) => {
+            const target = new RenderTargetWrapper(true, false, size, engine);
+            target.setTextures(
+                Array.from({ length: options.textureCount + (options.generateDepthTexture ? 1 : 0) }, () => new InternalTexture(engine, InternalTextureSource.MultiRenderTarget))
+            );
+            return target;
+        });
+        const scene = new Scene(engine);
+        const renderer = new GeometryBufferRenderer(scene);
+
+        try {
+            renderer.enableVelocity = true;
+            const mesh = CreateBox("VAT mesh", {}, scene);
+            mesh.material = new StandardMaterial("VAT material", scene);
+            mesh.skeleton = new Skeleton("VAT skeleton", "vat", scene);
+            new Bone("root", mesh.skeleton);
+            mesh.numBoneInfluencers = 1;
+            const indices = new Float32Array(mesh.getTotalVertices() * 4);
+            const weights = new Float32Array(indices.length);
+            for (let i = 0; i < weights.length; i += 4) {
+                weights[i] = 1;
+            }
+            mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, indices);
+            mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, weights);
+            const subMesh = mesh.subMeshes[0];
+            const manager = new BakedVertexAnimationManager(scene);
+            mesh.bakedVertexAnimationManager = manager;
+
+            const createEffect = vi.spyOn(engine, "createEffect");
+            await vi.waitFor(() => expect(renderer.isReady(subMesh, false)).toBe(true));
+            const vatEffect = expect.objectContaining({
+                defines: expect.stringContaining("#define BAKED_VERTEX_ANIMATION_TEXTURE"),
+                uniformsNames: expect.arrayContaining(["bakedVertexAnimationTime", "bakedVertexAnimationSettings", "bakedVertexAnimationTextureSizeInverted"]),
+                samplers: expect.arrayContaining(["bakedVertexAnimationTexture"]),
+            });
+            expect(createEffect).toHaveBeenLastCalledWith("geometry", vatEffect, engine);
+            expect(subMesh.effect!.defines).not.toContain("BONES_VELOCITY_ENABLED");
+            expect(subMesh.effect!.getAttributesNames()).not.toContain("bakedVertexAnimationSettingsInstanced");
+
+            expect(renderer.isReady(subMesh, true)).toBe(true);
+            expect(createEffect).toHaveBeenLastCalledWith("geometry", vatEffect, engine);
+            expect(subMesh.effect!.getAttributesNames()).toContain("bakedVertexAnimationSettingsInstanced");
+
+            manager.isEnabled = false;
+            expect(renderer.isReady(subMesh, false)).toBe(true);
+            expect(subMesh.effect!.defines).not.toContain("BAKED_VERTEX_ANIMATION_TEXTURE");
+            expect(subMesh.effect!.defines).toContain("BONES_VELOCITY_ENABLED");
+        } finally {
+            renderer.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+});
 
 describe("GeometryBufferRenderer object IDs", () => {
     it("rejects object IDs when linked to the PrePassRenderer", async () => {
