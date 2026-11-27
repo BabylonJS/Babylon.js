@@ -27,23 +27,106 @@ export class BezierCurve {
      * @returns the interpolated value
      */
     public static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
-        if (t === 0) {
+        if (t <= 0) {
             return 0;
         }
+        if (t >= 1) {
+            return 1;
+        }
+
         // Extract X (which is equal to time here)
         const f0 = 1 - 3 * x2 + 3 * x1;
         const f1 = 3 * x2 - 6 * x1;
         const f2 = 3 * x1;
 
+        // Find the curve parameter whose x is t. Newton's method converges in a few steps
+        // where the curve is steep, but its slope is 0 at an end point when x1 is 0 or x2 is 1
+        // (as in the common ease-in curve (0.42, 0, 1, 1)), and in the middle of (1, 0, 0, 1).
+        // Dividing by that slope gave NaN, so keep a bracket around the root and fall back to
+        // bisection when the slope collapses or a Newton step leaves the bracket.
+        //
+        // Newton stops on the step size, not the residual: near a flat X slope the residual can be
+        // below 1e-7 while the parameter (and Y output) is still wrong by >0.003.
+        let lo = 0;
+        let hi = 1;
         let refinedT = t;
-        for (let i = 0; i < 5; i++) {
-            const refinedT2 = refinedT * refinedT;
-            const refinedT3 = refinedT2 * refinedT;
+        let converged = false;
+        for (let i = 0; i < 8; i++) {
+            const x = ((f0 * refinedT + f1) * refinedT + f2) * refinedT - t;
+            if (x === 0) {
+                // The residual is computed zero. Near a stationary point (e.g. the midpoint of
+                // (1, 0, 0, 1) or a small-x2 perturbation of it) the polynomial rounds to t by
+                // cancellation even though the parameter is off. Only accept as an exact root
+                // when the slope is large enough that a true residual of 0 is not just cancellation.
+                const slope = (3.0 * f0 * refinedT + 2.0 * f1) * refinedT + f2;
+                if (Math.abs(slope) > 1e-3) {
+                    converged = true;
+                }
+                break;
+            }
+            if (x < 0) {
+                lo = refinedT;
+            } else {
+                hi = refinedT;
+            }
+            const slope = (3.0 * f0 * refinedT + 2.0 * f1) * refinedT + f2;
+            if (Math.abs(slope) < 1e-6) {
+                break;
+            }
+            const step = x / slope;
+            const next = refinedT - step;
+            if (next < lo || next > hi) {
+                break;
+            }
+            refinedT = next;
+            if (Math.abs(step) < 1e-7) {
+                converged = true;
+                break;
+            }
+        }
 
-            const x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
-            const slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
-            refinedT -= (x - t) * slope;
-            refinedT = Math.min(1, Math.max(0, refinedT));
+        if (!converged) {
+            // x grows monotonically from 0 to 1 for x1 and x2 in [0, 1]; bisect until the
+            // parameter bracket is narrow enough.
+            for (let i = 0; i < 40; i++) {
+                if (hi - lo < 1e-7) {
+                    break;
+                }
+                const mid = (lo + hi) / 2;
+                const x = ((f0 * mid + f1) * mid + f2) * mid;
+                if (x === t) {
+                    // Horner residual is zero. Near the stationary center this can be cancellation
+                    // (e.g. x2 = 2**-53 shifts the root by ~2e-6 but x(0.5) still rounds to t).
+                    // Use the Bernstein form with compensated summation to get the sign of the
+                    // true residual before accepting equality or bracketing.
+                    const sm = 1 - mid;
+                    const a = 3 * sm * sm * mid * x1;
+                    const b = 3 * sm * mid * mid * x2;
+                    const c = mid * mid * mid;
+                    const p = a + b;
+                    const ep = b - (p - a);
+                    const q = p + c;
+                    const eq = c - (q - p) + ep;
+                    const r = q - t;
+                    const er = -t - (r - q) + eq;
+                    const cr = r + er;
+                    if (cr === 0) {
+                        lo = mid;
+                        hi = mid;
+                        break;
+                    }
+                    if (cr < 0) {
+                        lo = mid;
+                    } else {
+                        hi = mid;
+                    }
+                } else if (x < t) {
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
+            }
+            refinedT = (lo + hi) / 2;
         }
 
         // Resolve cubic bezier for the given x
