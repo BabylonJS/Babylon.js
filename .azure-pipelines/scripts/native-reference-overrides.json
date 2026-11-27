@@ -1,0 +1,10 @@
+{
+    "scissor-test-2.png": {
+        "sha256": "bd6f358df594bd0b7946a60665f5fdcab0dfd10cce1d21546898af5103ac38ac",
+        "reason": "The Native reference is 666x444 for 0.9 hardware scaling."
+    },
+    "scissor-test-3.png": {
+        "sha256": "60f498850404f3a0c32662ad81fc8395c9fd57c83100a7f13b7c7c6c95b385df",
+        "reason": "The Native reference is 400x266 for 1.5 hardware scaling."
+    }
+}
