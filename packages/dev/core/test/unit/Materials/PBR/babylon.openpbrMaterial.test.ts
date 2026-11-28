@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
+import { Material } from "core/Materials/material";
+import { Color3 } from "core/Maths/math.color";
+import { Vector2 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { SubMesh } from "core/Meshes/subMesh";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
 import { openpbrDirectLighting as openpbrDirectLightingGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLighting";
@@ -243,6 +248,125 @@ describe("OpenPBRMaterial", () => {
                 expect(uniform.firstLinkedKey, `expected ${uniform.name} to have a cached firstLinkedKey`).not.toBe("");
                 expect(uniform.linkedProperties[uniform.firstLinkedKey], `cached firstLinkedKey on ${uniform.name} must point to a real linked property`).toBeDefined();
             }
+        });
+    });
+
+    describe("clone", () => {
+        it("preserves representative OpenPBR inputs", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            material.baseColor = new Color3(0.2, 0.3, 0.4);
+            material.specularRoughness = 0.61;
+            material.specularRoughnessAnisotropy = 0.72;
+            material.geometryTangent = new Vector2(0, 1);
+            material.transmissionWeight = 0.43;
+            material.subsurfaceWeight = 0.54;
+            material.coatWeight = 0.65;
+            material.fuzzWeight = 0.76;
+            material.geometryThinWalled = 1;
+            material.geometryOpacity = 0.87;
+            material.emissionColor = new Color3(1.2, 0.4, 0.1);
+            material.thinFilmWeight = 0.98;
+
+            const clone = material.clone("clone");
+
+            expect(clone.baseColor).toEqual(material.baseColor);
+            expect(clone.baseColor).not.toBe(material.baseColor);
+            expect(clone.specularRoughness).toBe(material.specularRoughness);
+            expect(clone.specularRoughnessAnisotropy).toBe(material.specularRoughnessAnisotropy);
+            expect(clone.geometryTangent).toEqual(material.geometryTangent);
+            expect(clone.geometryTangent).not.toBe(material.geometryTangent);
+            expect(clone.transmissionWeight).toBe(material.transmissionWeight);
+            expect(clone.subsurfaceWeight).toBe(material.subsurfaceWeight);
+            expect(clone.coatWeight).toBe(material.coatWeight);
+            expect(clone.fuzzWeight).toBe(material.fuzzWeight);
+            expect(clone.geometryThinWalled).toBe(material.geometryThinWalled);
+            expect(clone.geometryOpacity).toBe(material.geometryOpacity);
+            expect(clone.emissionColor).toEqual(material.emissionColor);
+            expect(clone.thinFilmWeight).toBe(material.thinFilmWeight);
+        });
+
+        it("clones a shared OpenPBR texture only once by default", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new Texture(null, scene);
+            texture.uScale = 2;
+            const cloneTexture = vi.spyOn(texture, "clone");
+            material.baseColorTexture = texture;
+            material.geometryOpacityTexture = texture;
+            material.backgroundRefractionTexture = texture;
+
+            const clone = material.clone("clone");
+
+            expect(cloneTexture).toHaveBeenCalledTimes(1);
+            expect(clone.baseColorTexture).toBeInstanceOf(Texture);
+            expect(clone.baseColorTexture).not.toBe(texture);
+            expect(clone.baseColorTexture).toBe(clone.geometryOpacityTexture);
+            expect(clone.backgroundRefractionTexture === clone.baseColorTexture).toBe(true);
+            expect((clone.baseColorTexture as Texture).uScale).toBe(2);
+        });
+
+        it("clones each OpenPBR texture binding when texture reuse is disabled", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new Texture(null, scene);
+            const cloneTexture = vi.spyOn(texture, "clone");
+            material.baseColorTexture = texture;
+            material.geometryOpacityTexture = texture;
+            material.backgroundRefractionTexture = texture;
+
+            const clone = material.clone("clone", false);
+
+            expect(cloneTexture).toHaveBeenCalledTimes(3);
+            expect(clone.backgroundRefractionTexture).toBeInstanceOf(Texture);
+            expect(clone.backgroundRefractionTexture).not.toBe(clone.baseColorTexture);
+            expect(clone.backgroundRefractionTexture).not.toBe(clone.geometryOpacityTexture);
+            expect(clone.baseColorTexture).toBeInstanceOf(Texture);
+            expect(clone.geometryOpacityTexture).toBeInstanceOf(Texture);
+            expect(clone.baseColorTexture).not.toBe(clone.geometryOpacityTexture);
+        });
+
+        it("keeps a render target bound to the clone", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RenderTargetTexture("render target", 16, scene);
+            const cloneTexture = vi.spyOn(texture, "clone");
+            material.baseColorTexture = texture;
+            material.backgroundRefractionTexture = texture;
+
+            const clone = material.clone("clone");
+
+            expect(clone.baseColorTexture === texture).toBe(true);
+            expect(clone.backgroundRefractionTexture === texture).toBe(true);
+            expect(cloneTexture).not.toHaveBeenCalled();
+        });
+
+        it("shares the subsurface irradiance and depth textures", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const irradiance = new ThinTexture(null);
+            const depth = new ThinTexture(null);
+            material.sssIrradianceTexture = irradiance;
+            material.sssDepthTexture = depth;
+
+            const clone = material.clone("clone", false);
+
+            expect(clone.sssIrradianceTexture).toBe(irradiance);
+            expect(clone.sssDepthTexture).toBe(depth);
+        });
+
+        it("preserves how packed glTF textures are read", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            material.baseColorTexture = new Texture(null, scene);
+            material.baseColorTexture.hasAlpha = true;
+            material.transparencyMode = Material.MATERIAL_ALPHABLEND;
+            material._useAlphaFromBaseColorTexture = true;
+            material.baseMetalnessTexture = new Texture(null, scene);
+            material._useMetallicFromMetallicTextureBlue = true;
+            material._useRoughnessFromMetallicTextureGreen = true;
+            material._useGltfStyleAnisotropy = true;
+
+            const clone = material.clone("clone");
+
+            expect(clone._useAlphaFromBaseColorTexture).toBe(true);
+            expect(clone._useMetallicFromMetallicTextureBlue).toBe(true);
+            expect(clone._useRoughnessFromMetallicTextureGreen).toBe(true);
+            expect(clone._useGltfStyleAnisotropy).toBe(true);
         });
     });
 });
