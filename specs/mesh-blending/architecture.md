@@ -37,6 +37,10 @@ Enable the required `GeometryBufferRenderer` outputs, set `samples` to `1`, and 
 
 The classic wrapper is runtime-only and cannot be serialized, parsed, or cloned because its geometry inputs are caller-owned runtime resources. Use FrameGraph/NRGE when the mesh-blending configuration must be serialized.
 
+The classic geometry buffer evaluates baked vertex animations (VAT) using the mesh's current playback settings, including per-instance settings. `PackedTag` should follow the animated silhouette. The classic velocity attachments do not track motion between VAT poses.
+
+To isolate a decorative overlay such as a `GreasedLine`, hide it in both SceneColor and the geometry buffer first. Use `geometryBufferRenderer.renderList` or `geometryBufferRenderer.getGBuffer().renderListPredicate` to exclude it from the geometry pass if needed. A zero blend tag prevents a mesh from being selected as a blend target, but does not stop it from writing depth or occluding a participating surface's tag. Excluding an overlay only from the geometry pass does not remove its pixels from SceneColor; when the overlay overlaps the seam, compositing it after mesh blending keeps it out of both inputs.
+
 ### Frame graph
 
 Request screen/view depth and mesh-blending tag outputs from `FrameGraphGeometryRendererTask`. Request and connect albedo only when shadow estimation is wanted. The tag can occupy any color-attachment position and must use `TEXTURETYPE_UNSIGNED_BYTE` with `TEXTUREFORMAT_RED_INTEGER`. Mixed float and integer attachments are declared and cleared according to their actual scalar type. Connect those handles and the matching SceneColor to `FrameGraphMeshBlendingTask` or `NodeRenderGraphMeshBlendingPostProcessBlock`. `renderTransparentMeshes` is not overridden; set it according to the scene's overlap and composition requirements.
@@ -55,6 +59,8 @@ Both wrappers use `ThinMeshBlendingPostProcess`, so quality, radius, slope, dept
 Cost grows with screen coverage and quality because the pass searches the packed tag texture per participating pixel. Profile enabled, disabled, and quality variants on the target hardware rather than relying on a universal millisecond threshold.
 
 The internal search texture is deterministic spatial noise: it rotates and jitters searches without changing between frames. The effect has no temporal accumulation and does not require TAA.
+
+`Small` selects a search radius, not a texture filter. Because the effect samples rendered color across the seam, strong contrast or fine surface detail can make variations in sample position more visible. Compare `SeamFade` and `TargetColor` with a flat-color material override: if the fade is smooth but the sampled color is not, inspect the source color; if the fade itself is patchy, compare `High` or `Cinematic` and try a slightly larger projected radius before changing the asset.
 
 ## Examples
 
