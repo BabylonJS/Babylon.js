@@ -90,6 +90,30 @@ describe("ShadowGenerator", () => {
             expect(generator).not.toBeUndefined();
         });
 
+        it("keeps light-facing normal bias opt-in when serializing and parsing", () => {
+            const scene = new Scene(subject);
+            const light = new DirectionalLight("Directional", new Vector3(0, -1, 0), scene);
+            const generator = new ShadowGenerator(32, light);
+            generator.normalBias = 0.25;
+
+            const legacy = generator.serialize();
+            expect(legacy).not.toHaveProperty("useLightFacingNormalBias");
+
+            generator.useLightFacingNormalBias = true;
+            const optedIn = generator.serialize();
+            expect(optedIn.useLightFacingNormalBias).toBe(true);
+            generator.dispose();
+
+            const parsedLegacy = ShadowGenerator.Parse(legacy, scene);
+            expect(parsedLegacy.normalBias).toBe(0.25);
+            expect(parsedLegacy.useLightFacingNormalBias).toBe(false);
+            parsedLegacy.dispose();
+
+            const parsedOptIn = ShadowGenerator.Parse(optedIn, scene);
+            expect(parsedOptIn.normalBias).toBe(0.25);
+            expect(parsedOptIn.useLightFacingNormalBias).toBe(true);
+        });
+
         it("should throw a descriptive error when cascaded shadow maps are not supported", () => {
             const scene = new Scene(subject);
             const light = new DirectionalLight("Directional", new Vector3(0, -1, 0), scene);

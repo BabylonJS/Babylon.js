@@ -316,6 +316,13 @@ export class ShadowGenerator implements IShadowGenerator {
         this._normalBias = normalBias;
     }
 
+    /**
+     * Orient positive normal bias away from the light when the shadow pass draws both faces of a caster.
+     * Enable this for thin surfaces that can face the light with either orientation.
+     * This defaults to false because it can enlarge the shadow of a closed double-sided mesh.
+     */
+    public useLightFacingNormalBias = false;
+
     protected _blurBoxOffset = 1;
     /**
      * Gets the blur box offset: offset applied during the blur pass.
@@ -1440,9 +1447,8 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // While a snapshot records again, a draw whose mesh, material and per-draw values did not change is encoded from the commands
-        // it was recorded with. forceBackFacesOnly changes the culling inside the full draw, and useOpacityTextureForTransparentShadow the
-        // texture of its alpha test (diffuseSampler): they are compared with the values the draw was recorded with
-        const domainState = (this.forceBackFacesOnly ? 1 : 0) + (this.useOpacityTextureForTransparentShadow ? 2 : 0);
+        // it was recorded with. Compare the culling override, the alpha-test texture selection, and the normal-bias shader variant.
+        const domainState = (this.forceBackFacesOnly ? 1 : 0) + (this.useOpacityTextureForTransparentShadow ? 2 : 0) + (this.useLightFacingNormalBias ? 4 : 0);
         const replayable =
             engine._recordsDraws &&
             // an instance drawn as a regular mesh (mirrored from its source): its full draw binds the uniform buffer of its source mesh,
@@ -1753,6 +1759,10 @@ export class ShadowGenerator implements IShadowGenerator {
         const defines: string[] = [];
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
+
+        if (this.useLightFacingNormalBias && this.normalBias && !material.backFaceCulling && !this.forceBackFacesOnly) {
+            defines.push("#define SM_NORMALBIAS_TWOSIDED");
+        }
 
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances, this._scene.getEngine().currentRenderPassId)) {
@@ -2296,6 +2306,9 @@ export class ShadowGenerator implements IShadowGenerator {
         serializationObject.frustumEdgeFalloff = this.frustumEdgeFalloff;
         serializationObject.bias = this.bias;
         serializationObject.normalBias = this.normalBias;
+        if (this.useLightFacingNormalBias) {
+            serializationObject.useLightFacingNormalBias = true;
+        }
         serializationObject.usePercentageCloserFiltering = this.usePercentageCloserFiltering;
         serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
         serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
@@ -2375,6 +2388,8 @@ export class ShadowGenerator implements IShadowGenerator {
         if (parsedShadowGenerator.normalBias !== undefined) {
             shadowGenerator.normalBias = parsedShadowGenerator.normalBias;
         }
+
+        shadowGenerator.useLightFacingNormalBias = !!parsedShadowGenerator.useLightFacingNormalBias;
 
         if (parsedShadowGenerator.usePercentageCloserFiltering) {
             shadowGenerator.usePercentageCloserFiltering = true;

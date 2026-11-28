@@ -11,5 +11,11 @@
     float sinNLSM = sqrt(1.0 - ndlSM * ndlSM);
     float normalBiasSM = biasAndScaleSM.y * sinNLSM;
 
+    #ifdef SM_NORMALBIAS_TWOSIDED
+        if (ndlSM < 0.0) {
+            normalBiasSM = -normalBiasSM;
+        }
+    #endif
+
     worldPos.xyz -= vNormalW * normalBiasSM;
 #endif
